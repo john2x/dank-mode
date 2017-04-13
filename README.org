@@ -1,0 +1,3 @@
+* dank-mode
+
+Emacs major mode to browse Reddit.
