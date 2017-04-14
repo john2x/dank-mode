@@ -1,12 +1,54 @@
-(defvar dank-backend--active-requests nil)
+(require 'request)
+(require 'json)
+(require 'dank-utils)
+(require 'dank-cache)
+(require 'dank-auth)
 
 (cl-defstruct dank-post id slug url title body score user date)
 (cl-defstruct dank-comment id post-id url body score user date)
 
-(defun dank-backend--cancel-active-request ())
+(defconst dank-backend-host "https://oauth.reddit.com")
 
-(defun dank-backend--do-request (f))
+(defvar-local dank-backend-buffer-history nil)
+(defvar-local dank-backend-buffer-url nil)
 
-(defun dank-backend-get-posts (get-posts-f))
+(defun dank-backend-authenticated-request (&rest request-args)
+  "Perform a synchronous `request' with REQUEST-ARGS and `dank-auth-token'.
+The first element in request-args (the _relative_ request url) will be prependend with `dank-backend-host'."
+  (let* ((full-url (concat dank-backend-host (car request-args)))
+         (request-args (cons full-url (cdr request-args)))  ;; replace the relative url with the full-url
+         (authorization (concat "Bearer " (dank-auth-token)))
+         (request-args (append request-args `(:headers (("Authorization" . ,authorization)
+                                                        ("User-Agent" . ,dank-auth-user-agent))
+                                              :parser json-read
+                                              :sync t)))
+         (resp (apply 'request request-args))
+         (resp-data (request-response-data resp))
+         (resp-error (request-response-error-thrown resp)))
+    (if resp-error
+        (dank-warning 'dank-backend "Failed to refresh Reddit token. Error %s" resp-data)
+      resp-data)))
+
+
+(defun dank-backend-listings (subreddit sorting &rest request-params)
+  "Fetch authenticated user's SUBREDDIT posts sorted by SORTING.
+
+SUBREDDIT can be nil to retrieve the user's front page listing.
+
+SORTING must be a symbol of either 'hot, 'new, 'rising, 'top, or 'controversial.
+
+REQUEST-PARAMS is plist of request parameters that Reddit's 'listing' API takes.
+e.g. (:after \"xxx\" :limit 25)
+Valid keywords are: :after (string), :before (string), :limit (integer).
+If both :after and :before are provided, :after takes precedence and :before is ignored."
+  (let ((after (plist-get request-params :after))
+        (before (plist-get request-params :before))
+        (limit (plist-get request-params :limit))
+        (url (concat (when subreddit (concat "/r/" subreddit)) "/" (symbol-name sorting))))
+    (let* ((params (if before (cons `(before . ,before) '() '())))
+           (params (if limit (cons `(limit . ,limit) params) params))
+           (params (if after (cons `(after . ,after) (assq-delete-all 'before params)) params))
+           (resp (dank-backend-authenticated-request url :type "GET" :params params)))
+      resp)))
 
 (provide 'dank-backend)
