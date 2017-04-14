@@ -29,7 +29,13 @@ username.")
 
 (defvar dank-reddit--token-storage nil)
 
-(setq dank-reddit-auth-file "auth.example.json")
+(setq dank-reddit-auth-file "auth.json")
+
+(defun dank-reddit--warning (&rest message-fmt)
+  "Convenience method to print warning messages for dank-reddit and return nil.
+Passes MESSAGE-FMT to `format-message'."
+  (progn (display-warning 'dank-reddit (apply 'format-message message-fmt) :warning "*dank-mode warnings*")
+         nil))
 
 (defun dank-reddit-load-auth-vars-from-file (path)
   "Read and set auth values from PATH."
@@ -67,7 +73,7 @@ username.")
                   :sync t))
            (resp-data (request-response-data resp)))
       (if (request-response-error-thrown resp)
-          (warn "dank-reddit failed to refresh Reddit token. Error %s" resp-data)
+          (dank-reddit--warning "failed to refresh Reddit token. Error %s" resp-data)
         (let ((expiry (+ (float-time) (cdr (assq 'expires_in resp-data)))))
           (setq dank-reddit--token-storage (cons `(expiry . ,expiry) resp-data)))))))
 
@@ -91,8 +97,11 @@ to do an actual request to Reddit's API using the current access token."
        dank-reddit--token-expiry-threshold-seconds)))
 
 (defun dank-reddit-authenticated-request (&rest request-args)
-  "Perform a synchronous `request' with REQUEST-ARGS with `dank-reddit-token' in the headers."
-  (let* ((authorization (concat "Bearer " (dank-reddit-token)))
+  "Perform a synchronous `request' with REQUEST-ARGS and `dank-reddit-token'.
+The first element in request-args (the _relative_ request url) will be prependend with `dank-reddit-host'."
+  (let* ((full-url (concat dank-reddit-host (car request-args)))
+         (request-args (cons full-url (cdr request-args)))  ;; replace the relative url with the full-url
+         (authorization (concat "Bearer " (dank-reddit-token)))
          (request-args (append request-args `(:headers (("Authorization" . ,authorization)
                                                         ("User-Agent" . ,dank-reddit-user-agent))
                                               :parser json-read
@@ -101,9 +110,27 @@ to do an actual request to Reddit's API using the current access token."
          (resp-data (request-response-data resp))
          (resp-error (request-response-error-thrown resp)))
     (if resp-error
-        (warn "dank-reddit-authenticated-request failed. %s" resp-data)
+        (dank-reddit--warning "Failed to refresh Reddit token. Error %s" resp-data)
       resp-data)))
 
 
-(defun dank-reddit-listings (listing &rest request-params)
-  ())
+(defun dank-reddit-listings (subreddit sorting &rest request-params)
+  "Fetch authenticated user's SUBREDDIT posts sorted by SORTING.
+
+SUBREDDIT can be nil to retrieve the user's front page listing.
+
+SORTING must be a symbol of either 'hot, 'new, 'rising, 'top, or 'controversial.
+
+REQUEST-PARAMS is plist of request parameters that Reddit's 'listing' API takes.
+e.g. (:after \"xxx\" :limit 25)
+Valid keywords are: :after (string), :before (string), :limit (integer).
+If both :after and :before are provided, :after takes precedence and :before is ignored."
+  (let ((after (plist-get request-params :after))
+        (before (plist-get request-params :before))
+        (limit (plist-get request-params :limit))
+        (url (concat (when subreddit (concat "/r/" subreddit)) "/" (symbol-name sorting))))
+    (let* ((params (if before (cons `(before . ,before) '() '())))
+           (params (if limit (cons `(limit . ,limit) params) params))
+           (params (if after (cons `(after . ,after) (assq-delete-all 'before params)) params))
+           (resp (dank-reddit-authenticated-request url :type "GET" :params params)))
+      resp)))
