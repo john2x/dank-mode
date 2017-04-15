@@ -12,22 +12,43 @@
 (defvar-local dank-backend-buffer-history nil)
 (defvar-local dank-backend-buffer-url nil)
 
+(defun dank-backend--find-property (request-args property)
+  "Find the PROPERTY and return its value from REQUEST-ARGS."
+  (when request-args
+    (if (eq (car request-args) property)
+        (car (cdr request-args))
+      (dank-backend--find-property (cdr request-args) property))))
+
+(defun dank-backend--cache-key (request-args)
+  "Return a cache key from REQUEST-ARGS."
+  (let ((url (car request-args))
+        (params (dank-backend--find-property request-args :params)))
+    (if params
+        (dank-cache-key (concat url (if (string-match-p "\\?" url) "&" "?")
+                                (request--urlencode-alist params)))
+      (dank-cache-key url))))
+
 (defun dank-backend-authenticated-request (&rest request-args)
   "Perform a synchronous `request' with REQUEST-ARGS and `dank-auth-token'.
 The first element in request-args (the _relative_ request url) will be prependend with `dank-backend-host'."
-  (let* ((full-url (concat dank-backend-host (car request-args)))
-         (request-args (cons full-url (cdr request-args)))  ;; replace the relative url with the full-url
-         (authorization (concat "Bearer " (dank-auth-token)))
-         (request-args (append request-args `(:headers (("Authorization" . ,authorization)
-                                                        ("User-Agent" . ,dank-auth-user-agent))
-                                              :parser json-read
-                                              :sync t)))
-         (resp (apply 'request request-args))
-         (resp-data (request-response-data resp))
-         (resp-error (request-response-error-thrown resp)))
-    (if resp-error
-        (dank-warning 'dank-backend "Failed to refresh Reddit token. Error %s" resp-data)
-      resp-data)))
+  (let ((key (dank-backend--cache-key request-args)))
+    (if (dank-cache-key-exists key)
+          (json-read-from-string (dank-cache-get key))
+      (let* ((full-url (concat dank-backend-host (car request-args)))
+             (request-args (cons full-url (cdr request-args)))  ;; replace the relative url with the full-url
+             (authorization (concat "Bearer " (dank-auth-token)))
+             (request-args (append request-args `(:headers (("Authorization" . ,authorization)
+                                                            ("User-Agent" . ,dank-auth-user-agent))
+                                                           :parser buffer-string
+                                                           :sync t)))
+             (resp (apply 'request request-args))
+             (resp-data (request-response-data resp))
+             (resp-error (request-response-error-thrown resp)))
+        (if resp-error
+            (dank-warning 'dank-backend "Request failed. Error %s" resp-data)
+          (let ((json-object-type 'plist))
+            (dank-cache-set key resp-data)
+            (json-read-from-string resp-data)))))))
 
 
 (defun dank-backend-listings (subreddit sorting &rest request-params)
