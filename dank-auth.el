@@ -24,7 +24,7 @@ README file.")
 This can be set via `dank-auth-file'.  This variable is optional, and
 by default will be a concatenation of the string \"dank-mode/\" plus your
 username.")
-(defcustom dank-auth--token-expiry-threshold-seconds 300
+(defvar dank-auth--token-expiry-threshold-seconds 300
   "The threshold in seconds to consider an access token as invalid.")
 
 (defvar dank-auth--token-storage nil)
@@ -34,13 +34,15 @@ username.")
 
 (defun dank-auth-load-auth-vars-from-file (path)
   "Read and set auth values from PATH."
-  (let ((data (json-read-file path)))
-    (setq dank-auth-username (alist-get 'username data))
-    (setq dank-auth-password (alist-get 'password data))
-    (setq dank-auth-oauth-client-id (alist-get 'oauthClientId data))
-    (setq dank-auth-oauth-client-secret (alist-get 'oauthClientSecret data))
-    (setq dank-auth-user-agent (or (alist-get 'userAgent data)
-                                     (concat "dank-mode/" dank-auth-username)))))
+  (let* ((json-object-type 'plist)
+         (data (json-read-file path)))
+    (setq dank-auth-username (plist-get data :username))
+    (setq dank-auth-password (plist-get data :password))
+    (setq dank-auth-oauth-client-id (plist-get data :oauthClientId))
+    (setq dank-auth-oauth-client-secret (plist-get data :oauthClientSecret))
+    (setq dank-auth-user-agent (or (plist-get data :userAgent)
+                                   (concat "dank-mode/" dank-auth-username)))
+    data))
 
 (defun dank-auth--configured-p ()
   "Return t if the following auth vars are set.
@@ -64,21 +66,21 @@ username.")
                           ("password" . ,dank-auth-password))
                   :headers `(("Authorization" . ,(concat "Basic " authorization))
                              ("User-Agent" . ,dank-auth-user-agent))
-                  :parser 'json-read
+                  :parser (lambda () (let ((json-object-type 'plist)) (json-read)))
                   :sync t))
            (resp-data (request-response-data resp)))
       (if (request-response-error-thrown resp)
           (dank-warning 'dank-auth "failed to refresh Reddit token. Error %s" resp-data)
-        (let ((expiry (+ (float-time) (cdr (assq 'expires_in resp-data)))))
-          (setq dank-auth--token-storage (cons `(expiry . ,expiry) resp-data)))))))
+        (let ((expiry (+ (float-time) (plist-get resp-data :expires_in))))
+          (setq dank-auth--token-storage (plist-put resp-data :expiry expiry)))))))
 
 (defun dank-auth-token ()
   "Return the access token stored in dank-auth--token-storage.
 If the token is no longer valid, then attempt to retrieve a new token."
   (if (dank-auth--token-valid-p)
-      (alist-get 'access_token dank-auth--token-storage)
+      (plist-get dank-auth--token-storage :access_token)
     (progn (dank-auth-token-refresh)
-           (alist-get 'access_token dank-auth--token-storage))))
+           (plist-get dank-auth--token-storage :access_token))))
 
 (defun dank-auth--token-valid-p (&optional attempt-request)
   "Return t if the access token in `dank-auth--token-storage' is still valid.
@@ -88,7 +90,7 @@ It checks if the token expiry falls below
 If `ATTEMPT-REQUEST' is non-nil, then in addition this function will attempt
 to do an actual request to Reddit's API using the current access token."
   (when dank-auth--token-storage
-    (> (- (alist-get 'expiry dank-auth--token-storage) (float-time))
+    (> (- (plist-get dank-auth--token-storage :expiry) (float-time))
        dank-auth--token-expiry-threshold-seconds)))
 
 (provide 'dank-auth)
