@@ -52,7 +52,7 @@ The first element in request-args (the _relative_ request url) will be prependen
             (json-read-from-string resp-data)))))))
 
 
-(defun dank-backend-listings (subreddit sorting &rest request-params)
+(defun dank-backend-post-listing (subreddit sorting &rest request-params)
   "Fetch authenticated user's SUBREDDIT posts sorted by SORTING.
 
 SUBREDDIT can be nil to retrieve the user's front page listing.
@@ -72,5 +72,18 @@ If both :after and :before are provided, :after takes precedence and :before is 
            (params (if after (cons `(after . ,after) (assq-delete-all 'before params)) params))
            (resp (dank-backend-authenticated-request url :type "GET" :params params)))
       resp)))
+
+(defun dank-backend-my-subreddits-listing (&rest request-params)
+  "Fetch authenticated user's subscribed subreddits.
+REQUEST-PARAMS is a plist of request parameters that Reddit's 'listing' API takes."
+  (let ((after (plist-get request-params :after))
+        (before (plist-get request-params :before))
+        (limit (plist-get request-params :limit)))
+    (let* ((params (if before (cons `(before . ,before) '() '())))
+           (params (if limit (cons `(limit . ,limit) params) params))
+           (params (if after (cons `(after . , after) (assq-delete-all 'before params)) params))
+           (resp (dank-backend-authenticated-request "/subreddits/mine/subscriber" :type "GET" :params params)))
+      resp)))
+
 
 (provide 'dank-backend)
