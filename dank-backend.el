@@ -33,7 +33,8 @@
 The first element in request-args (the _relative_ request url) will be prependend with `dank-backend-host'."
   (let ((key (dank-backend--cache-key request-args)))
     (if (dank-cache-key-exists key)
-          (json-read-from-string (dank-cache-get key))
+        (let ((json-object-type 'plist))
+          (json-read-from-string (dank-cache-get key)))
       (let* ((full-url (concat dank-backend-host (car request-args)))
              (request-args (cons full-url (cdr request-args)))  ;; replace the relative url with the full-url
              (authorization (concat "Bearer " (dank-auth-token)))
