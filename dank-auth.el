@@ -53,9 +53,10 @@ username.")
   (and dank-auth-username dank-auth-password
        dank-auth-oauth-client-id dank-auth-oauth-client-secret))
 
-(defun dank-auth-token-refresh ()
-  "Retrieve new token data and store it in dank-auth--token-storage."
-  (when (and (dank-auth--configured-p) (not (dank-auth--token-valid-p)))
+(defun dank-auth-token-refresh (&optional force-refresh)
+  "Retrieve new token data and store it in dank-auth--token-storage.
+When FORCE-REFRESH is non-nil, then force the refresh."
+  (when (and (dank-auth--configured-p) (or force-refresh (not (dank-auth--token-valid-p))))
     (let* ((authorization (base64-encode-string (concat dank-auth-oauth-client-id ":"
                                                         dank-auth-oauth-client-secret)))
            (resp (request
