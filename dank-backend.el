@@ -71,7 +71,7 @@ If both :after and :before are provided, :after takes precedence and :before is 
            (params (if limit (cons `(limit . ,limit) params) params))
            (params (if after (cons `(after . ,after) (assq-delete-all 'before params)) params))
            (resp (dank-backend-authenticated-request url :type "GET" :params params)))
-      resp)))
+      (plist-get (plist-get resp :data) :children))))
 
 (defun dank-backend-my-subreddits-listing (&rest request-params)
   "Fetch authenticated user's subscribed subreddits.

@@ -12,8 +12,7 @@
 
 (defun dank-cache-key (request-url)
   "Return a cache-friendly key from REQUEST-URL."
-  (print request-url)
-  (print (md5 request-url)))
+  (md5 request-url))
 
 (defun dank-cache--full-key (key)
   "Get the full path of KEY."
