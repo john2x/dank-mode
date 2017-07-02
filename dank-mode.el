@@ -1,6 +1,6 @@
 (require 'dank-auth)
 (require 'dank-backend)
-(require 'dank-posts)
+(require 'dank-listing)
 
 (defvar-local dank-mode-initialized nil)
 (defvar posts )
@@ -17,13 +17,10 @@
 (defun dank--render-post (post)
   "")
 
-(define-derived-mode dank-main-mode special-mode "dank-main-mode"
-  (message "Welcome to your front page!"))
-
 (defun dank-mode ()
   (interactive)
   (switch-to-buffer "*dank-mode*")
-  (dank-main-mode)
+  (dank-listing-mode)
   (unless dank-mode-initialized
     (dank-mode-init)))
 
@@ -36,7 +33,6 @@
   (let ((inhibit-read-only t))
     (erase-buffer))
   (dank-mode--init-auth)
-  (dank-mode--init-front-page)
   (setq dank-mode-initialized t))
 
 (defun dank-mode--init-auth ()
@@ -47,9 +43,13 @@
 
 (defun dank-mode--init-front-page ()
   "Render the user's front page."
-  (let ((posts (dank-backend-post-listing nil 'hot))
-        (inhibit-read-only t))
-    (cl-loop for post across posts do
-      (dank-posts-render post))))
+  (unless dank-listing-buffer
+    (setq dank-listing-buffer (get-buffer "*dank-mode*")))
+  (with-current-buffer "*dank-mode*"
+    (let ((posts (dank-backend-post-listing nil 'hot))
+          (inhibit-read-only t))
+      (cl-loop for post across posts do
+               (dank-listing-insert post)))))
+
 
 (provide 'dank-mode)
