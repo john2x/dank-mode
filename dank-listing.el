@@ -1,5 +1,6 @@
 (require 'dank-auth)
 (require 'dank-backend)
+(require 'dank-utils)
 (require 's)
 
 (cl-defstruct dank-post
@@ -17,10 +18,10 @@
 (defcustom dank-listing-default-subreddit nil "")
 (defcustom dank-listing-default-sorting 'hot "")
 
-(defvar-local dank-listing-current-subreddit nil)
-(defvar-local dank-listing-current-sorting 'hot)
+(defvar-local dank-listing-current-subreddit dank-listing-default-subreddit)
+(defvar-local dank-listing-current-sorting dank-listing-default-sorting)
 (defvar-local dank-listing-current-after nil)
-(defvar-local dank-listing-current-listing-posts nil)
+(defvar-local dank-listing-current-page-posts nil)
 
 ;; create new buffer
 ;; fetch subreddits
@@ -36,25 +37,29 @@
 (defun dank-listing-mode-init ()
   "Initialize dank-listing-mode buffer."
   (message "init listing...")
-  (unless dank-listing-buffer
+  (unless (and dank-listing-buffer (buffer-live-p dank-listing-buffer))
     (setq dank-listing-buffer (get-buffer "*dank-mode*")))
-  (dank-listing-get-current-page dank-listing-default-subreddit
-                                 dank-listing-default-sorting
-                                 dank-listing-page-items-count)
+  (dank-listing-set-page-posts dank-listing-default-subreddit
+                               dank-listing-default-sorting
+                               dank-listing-page-items-count)
   (dank-listing-render-current-page t))
 
-(defun dank-listing-get-current-page (subreddit sorting &optional limit after)
+(defun dank-listing-set-page-posts (subreddit sorting &optional limit after)
   "Get a page of posts from reddit.
-Store the results in `dank-listing-current-listing-posts'."
+Store the results in `dank-listing-current-page-posts'."
   (let* ((posts (dank-backend-post-listing subreddit sorting :limit limit :after after))
          (posts (mapcar (lambda (el) (plist-get el :data)) posts))
          (posts (mapcar #'dank-listing-make-post posts)))
-    (setq-local dank-listing-current-listing-posts posts)))
+    (setq-local dank-listing-current-page-posts posts)
+    (setq-local dank-listing-current-subreddit subreddit)
+    (setq-local dank-listing-current-sorting sorting)
+    (setq-local dank-listing-current-after after)
+    (dank-listing-set-header-line)))
 
 (defun dank-listing-render-current-page (&optional clear)
-  "Render contents of `dank-listing-current-listing-posts' into `dank-listing-buffer'.
+  "Render contents of `dank-listing-current-page-posts' into `dank-listing-buffer'.
 If CLEAR is non-nil, clear the listing buffer before rendering the current page."
-  (mapc #'dank-listing-append-post dank-listing-current-listing-posts))
+  (mapc #'dank-listing-append-post dank-listing-current-page-posts))
 
 (defun dank-listing-render-post (post)
   "Render POST as string using `dank-listing-post-template'."
@@ -77,9 +82,7 @@ If CLEAR is non-nil, clear the listing buffer before rendering the current page.
                                  subreddit ,subreddit score ,score num_comments ,num_comments
                                  nsfw ,nsfw spoiler ,spoiler domain ,domain post_type ,post_type
                                  link_flair ,link_flair)))
-    (s-format dank-listing-post-template
-              (lambda (var &optional extra) (message (plist-get extra (intern var))) (plist-get extra (intern var)))
-              format-context)))
+    (dank-utils-format-plist dank-listing-post-template format-context)))
 
 (defun dank-listing-make-post (post)
   "Parse POST into a `dank-post'."
@@ -110,7 +113,32 @@ If CLEAR is non-nil, clear the listing buffer before rendering the current page.
       (let ((inhibit-read-only t))
         (save-excursion
           (goto-char (point-max))
-          (insert (concat "\n" (dank-listing-render-post post))))))))
+          (insert (concat (dank-listing-render-post post) "\n")))))))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;
+;; header-line stuff ;;
+;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar dank-listing-header-line-format-template
+  "${subreddit} - ${sorting}")
+
+(defun dank-listing-set-header-line ()
+  (when (buffer-live-p dank-listing-buffer)
+    (with-current-buffer dank-listing-buffer
+      (setq header-line-format (dank-utils-format-plist
+                                dank-listing-header-line-format-template
+                                `(subreddit ,(or dank-listing-current-subreddit "Frontpage")
+                                            sorting ,(symbol-name dank-listing-current-sorting)
+                                            position ,(if dank-listing-current-after (format " - " dank-listing-current-after)
+                                                        "")))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; navigation functions ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; interaction functions ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (provide 'dank-listing)
