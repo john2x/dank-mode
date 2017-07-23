@@ -1,3 +1,24 @@
 * dank-mode
 
 Emacs major mode to browse Reddit.
+
+** Features
+
+- [ ] front page/subreddit listing
+  - pagination
+- [ ] font-lock for posts
+- [ ] open post self-text and comments in split window
+  - pagination
+  - how to handle deeply nested comment threads?
+  - sorting
+- [ ] font-lock for comments
+- [ ] upvote/downvote posts
+- [ ] compose comments directly in the buffer for comments
+  - editable region?
+- [ ] subscribed subreddits list (separate mode)
+- [ ] view messages/replies (separate mode)
+- [ ] reply to comments/messages
+- [ ] subreddit sidebar info (in split window)
+- [ ] view link contents directly in emacs
+- [ ] subscribe/unsubscribe from subreddit
+- [ ] multi-subreddits
