@@ -14,6 +14,9 @@
 
 (defvar dank-listing-page-items-count 25)
 
+(defcustom dank-listing-default-subreddit nil "")
+(defcustom dank-listing-default-sorting 'hot "")
+
 (defvar-local dank-listing-current-subreddit nil)
 (defvar-local dank-listing-current-sorting 'hot)
 (defvar-local dank-listing-current-after nil)
@@ -30,6 +33,16 @@
 (define-derived-mode dank-listing-mode special-mode "dank-listing-mode"
   (message "Welcome to your front page!"))
 
+(defun dank-listing-mode-init ()
+  "Initialize dank-listing-mode buffer."
+  (message "init listing...")
+  (unless dank-listing-buffer
+    (setq dank-listing-buffer (get-buffer "*dank-mode*")))
+  (dank-listing-get-current-page dank-listing-default-subreddit
+                                 dank-listing-default-sorting
+                                 dank-listing-page-items-count)
+  (dank-listing-render-current-page t))
+
 (defun dank-listing-get-current-page (subreddit sorting &optional limit after)
   "Get a page of posts from reddit.
 Store the results in `dank-listing-current-listing-posts'."
@@ -38,9 +51,9 @@ Store the results in `dank-listing-current-listing-posts'."
          (posts (mapcar #'dank-listing-make-post posts)))
     (setq-local dank-listing-current-listing-posts posts)))
 
-(defun dank-listing-render-current-page ()
-  "Render contents of `dank-listing-current-listing-posts' into `dank-listing-buffer'."
-  (message "%s" dank-listing-current-listing-posts)
+(defun dank-listing-render-current-page (&optional clear)
+  "Render contents of `dank-listing-current-listing-posts' into `dank-listing-buffer'.
+If CLEAR is non-nil, clear the listing buffer before rendering the current page."
   (mapc #'dank-listing-append-post dank-listing-current-listing-posts))
 
 (defun dank-listing-render-post (post)
@@ -87,8 +100,8 @@ Store the results in `dank-listing-current-listing-posts'."
                   :link_flair (plist-get post :link_flair_text)
                   :author_flair (plist-get post :author_flair_text)
                   :gilded (plist-get post :gilded)
-                  :stickied (not (eq (plist-get :stickied) :json-false))
-                  :locked (not (eq (plist-get :locked) :json-false))))
+                  :stickied (not (eq (plist-get post :stickied) :json-false))
+                  :locked (not (eq (plist-get post :locked) :json-false))))
 
 (defun dank-listing-append-post (post)
   "Append POST into `dank-listing-buffer'."

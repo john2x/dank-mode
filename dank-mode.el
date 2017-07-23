@@ -1,5 +1,6 @@
 (require 'dank-auth)
 (require 'dank-backend)
+(require 'dank-cache)
 (require 'dank-listing)
 
 (defvar-local dank-mode-initialized nil)
@@ -20,36 +21,38 @@
 (defun dank-mode ()
   (interactive)
   (switch-to-buffer "*dank-mode*")
-  (dank-listing-mode)
   (unless dank-mode-initialized
-    (dank-mode-init)))
+    (dank-mode-init)
+    (dank-listing-mode)
+    (dank-listing-mode-init)))
 
 (defun dank-mode-reload ()
   (interactive)
-  (dank-mode-init))
+  (dank-mode-reset)
+  (dank-mode))
 
 (defun dank-mode-init ()
   "Initialize dank-mode buffer."
   (let ((inhibit-read-only t))
     (erase-buffer))
+  (dank-mode--init-cache)
   (dank-mode--init-auth)
   (setq dank-mode-initialized t))
 
+
+(defun dank-mode-reset ()
+  (setq dank-mode-initialized nil))
+
+(defun dank-mode--init-cache ()
+  "Initialize dank-mode's cache (i.e. clear it)"
+  (message "clearing cache...")
+  (dank-cache-delete-all))
+
 (defun dank-mode--init-auth ()
   "Initialize dank-mode auth."
+  (message "init auth...")
   (when dank-auth-file
     (unless (dank-auth-configured-p)
       (dank-auth-load-auth-vars-from-file dank-auth-file))))
-
-(defun dank-mode--init-front-page ()
-  "Render the user's front page."
-  (unless dank-listing-buffer
-    (setq dank-listing-buffer (get-buffer "*dank-mode*")))
-  (with-current-buffer "*dank-mode*"
-    (let ((posts (dank-backend-post-listing nil 'hot))
-          (inhibit-read-only t))
-      (cl-loop for post across posts do
-               (dank-listing-insert post)))))
-
 
 (provide 'dank-mode)
