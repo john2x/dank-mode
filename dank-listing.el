@@ -42,7 +42,7 @@
   (dank-listing-set-page-posts dank-listing-default-subreddit
                                dank-listing-default-sorting
                                dank-listing-page-items-count)
-  (dank-listing-render-current-page t))
+  (dank-listing-render-current-page))
 
 (defun dank-listing-set-page-posts (subreddit sorting &optional limit after)
   "Get a page of posts from reddit.
@@ -56,9 +56,12 @@ Store the results in `dank-listing-current-page-posts'."
     (setq-local dank-listing-current-after after)
     (dank-listing-set-header-line)))
 
-(defun dank-listing-render-current-page (&optional clear)
+(defun dank-listing-render-current-page ()
   "Render contents of `dank-listing-current-page-posts' into `dank-listing-buffer'.
-If CLEAR is non-nil, clear the listing buffer before rendering the current page."
+Clears `dank-listing-buffer' before rendering."
+  (when (buffer-live-p dank-listing-buffer)
+    (with-current-buffer dank-listing-buffer
+      (erase-buffer)))
   (mapc #'dank-listing-append-post dank-listing-current-page-posts))
 
 (defun dank-listing-render-post (post)
@@ -90,7 +93,7 @@ If CLEAR is non-nil, clear the listing buffer before rendering the current page.
                   :title (plist-get post :title)
                   :link (plist-get post :url)
                   :text (plist-get post :selftext)
-                  :age "TODO hours ago"
+                  :age (dank-utils-timestamp-ago (plist-get post :created_utc))
                   :date (plist-get post :created_utc)
                   :score (plist-get post :score)
                   :author (plist-get post :author)
@@ -136,6 +139,14 @@ If CLEAR is non-nil, clear the listing buffer before rendering the current page.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; navigation functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun dank-listing-goto-next-page ()
+  )
+
+(defun dank-listing-goto-next-page ()
+  )
+
+(defun dank-listing-goto-subreddit ())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; interaction functions ;;
