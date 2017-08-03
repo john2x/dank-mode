@@ -2,7 +2,9 @@
 (require 'dank-backend)
 (require 'dank-utils)
 (require 'dank-post)
+(require 'dank-faces)
 (require 's)
+(require 'dash)
 
 (defvar dank-listing-buffer nil)
 
@@ -13,16 +15,11 @@
 
 (defvar-local dank-listing-current-subreddit dank-listing-default-subreddit)
 (defvar-local dank-listing-current-sorting dank-listing-default-sorting)
+(defvar-local dank-listing-current-count 0)
 (defvar-local dank-listing-current-after nil)
+(defvar-local dank-listing-current-before nil)
 (defvar-local dank-listing-current-page-posts nil)
 
-;; create new buffer
-;; fetch subreddits
-;; push to history
-;; render
-;; open subreddit
-;; push to history
-;; render
 
 (define-derived-mode dank-listing-mode special-mode "dank-listing-mode"
   (message "Welcome to your front page!"))
@@ -55,10 +52,12 @@ Clears `dank-listing-buffer' before rendering."
   (when (buffer-live-p dank-listing-buffer)
     (with-current-buffer dank-listing-buffer
       (erase-buffer)))
+  (let ((ordinals (number-sequence dank-listing-current-count (+ dank-listing-current-count dank-listing-page-items-count)))))
   (mapc #'dank-listing-append-post dank-listing-current-page-posts))
 
 (defun dank-listing-append-post (post)
-  "Append POST into `dank-listing-buffer'."
+  "Append POST into `dank-listing-buffer'.
+POST-INDEX is the ordinal of the post."
   (when (buffer-live-p dank-listing-buffer)
     (with-current-buffer dank-listing-buffer
       (let ((inhibit-read-only t))
@@ -67,9 +66,9 @@ Clears `dank-listing-buffer' before rendering."
           (insert (concat (dank-post-render post) "\n")))))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;
-;; header-line stuff ;;
-;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;
+;; display stuff ;;
+;;;;;;;;;;;;;;;;;;;
 
 (defvar dank-listing-header-line-format-template
   "${subreddit} - ${sorting}")
@@ -84,9 +83,78 @@ Clears `dank-listing-buffer' before rendering."
                                             position ,(if dank-listing-current-after (format " - " dank-listing-current-after)
                                                         "")))))))
 
+;; this highlighting logic is copied from ledger-mode
+(defvar-local dank-listing-post-highlight-overlay (list))
+
+(defun dank-listing--make-highlight-overlay ()
+  (let ((ovl (make-overlay 1 1)))
+    (overlay-put ovl 'font-lock-face 'dank-faces-highlight)
+    (overlay-put ovl 'priority '(nil . 99))
+    ovl))
+
+(defun dank-listing-highlight-post-under-point ()
+  "Highlight post under point."
+  (unless dank-listing-post-highlight-overlay
+    (setq dank-listing-post-highlight-overlay (dank-listing--make-highlight-overlay)))
+  (let ((exts (dank-listing--find-post-extents (point))))
+    (let ((b (car exts))
+          (e (cadr exts))
+          (p (point)))
+      (if (and (> (- e b) 1)
+               (<= p e) (>= p b))
+          (move-overlay dank-listing-post-highlight-overlay b (+ 1 e))
+        (move-overlay dank-listing-post-highlight-overlay 1 1)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; navigation functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun dank-listing--navigate-beginning-of-post ()
+  "Move point to the beginning of the current post."
+  (interactive)
+  (beginning-of-line)
+  (let ((sreg "^[^ ]"))
+    (unless (looking-at sreg)
+      (re-search-backward sreg nil t)
+      (beginning-of-line)))
+  (point))
+
+(defun dank-listing--navigate-end-of-post ()
+  "Move point to the end of the current post."
+  (interactive)
+  ;; Go to beginning of post and go down 2 lines :-P
+  (dank-listing--navigate-beginning-of-post)
+  (end-of-line)  ;; need to go to end-of-line first to workaround linewraps
+  (next-line)
+  (end-of-line)
+  (next-line)
+  (end-of-line)
+  (point))
+
+(defun dank-listing--find-post-extents (pos)
+  "Return list containing point for beginning and end of post containing POS."
+  (interactive "d")
+  (save-excursion
+    (goto-char pos)
+    (list (dank-listing--navigate-beginning-of-post)
+          (dank-listing--navigate-end-of-post))))
+
+
+(defun dank-listing-navigate-prev-post ()
+  "Move point to the beginning of previous post."
+  (interactive)
+  (dank-listing--navigate-beginning-of-post)
+  (previous-line)
+  (dank-listing--navigate-beginning-of-post)
+  (point))
+
+(defun dank-listing-navigate-next-post ()
+  "Move point to the beginning of next post."
+  (interactive)
+  (dank-listing--navigate-end-of-post)
+  (next-line)
+  (beginning-of-line)
+  (point))
 
 (defun dank-listing-goto-next-page ()
   )
@@ -99,5 +167,10 @@ Clears `dank-listing-buffer' before rendering."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; interaction functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; misc
+
+(defun dank-listing--find-post-extents (pos)
+  "Return list containing point for beginning and end of a post containing POS.")
 
 (provide 'dank-listing)

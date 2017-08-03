@@ -35,14 +35,24 @@
          (format-context `(title ,title age ,age author ,author author_flair ,author_flair
                                  subreddit ,subreddit score ,score num_comments ,num_comments
                                  nsfw ,nsfw spoiler ,spoiler domain ,domain post_type ,post_type
-                                 link_flair ,link_flair)))
-    (dank-utils-format-plist dank-listing-post-template format-context)))
+                                 link_flair ,link_flair))
+         (rendered-post (dank-utils-format-plist dank-post-template format-context)))
+    (dank-post-propertize rendered-post post)
+    rendered-post))
 
+(defun dank-post-propertize (rendered-post source-post &optional pos)
+  "Assign RENDERED-POST text properties from SOURCE-POST.
+Optional POS is the position of the post in the list."
+  (add-text-properties 0 (length rendered-post)
+                       `(dank-post-id ,(dank-post-id source-post)
+                                      dank-post-subreddit ,(dank-post-subreddit source-post)
+                                      dank-post-pos ,pos)
+                       rendered-post))
 
 (defun dank-post-parse (post)
   "Parse POST into a `dank-post'."
   (make-dank-post :id (plist-get post :id)
-                  :title (plist-get post :title)
+                  :title (s-trim (plist-get post :title))
                   :link (plist-get post :url)
                   :text (plist-get post :selftext)
                   :age (dank-utils-timestamp-ago (plist-get post :created_utc))

@@ -57,4 +57,9 @@
   "Face for link site domains."
   :group 'dank-faces)
 
+(defface dank-faces-highlight
+  '((t :inherit highlight))
+  "Face for highlighted sections."
+  :group 'dank-faces)
+
 (provide 'dank-faces)
