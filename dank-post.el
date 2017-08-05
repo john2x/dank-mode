@@ -62,7 +62,7 @@ Optional POS is the position of the post in the list."
                   :subreddit (plist-get post :subreddit)
                   :num_comments (plist-get post :num_comments)
                   :domain (plist-get post :domain)
-                  :post_type (or (plist-get post :post_hint) (when (eq (plist-get post :is_self) t) "self"))
+                  :post_type (or (plist-get post :post_hint) (if (eq (plist-get post :is_self) t) "self" "link"))
                   :nsfw (not (eq (plist-get post :over_18) :json-false))
                   :spoiler (not (eq (plist-get post :spoiler) :json-false))
                   :link_flair (plist-get post :link_flair_text)

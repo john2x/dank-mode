@@ -52,10 +52,13 @@ Clears `dank-listing-buffer' before rendering."
   (when (buffer-live-p dank-listing-buffer)
     (with-current-buffer dank-listing-buffer
       (erase-buffer)))
-  (let ((ordinals (number-sequence dank-listing-current-count (+ dank-listing-current-count dank-listing-page-items-count)))))
-  (mapc #'dank-listing-append-post dank-listing-current-page-posts))
+  (let* ((ordinals (number-sequence dank-listing-current-count (+ dank-listing-current-count dank-listing-page-items-count)))
+         ;; merge ordinals and posts lists into one list of pairs '(ord post)
+         (ords-posts (mapcar* #'list ordinals dank-listing-current-page-posts)))
+    (mapc (lambda (ord-post) (dank-listing-append-post (car ord-post) (cadr ord-post)))
+          ords-posts)))
 
-(defun dank-listing-append-post (post)
+(defun dank-listing-append-post (ord post)
   "Append POST into `dank-listing-buffer'.
 POST-INDEX is the ordinal of the post."
   (when (buffer-live-p dank-listing-buffer)
@@ -63,7 +66,7 @@ POST-INDEX is the ordinal of the post."
       (let ((inhibit-read-only t))
         (save-excursion
           (goto-char (point-max))
-          (insert (concat (dank-post-render post) "\n")))))))
+          (insert (concat (int-to-string (+ ord 1)) ". " (dank-post-render post) "\n")))))))
 
 
 ;;;;;;;;;;;;;;;;;;;
@@ -167,10 +170,5 @@ POST-INDEX is the ordinal of the post."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; interaction functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; misc
-
-(defun dank-listing--find-post-extents (pos)
-  "Return list containing point for beginning and end of a post containing POS.")
 
 (provide 'dank-listing)
