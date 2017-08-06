@@ -4,21 +4,60 @@ Emacs major mode to browse Reddit.
 
 ** Features
 
-- [ ] front page/subreddit listing
-  - pagination
-- [ ] font-lock for posts
-- [ ] open post self-text and comments in split window
-  - pagination
-  - how to handle deeply nested comment threads?
-  - sorting
-- [ ] font-lock for comments
+*** Post listing
+- [X] load page
+- [X] load next page and append to current listing
+- [X] post items font-lock
+- [X] refresh current subreddit
+- [ ] visit other subreddits
+- [ ] visit other subreddits via links on post items
+**** Interaction
 - [ ] upvote/downvote posts
-- [ ] compose comments directly in the buffer for comments
-  - editable region?
-- [ ] subscribed subreddits list (separate mode)
-- [ ] view messages/replies (separate mode)
-- [ ] reply to comments/messages
-- [ ] subreddit sidebar info (in split window)
-- [ ] view link contents directly in emacs
 - [ ] subscribe/unsubscribe from subreddit
+**** Other
+- [ ] subreddit sidebar info (in split window)
+
+*** Post details
+- [ ] open self post contents in split window
+- [ ] open post link in browser
+**** Interaction
+- [ ] upvote/downvote posts
+- [ ] post comment
+- [ ] subscribe/unsubscribe from subreddit
+**** Other
+- [ ] subreddit sidebar info (in split window)
+
+*** Comments
+- [ ] show comments in self post contents window
+- [ ] comments font-lock
+- [ ] comments pagination
+- [ ] nested comment threads
+**** Interaction
+- [ ] upvote/downvote comments
+- [ ] post reply
+
+*** Subreddits
+- [ ] subscribed subreddits list (separate mode)
+
+*** Messages
+- [ ] list messages/replies (separate mode)
+- [ ] messages font-lock
+**** Interaction
+- [ ] reply to comments/messages
+
+*** Later
+- [ ] view link contents directly in emacs
 - [ ] multi-subreddits
+
+** Inspiration
+
+- Magit
+- mu4e
+
+** External libraries
+
+These libraries are not part of Emacs 25.
+
+- s.el (GPLv3) https://github.com/magnars/dash.el
+- dash.el (GPLv3) https://github.com/magnars/s.el
+- request.el (GPLv3) https://github.com/tkf/emacs-request
