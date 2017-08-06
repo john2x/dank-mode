@@ -8,14 +8,15 @@
 
 (defvar dank-listing-buffer nil)
 
-(defvar dank-listing-page-items-count 25)
+(defvar dank-listing-page-items-limit 25)
 
 (defcustom dank-listing-default-subreddit nil "")
 (defcustom dank-listing-default-sorting 'hot "")
 
 (defvar-local dank-listing-current-subreddit dank-listing-default-subreddit)
 (defvar-local dank-listing-current-sorting dank-listing-default-sorting)
-(defvar-local dank-listing-current-count 0)
+(defvar-local dank-listing-current-start-count 0)
+(defvar-local dank-listing-current-end-count 0)
 (defvar-local dank-listing-current-after nil)
 (defvar-local dank-listing-current-before nil)
 (defvar-local dank-listing-current-page-posts nil)
@@ -24,35 +25,63 @@
 (define-derived-mode dank-listing-mode special-mode "dank-listing-mode"
   (message "Welcome to your front page!"))
 
-(defun dank-listing-mode-init ()
+(defun dank-listing-init-front-page ()
   "Initialize dank-listing-mode buffer."
-  (message "init listing...")
+  (message "init front page...")
   (unless (and dank-listing-buffer (buffer-live-p dank-listing-buffer))
     (setq dank-listing-buffer (get-buffer "*dank-mode*")))
-  (dank-listing-set-page-posts dank-listing-default-subreddit
-                               dank-listing-default-sorting
-                               dank-listing-page-items-count)
+  (dank-listing-reset-state dank-listing-default-subreddit dank-listing-default-sorting
+                            dank-listing-page-items-limit)
   (dank-listing-render-current-page))
 
-(defun dank-listing-set-page-posts (subreddit sorting &optional limit after)
+
+(defun dank-listing-reset-state (subreddit sorting limit)
+  (setq-local dank-listing-current-subreddit subreddit)
+  (setq-local dank-listing-current-sorting sorting)
+  (setq-local dank-listing-current-start-count 0)
+  (setq-local dank-listing-current-end-count 0)
+  (setq-local dank-listing-current-after nil)
+  (setq-local dank-listing-current-before nil)
+  (setq-local dank-listing-current-page-posts nil)
+  (setq-local dank-listing-current-all-posts nil)
+  (dank-listing-set-page-posts subreddit sorting limit))
+
+
+(defun dank-listing-set-page-posts (subreddit sorting limit &optional count after before)
   "Get a page of posts from reddit.
 Store the results in `dank-listing-current-page-posts'."
-  (let* ((posts (dank-backend-post-listing subreddit sorting :limit limit :after after))
+  (let* ((posts (dank-backend-post-listing subreddit sorting
+                                           :limit limit :after after :before before :count count))
          (posts (mapcar (lambda (el) (plist-get el :data)) posts))
          (posts (mapcar #'dank-post-parse posts)))
     (setq-local dank-listing-current-page-posts posts)
+    (setq-local dank-listing-current-all-posts (append dank-listing-current-page-posts posts))
     (setq-local dank-listing-current-subreddit subreddit)
     (setq-local dank-listing-current-sorting sorting)
-    (setq-local dank-listing-current-after after)
+    ;; update navigation references
+    (if (not before)
+        (progn
+          (setq-local dank-listing-current-start-count (+ 1 dank-listing-current-end-count))
+          (setq-local dank-listing-current-end-count (+ dank-listing-current-end-count
+                                                        dank-listing-page-items-limit)))
+      (progn
+        (setq-local dank-listing-current-end-count (- dank-listing-current-start-count 1))
+        (setq-local dank-listing-current-start-count (- dank-listing-current-end-count
+                                                        dank-listing-page-items-limit))))
+    (if (<= dank-listing-current-start-count 0)
+        (setq dank-listing-current-start-count 1))
+    (setq-local dank-listing-current-after (dank-post-name (car (last posts))))
+    (setq-local dank-listing-current-before (dank-post-name (car posts)))
     (dank-listing-set-header-line)))
 
-(defun dank-listing-render-current-page ()
+(defun dank-listing-render-current-page (&optional clear-buffer)
   "Render contents of `dank-listing-current-page-posts' into `dank-listing-buffer'.
 Clears `dank-listing-buffer' before rendering."
-  (when (buffer-live-p dank-listing-buffer)
+  (when (and (buffer-live-p dank-listing-buffer) clear-buffer)
     (with-current-buffer dank-listing-buffer
-      (erase-buffer)))
-  (let* ((ordinals (number-sequence dank-listing-current-count (+ dank-listing-current-count dank-listing-page-items-count)))
+      (let ((inhibit-read-only t))
+        (erase-buffer))))
+  (let* ((ordinals (number-sequence dank-listing-current-start-count dank-listing-current-end-count))
          ;; merge ordinals and posts lists into one list of pairs '(ord post)
          (ords-posts (mapcar* #'list ordinals dank-listing-current-page-posts)))
     (mapc (lambda (ord-post) (dank-listing-append-post (car ord-post) (cadr ord-post)))
@@ -66,7 +95,7 @@ POST-INDEX is the ordinal of the post."
       (let ((inhibit-read-only t))
         (save-excursion
           (goto-char (point-max))
-          (insert (concat (int-to-string (+ ord 1)) ". " (dank-post-render post) "\n")))))))
+          (insert (concat (int-to-string ord) ". " (dank-post-render post) "\n")))))))
 
 
 ;;;;;;;;;;;;;;;;;;;
@@ -74,7 +103,7 @@ POST-INDEX is the ordinal of the post."
 ;;;;;;;;;;;;;;;;;;;
 
 (defvar dank-listing-header-line-format-template
-  "${subreddit} - ${sorting}")
+  "${subreddit} - ${sorting} (${count})")
 
 (defun dank-listing-set-header-line ()
   (when (buffer-live-p dank-listing-buffer)
@@ -83,8 +112,7 @@ POST-INDEX is the ordinal of the post."
                                 dank-listing-header-line-format-template
                                 `(subreddit ,(or dank-listing-current-subreddit "Frontpage")
                                             sorting ,(symbol-name dank-listing-current-sorting)
-                                            position ,(if dank-listing-current-after (format " - " dank-listing-current-after)
-                                                        "")))))))
+                                            count ,dank-listing-current-end-count))))))
 
 ;; this highlighting logic is copied from ledger-mode
 (defvar-local dank-listing-post-highlight-overlay (list))
@@ -160,10 +188,21 @@ POST-INDEX is the ordinal of the post."
   (point))
 
 (defun dank-listing-goto-next-page ()
-  )
+  (interactive)
+  (dank-listing-set-page-posts dank-listing-current-subreddit
+                               dank-listing-current-sorting
+                               dank-listing-page-items-limit
+                               dank-listing-current-end-count
+                               dank-listing-current-after
+                               nil)
+  (goto-char (point-max))
+  (dank-listing-render-current-page))
 
-(defun dank-listing-goto-next-page ()
-  )
+(defun dank-listing-refresh ()
+  (interactive)
+  (dank-listing-reset-state dank-listing-current-subreddit dank-listing-current-sorting
+                            dank-listing-page-items-limit)
+  (dank-listing-render-current-page t))
 
 (defun dank-listing-goto-subreddit ())
 

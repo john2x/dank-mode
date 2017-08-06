@@ -2,7 +2,7 @@
 (require 'dank-faces)
 
 (cl-defstruct dank-post
-  id title link text age date author subreddit score num_comments
+  name id title link text age date author subreddit score num_comments
   domain post_type nsfw spoiler link_flair author_flair
   gilded stickied locked)
 
@@ -52,6 +52,7 @@ Optional POS is the position of the post in the list."
 (defun dank-post-parse (post)
   "Parse POST into a `dank-post'."
   (make-dank-post :id (plist-get post :id)
+                  :name (plist-get post :name)
                   :title (s-trim (plist-get post :title))
                   :link (plist-get post :url)
                   :text (plist-get post :selftext)

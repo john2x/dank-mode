@@ -32,7 +32,7 @@
 (defun dank-cache-key-exists (key)
   "Check if KEY exists in cache and is not expired."
   (when (file-readable-p (dank-cache--full-key key))
-    (if (dank-cache-key-expired-p (key))
+    (if (dank-cache-key-expired-p key)
         nil t)))
 
 (defun dank-cache-set (key value)

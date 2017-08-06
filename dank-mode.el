@@ -25,7 +25,7 @@
   (unless dank-mode-initialized
     (dank-mode-init)
     (dank-listing-mode)
-    (dank-listing-mode-init))
+    (dank-listing-init-front-page))
   (message "Welcome to your front page!"))
 
 (defun dank-mode-reload ()
