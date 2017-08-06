@@ -2,6 +2,7 @@
 
 Emacs major mode to browse Reddit.
 
+
 ** Features
 
 *** Post listing
@@ -61,3 +62,6 @@ These libraries are not part of Emacs 25.
 - s.el (GPLv3) https://github.com/magnars/dash.el
 - dash.el (GPLv3) https://github.com/magnars/s.el
 - request.el (GPLv3) https://github.com/tkf/emacs-request
+** Ideas
+
+- Custom Emacs distribution with dank-mode bundled (paid?)
