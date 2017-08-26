@@ -95,7 +95,11 @@ POST-INDEX is the ordinal of the post."
       (let ((inhibit-read-only t))
         (save-excursion
           (goto-char (point-max))
-          (insert (concat (int-to-string ord) ". " (dank-post-render post) "\n")))))))
+          (insert (concat (cond ((< ord 10) "  ")
+                                ((< ord 100) " ")
+                                (t ""))
+                          (int-to-string ord) " "
+                          (dank-post-render post) "\n")))))))
 
 
 ;;;;;;;;;;;;;;;;;;;
@@ -187,7 +191,7 @@ POST-INDEX is the ordinal of the post."
   (beginning-of-line)
   (point))
 
-(defun dank-listing-goto-next-page ()
+(defun dank-listing-load-next-page ()
   (interactive)
   (dank-listing-set-page-posts dank-listing-current-subreddit
                                dank-listing-current-sorting

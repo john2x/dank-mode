@@ -9,7 +9,7 @@
 ;; Rendering
 
 (defvar dank-post-template
-  "${title}\n  submitted ${age} by ${author}${author_flair} to ${subreddit}\n  ${score} points | ${num_comments} comments | ${link_flair}${nsfw}${spoiler}${post_type}${domain}")
+  "${title}\n    | submitted ${age} by ${author}${author_flair} to ${subreddit}\n    | ${score} points | ${num_comments} comments | ${link_flair}${nsfw}${spoiler}${post_type}${domain}")
 
 (defun dank-post-render (post)
   "Render POST as string using `dank-post-template'."
