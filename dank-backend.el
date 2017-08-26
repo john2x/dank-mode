@@ -46,7 +46,8 @@ The first element in request-args (the _relative_ request url) will be prependen
              (resp-data (request-response-data resp))
              (resp-error (request-response-error-thrown resp)))
         (if resp-error
-            (dank-warning 'dank-backend "Request failed. Error %s" resp-data)
+            (dank-warning 'dank-backend "Request failed. %s %s. Error %s"
+                          (plist-get (cdr request-args) :type) full-url resp-data)
           (let ((json-object-type 'plist))
             (dank-cache-set key resp-data)
             (json-read-from-string resp-data)))))))
@@ -87,5 +88,25 @@ REQUEST-PARAMS is a plist of request parameters that Reddit's 'listing' API take
            (resp (dank-backend-authenticated-request "/subreddits/mine/subscriber" :type "GET" :params params)))
       resp)))
 
+
+(defun dank-backend-post-and-comments-listing (subreddit post-id sorting &rest request-params)
+  "Fetch post details and comments of a post in SUBREDDIT with POST-ID.
+
+SORTING must be a symbol of either 'hot, 'new, 'old, 'top, 'random, 'qa, 'confidence, 'live, or 'controversial.
+
+REQUEST-PARAMS is plist of request parameters that Reddit's 'listing' API takes.
+e.g. (:depth 10 :limit 25)
+Valid keywords are: :depth (integer), :limit (integer)."
+  (let ((depth (plist-get request-params :depth))
+        (limit (plist-get request-params :limit))
+        (showedits (plist-get request-params :showedits))
+        (url (concat (when subreddit (concat "/r/" subreddit)) "/comments/" post-id)))
+    (let* ((params (if depth (cons `(depth . ,depth) '()) '()))
+           (params (if limit (cons `(limit . ,limit) params) params))
+           (params (cons `(sorting . ,(symbol-name sorting)) params))
+           (resp (dank-backend-authenticated-request url :type "GET" :params params))
+           (post (aref (plist-get (plist-get (aref resp 0) :data) :children) 0))
+           (comments (plist-get (plist-get (aref resp 1) :data) :children)))
+      `(,post . ,comments))))
 
 (provide 'dank-backend)
