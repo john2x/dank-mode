@@ -1,7 +1,7 @@
 (require 'dank-auth)
 (require 'dank-backend)
 (require 'dank-cache)
-(require 'dank-listing)
+(require 'dank-posts)
 
 (defvar-local dank-mode-initialized nil)
 (defvar posts )
@@ -21,11 +21,11 @@
 (defun dank-mode ()
   (interactive)
   ;; TODO: if the buffer is already open in another window, switch to that window instead
-  (switch-to-buffer "*dank-mode*")
+  (switch-to-buffer "*dank-posts*")
+  (dank-posts-mode)
   (unless dank-mode-initialized
     (dank-mode-init)
-    (dank-listing-mode)
-    (dank-listing-init-front-page))
+    (dank-posts-init-front-page))
   (message "Welcome to your front page!"))
 
 (defun dank-mode-reload ()
