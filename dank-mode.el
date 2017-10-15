@@ -3,7 +3,7 @@
 (require 'dank-cache)
 (require 'dank-posts)
 
-(defvar-local dank-mode-initialized nil)
+(defvar dank-mode-initialized nil)
 (defvar posts )
 (defun dank--render-posts-list (posts)
   "")
@@ -21,12 +21,9 @@
 (defun dank-mode ()
   (interactive)
   ;; TODO: if the buffer is already open in another window, switch to that window instead
-  (switch-to-buffer "*dank-posts*")
-  (dank-posts-mode)
   (unless dank-mode-initialized
-    (dank-mode-init)
-    (dank-posts-init-front-page))
-  (message "Welcome to your front page!"))
+    (dank-mode-init))
+  (dank-posts-init nil))
 
 (defun dank-mode-reload ()
   (interactive)
@@ -35,8 +32,6 @@
 
 (defun dank-mode-init ()
   "Initialize dank-mode buffer."
-  (let ((inhibit-read-only t))
-    (erase-buffer))
   (dank-mode--init-cache)
   (dank-mode--init-auth)
   (setq dank-mode-initialized t))

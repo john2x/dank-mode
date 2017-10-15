@@ -3,16 +3,17 @@
 (require 'dank-utils)
 (require 'dank-post)
 (require 'dank-faces)
+(require 'dank-comments)
 (require 's)
 (require 'dash)
 
-(defvar dank-posts-buffer nil)
 
 (defvar dank-posts-page-items-limit 25)
 
 (defcustom dank-posts-default-subreddit nil "")
 (defcustom dank-posts-default-sorting 'hot "")
 
+(defvar-local dank-posts-buffer nil)
 (defvar-local dank-posts-current-subreddit dank-posts-default-subreddit)
 (defvar-local dank-posts-current-sorting dank-posts-default-sorting)
 (defvar-local dank-posts-current-start-count 0)
@@ -22,18 +23,23 @@
 (defvar-local dank-posts-current-page-posts nil)
 
 
-(define-derived-mode dank-posts-mode special-mode "dank-posts-mode"
-  (switch-to-buffer "*dank-posts*")
-  (message "Welcome to your front page!"))
+(define-derived-mode dank-posts-mode special-mode "dank-posts-mode")
 
-(defun dank-posts-init-front-page ()
-  "Initialize dank-posts-mode buffer."
-  (message "init front page...")
-  (unless (and dank-posts-buffer (buffer-live-p dank-posts-buffer))
-    (setq dank-posts-buffer (get-buffer "*dank-posts*")))
-  (dank-posts-reset-state dank-posts-default-subreddit dank-posts-default-sorting
-                            dank-posts-page-items-limit)
-  (dank-posts-render-current-page))
+(defun dank-posts-init (&optional subreddit)
+  "Initialize dank-posts-mode buffer to SUBREDDIT."
+  (message "init %s..." subreddit)
+  (let ((buf (concat "*dank-posts* " (if subreddit (concat "/r/" subreddit) "frontpage"))))
+    (if (get-buffer buf)
+        (switch-to-buffer buf)
+      (progn
+        (switch-to-buffer buf)
+        (dank-posts-mode)
+        (setq dank-posts-buffer (current-buffer))
+        (condition-case err
+            (dank-posts-reset-state subreddit dank-posts-default-sorting dank-posts-page-items-limit)
+          (dank-backend-error (progn (dank-posts-render-error err)
+                                     (signal (car err) (cdr err)))))
+        (dank-posts-render-current-page)))))
 
 
 (defun dank-posts-reset-state (subreddit sorting limit)
@@ -63,44 +69,48 @@ Store the results in `dank-posts-current-page-posts'."
         (progn
           (setq-local dank-posts-current-start-count (+ 1 dank-posts-current-end-count))
           (setq-local dank-posts-current-end-count (+ dank-posts-current-end-count
-                                                        dank-posts-page-items-limit)))
+                                                      dank-posts-page-items-limit)))
       (progn
         (setq-local dank-posts-current-end-count (- dank-posts-current-start-count 1))
         (setq-local dank-posts-current-start-count (- dank-posts-current-end-count
-                                                        dank-posts-page-items-limit))))
+                                                      dank-posts-page-items-limit))))
     (if (<= dank-posts-current-start-count 0)
         (setq dank-posts-current-start-count 1))
     (setq-local dank-posts-current-after (dank-post-name (car (last posts))))
     (setq-local dank-posts-current-before (dank-post-name (car posts)))
     (dank-posts-set-header-line)))
 
-(defun dank-posts-render-current-page (&optional clear-buffer)
+
+(dank-defrender dank-posts-render-current-page dank-posts-buffer (&optional clear-buffer)
   "Render contents of `dank-posts-current-page-posts' into `dank-posts-buffer'.
 Clears `dank-posts-buffer' before rendering."
-  (when (and (buffer-live-p dank-posts-buffer) clear-buffer)
-    (with-current-buffer dank-posts-buffer
-      (let ((inhibit-read-only t))
-        (erase-buffer))))
+  (when clear-buffer
+    (let ((inhibit-read-only t))
+      (erase-buffer)))
   (let* ((ordinals (number-sequence dank-posts-current-start-count dank-posts-current-end-count))
          ;; merge ordinals and posts lists into one list of pairs '(ord post)
          (ords-posts (mapcar* #'list ordinals dank-posts-current-page-posts)))
     (mapc (lambda (ord-post) (dank-posts-append-post (car ord-post) (cadr ord-post)))
           ords-posts)))
 
-(defun dank-posts-append-post (ord post)
+
+(defun dank-posts-append-post (post-index post)
   "Append POST into `dank-posts-buffer'.
-POST-INDEX is the ordinal of the post."
+POST-INDEX is the number (\"position\") of the post."
   (when (buffer-live-p dank-posts-buffer)
     (with-current-buffer dank-posts-buffer
-      (let ((inhibit-read-only t))
+      (let* ((inhibit-read-only t)
+             (rendered-post (concat (dank-post-render post) "\n")))
+        (dank-post-propertize rendered-post post post-index)
         (save-excursion
           (goto-char (point-max))
-          (insert (concat (cond ((< ord 10) "  ")
-                                ((< ord 100) " ")
-                                (t ""))
-                          (int-to-string ord) " "
-                          (dank-post-render post) "\n")))))))
+          (insert rendered-post))))))
 
+(dank-defrender dank-posts-render-error dank-posts-buffer (err)
+  (let ((inhibit-read-only t))
+    (erase-buffer)
+    (insert (format "%s\n" err))
+    (insert "TODO: show recommended actions (either [q]uit or retry)")))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; display stuff ;;
@@ -194,11 +204,11 @@ POST-INDEX is the ordinal of the post."
 (defun dank-posts-load-next-page ()
   (interactive)
   (dank-posts-set-page-posts dank-posts-current-subreddit
-                               dank-posts-current-sorting
-                               dank-posts-page-items-limit
-                               dank-posts-current-end-count
-                               dank-posts-current-after
-                               nil)
+                             dank-posts-current-sorting
+                             dank-posts-page-items-limit
+                             dank-posts-current-end-count
+                             dank-posts-current-after
+                             nil)
   (goto-char (point-max))
   (dank-posts-render-current-page))
 
@@ -210,9 +220,21 @@ POST-INDEX is the ordinal of the post."
 
 (defun dank-posts-goto-subreddit ())
 
-(defun dank-posts-goto-post-comments (post-id))
+(defun dank-posts-goto-post-comments (subreddit post-id &optional sorting title)
+  (dank-comments-init-post-comments subreddit post-id sorting title))
 
-(defun dank-posts-goto-post-comments-at-point ())
+(defun dank-posts-post-properties-at-point ()
+  (interactive)
+  (text-properties-at (point)))
+
+(defun dank-posts-goto-post-comments-at-point ()
+  (interactive)
+  (let* ((post-props (dank-posts-post-properties-at-point))
+         (post-id (plist-get post-props 'dank-post-id))
+         (subreddit (plist-get post-props 'dank-post-subreddit))
+         (permalink (plist-get post-props 'dank-post-permalink))
+         (title (plist-get post-props 'dank-post-title)))
+    (dank-posts-goto-post-comments subreddit post-id permalink nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; interaction functions ;;

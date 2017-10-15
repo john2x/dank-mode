@@ -12,6 +12,10 @@
 (defvar-local dank-backend-buffer-history nil)
 (defvar-local dank-backend-buffer-url nil)
 
+(define-error 'dank-backend-error "dank-backend error" 'error)
+
+(define-error 'dank-backend-request-error "Request failed" 'dank-backend-error)
+
 (defun dank-backend--find-property (request-args property)
   "Find the PROPERTY and return its value from REQUEST-ARGS."
   (when request-args
@@ -46,8 +50,8 @@ The first element in request-args (the _relative_ request url) will be prependen
              (resp-data (request-response-data resp))
              (resp-error (request-response-error-thrown resp)))
         (if resp-error
-            (dank-warning 'dank-backend "Request failed. %s %s. Error %s"
-                          (plist-get (cdr request-args) :type) full-url resp-data)
+            (signal 'dank-backend-request-error
+                    `(,(plist-get (cdr request-args) :type) ,full-url ,resp-data))
           (let ((json-object-type 'plist))
             (dank-cache-set key resp-data)
             (json-read-from-string resp-data)))))))

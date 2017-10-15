@@ -22,4 +22,14 @@ Passes MESSAGE-FMT to `format-message'."
           ((< diff-secs 946080000) (format "%s months ago" (/ diff-secs 2592000)))
           (t (format "%s years ago" (/ diff-secs 946080000))))))
 
+(defmacro dank-defrender (name buf arg-list &optional doc &rest body)
+  "Define a render function named NAME that expects the buffer variable BUF to be non-nil and active."
+  (declare (indent defun)
+           (doc-string 4))
+  `(defun ,name ,arg-list ,doc
+          (if (buffer-live-p ,buf)
+              (with-current-buffer ,buf
+                ,@body)
+            (message "Render failed"))))
+
 (provide 'dank-utils)

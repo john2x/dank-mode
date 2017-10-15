@@ -2,7 +2,7 @@
 (require 'dank-faces)
 
 (cl-defstruct dank-post
-  name id title link text age date author subreddit score num_comments
+  name id title link permalink text age date author subreddit score num_comments
   domain post_type nsfw spoiler link_flair author_flair
   gilded stickied locked)
 
@@ -37,7 +37,6 @@
                                  nsfw ,nsfw spoiler ,spoiler domain ,domain post_type ,post_type
                                  link_flair ,link_flair))
          (rendered-post (dank-utils-format-plist dank-post-template format-context)))
-    (dank-post-propertize rendered-post post)
     rendered-post))
 
 (defun dank-post-propertize (rendered-post source-post &optional pos)
@@ -46,7 +45,9 @@ Optional POS is the position of the post in the list."
   (add-text-properties 0 (length rendered-post)
                        `(dank-post-id ,(dank-post-id source-post)
                                       dank-post-subreddit ,(dank-post-subreddit source-post)
-                                      dank-post-pos ,pos)
+                                      dank-post-pos ,pos
+                                      dank-post-permalink ,(dank-post-permalink source-post)
+                                      dank-post-title ,(dank-post-title source-post))
                        rendered-post))
 
 (defun dank-post-parse (post)
@@ -71,6 +72,7 @@ Optional POS is the position of the post in the list."
                     :author_flair (plist-get post :author_flair_text)
                     :gilded (plist-get post :gilded)
                     :stickied (not (eq (plist-get post :stickied) :json-false))
-                    :locked (not (eq (plist-get post :locked) :json-false)))))
+                    :locked (not (eq (plist-get post :locked) :json-false))
+                    :permalink (plist-get post :permalink))))
 
 (provide 'dank-post)

@@ -15,6 +15,7 @@ Emacs major mode to browse Reddit.
 **** Interaction
 - [ ] upvote/downvote posts
 - [ ] subscribe/unsubscribe from subreddit
+- [ ] submit posts
 **** Other
 - [ ] subreddit sidebar info (in split window)
 
@@ -34,6 +35,10 @@ Emacs major mode to browse Reddit.
 - [ ] comments pagination
 - [ ] nested comment threads
 **** Interaction
+- [ ] navigate to child/parent comment
+- [ ] navigate to sibling comment up/down
+- [ ] collapse comment tree
+- [ ] load more comments
 - [ ] upvote/downvote comments
 - [ ] post reply
 
@@ -62,6 +67,10 @@ These libraries are not part of Emacs 25.
 - s.el (GPLv3) https://github.com/magnars/dash.el
 - dash.el (GPLv3) https://github.com/magnars/s.el
 - request.el (GPLv3) https://github.com/tkf/emacs-request
+
 ** Ideas
 
+- Use plstore.el for oauth tokens
+- Use web-server.el to do the oauth dance
+  http://eschulte.github.io/emacs-web-server
 - Custom Emacs distribution with dank-mode bundled (paid?)

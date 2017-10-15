@@ -31,6 +31,8 @@ username.")
 
 (setq dank-auth-file "auth.json")
 
+(define-error 'dank-auth-error "dank-auth error" 'error)
+(define-error 'dank-auth-token-refresh-error "Failed to refresh access token" 'dank-auth-error)
 
 (defun dank-auth-load-auth-vars-from-file (path)
   "Read and set auth values from PATH."
@@ -71,7 +73,7 @@ When FORCE-REFRESH is non-nil, then force the refresh."
                   :sync t))
            (resp-data (request-response-data resp)))
       (if (request-response-error-thrown resp)
-          (dank-warning 'dank-auth "failed to refresh Reddit token. Error %s" resp-data)
+          (signal 'dank-auth-token-refresh-error `(,resp-data))
         (let ((expiry (+ (float-time) (plist-get resp-data :expires_in))))
           (setq dank-auth--token-storage (plist-put resp-data :expiry expiry)))))))
 
