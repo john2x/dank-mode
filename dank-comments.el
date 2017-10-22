@@ -33,15 +33,15 @@
         (dank-comments-set-current-post-and-comments subreddit post-id sorting)
       (dank-backend-error (progn (dank-comments-render-error err)
                                  (signal (car err) (cdr err)))))
-    (dank-comments-render-current-comments)))
+    (dank-comments-render-current-comments t)))
 
 (defun dank-comments-set-current-post-and-comments (subreddit post-id &optional sorting)
   (let* ((post-comments (dank-backend-post-and-comments-listing subreddit post-id sorting))
          (post (dank-post-parse (car post-comments)))
          (comments (mapcar #'dank-comment-parse (cdr post-comments))))
     (message "%s" post)
-    (setq-local dank-comments-current-post post)
-    (setq-local dank-comments-current-comments comments)))
+    (setq dank-comments-current-post post)
+    (setq dank-comments-current-comments comments)))
 
 
 (defun dank-comments--insert-comment-tree (parent children)
@@ -53,7 +53,15 @@
     (dank-post-propertize rendered-post dank-comments-current-post 1)
     (save-excursion
       (goto-char (point-max))
-      (insert rendered-post))))
+      (insert rendered-post)
+      (dank-comments--insert-current-post-self-text))))
+
+(defun dank-comments--insert-current-post-self-text ()
+  ""
+  (insert (propertize "\n" 'font-lock-face 'dank-faces-separator))
+  (insert (dank-post-text dank-comments-current-post))
+  (insert "\n")
+  (insert (propertize "\n" 'font-lock-face 'dank-faces-separator)))
 
 (dank-defrender dank-comments-render-current-comments dank-comments-buffer (&optional clear-buffer)
   (when clear-buffer

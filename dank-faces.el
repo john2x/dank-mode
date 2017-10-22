@@ -62,4 +62,9 @@
   "Face for highlighted sections."
   :group 'dank-faces)
 
+(defface dank-faces-separator
+  '((t :background "gray" :box (:style released-button)))
+  "Face for separators."
+  :group 'dank-faces)
+
 (provide 'dank-faces)
