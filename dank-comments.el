@@ -33,7 +33,8 @@
         (dank-comments-set-current-post-and-comments subreddit post-id sorting)
       (dank-backend-error (progn (dank-comments-render-error err)
                                  (signal (car err) (cdr err)))))
-    (dank-comments-render-current-comments t)))
+    (dank-comments-render-current-post t)
+    (dank-comments-render-current-comments)))
 
 (defun dank-comments-set-current-post-and-comments (subreddit post-id &optional sorting)
   (let* ((post-comments (dank-backend-post-and-comments-listing subreddit post-id sorting))
@@ -47,29 +48,22 @@
 (defun dank-comments--insert-comment-tree (parent children)
   )
 
-(dank-defrender dank-comments-render-current-post dank-comments-buffer ()
+(dank-defrender dank-comments-render-current-post dank-comments-buffer (&optional clear-buffer)
   (let* ((inhibit-read-only t)
-         (rendered-post (concat (dank-post-render dank-comments-current-post) "\n")))
+         (rendered-post (concat (dank-post-render dank-comments-current-post) "\n"))
+         (rendered-content (dank-post-render-content dank-comments-current-post)))
     (dank-post-propertize rendered-post dank-comments-current-post 1)
+    (when clear-buffer
+      (erase-buffer))
     (save-excursion
       (goto-char (point-max))
       (insert rendered-post)
-      (dank-comments--insert-current-post-self-text))))
-
-(defun dank-comments--insert-current-post-self-text ()
-  ""
-  (insert (propertize "\n" 'font-lock-face 'dank-faces-separator))
-  (if (string= (dank-post-post_type dank-comments-current-post) "self-text")
-      (insert (dank-post-text dank-comments-current-post))
-    (insert (dank-post-link dank-comments-current-post)))
-  (insert "\n")
-  (insert (propertize "\n" 'font-lock-face 'dank-faces-separator)))
+      (insert rendered-content))))
 
 (dank-defrender dank-comments-render-current-comments dank-comments-buffer (&optional clear-buffer)
   (when clear-buffer
     (let ((inhibit-read-only t))
       (erase-buffer)))
-  (dank-comments-render-current-post)
   ;(mapc dank-comments-insert-post dank-comments-current-comments)
   )
 

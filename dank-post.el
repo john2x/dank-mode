@@ -9,7 +9,7 @@
 ;; Rendering
 
 (defvar dank-post-template
-  "${title}\n    | submitted ${age} by ${author}${author_flair} to ${subreddit}\n    | ${score} points | ${num_comments} comments | ${link_flair}${nsfw}${spoiler}${post_type}${domain}")
+  "${title}\n    | ${score} points | ${num_comments} comments | ${link_flair}${nsfw}${spoiler}${post_type}${domain}\n    | submitted ${age} by ${author}${author_flair} to ${subreddit}")
 
 (defun dank-post-render (post)
   "Render POST as string using `dank-post-template'."
@@ -38,6 +38,16 @@
                                  link_flair ,link_flair))
          (rendered-post (dank-utils-format-plist dank-post-template format-context)))
     rendered-post))
+
+(defun dank-post-render-content (post)
+  "Render POST content as string."
+  (concat
+   (propertize "\n" 'font-lock-face 'dank-faces-separator)
+   (if (string= (dank-post-post_type post) "self-text")
+       (dank-post-text post) ;; TODO: render markdown properly
+     (dank-post-link post))
+   "\n"
+   (propertize "\n" 'font-lock-face 'dank-faces-separator)))
 
 (defun dank-post-propertize (rendered-post source-post &optional pos)
   "Assign RENDERED-POST text properties from SOURCE-POST.
