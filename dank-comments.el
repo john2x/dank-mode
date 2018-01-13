@@ -59,7 +59,9 @@
 (defun dank-comments--insert-current-post-self-text ()
   ""
   (insert (propertize "\n" 'font-lock-face 'dank-faces-separator))
-  (insert (dank-post-text dank-comments-current-post))
+  (if (string= (dank-post-post_type dank-comments-current-post) "self-text")
+      (insert (dank-post-text dank-comments-current-post))
+    (insert (dank-post-link dank-comments-current-post)))
   (insert "\n")
   (insert (propertize "\n" 'font-lock-face 'dank-faces-separator)))
 
