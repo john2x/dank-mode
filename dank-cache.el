@@ -48,7 +48,8 @@
 
 (defun dank-cache-delete-all ()
   "Delete everything in cache."
-  (delete-directory dank-cache-directory t)
+  (when (file-exists-p dank-cache-directory)
+    (delete-directory dank-cache-directory t))
   (dank-cache--create-cache-directory))
 
 (defun dank-cache-delete-expired ()
