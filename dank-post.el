@@ -11,8 +11,9 @@
 (defvar dank-post-template
   "${title}\n    | ${score} points | ${num_comments} comments | ${link_flair}${nsfw}${spoiler}${post_type}${domain}\n    | submitted ${age} by ${author}${author_flair} to ${subreddit}")
 
-(defun dank-post-render (post)
-  "Render POST as string using `dank-post-template'."
+(defun dank-post-format (post &optional post-index)
+  "Format POST as string using `dank-post-template'.
+Optional POST-INDEX is the position of the post in a list."
   (let* ((title (propertize (dank-post-title post) 'font-lock-face 'dank-faces-post-title))
          (age (propertize (dank-post-age post) 'font-lock-face 'dank-faces-age))
          (author (propertize (dank-post-author post) 'font-lock-face 'dank-faces-author))
@@ -36,29 +37,30 @@
                                  subreddit ,subreddit score ,score num_comments ,num_comments
                                  nsfw ,nsfw spoiler ,spoiler domain ,domain post_type ,post_type
                                  link_flair ,link_flair))
-         (rendered-post (dank-utils-format-plist dank-post-template format-context)))
-    rendered-post))
+         (formatted-post (dank-utils-format-plist dank-post-template format-context)))
+    (dank-post--propertize formatted-post post post-index)))
 
-(defun dank-post-render-content (post)
-  "Render POST content as string."
+(defun dank-post-format-content (post)
+  "Format POST content as string."
   (concat
    (propertize "\n" 'font-lock-face 'dank-faces-separator)
    (if (string= (dank-post-post_type post) "self-text")
-       (dank-post-text post) ;; TODO: render markdown properly
-     (dank-post-link post))
+       (dank-post-text post) ;; TODO: propertize markdown
+     (dank-post-link post)) ;; TODO: propertize link
    "\n"
    (propertize "\n" 'font-lock-face 'dank-faces-separator)))
 
-(defun dank-post-propertize (rendered-post source-post &optional pos)
-  "Assign RENDERED-POST text properties from SOURCE-POST.
-Optional POS is the position of the post in the list."
-  (add-text-properties 0 (length rendered-post)
+(defun dank-post--propertize (formatted-post source-post &optional post-index)
+  "Assign FORMATTED-POST text properties from SOURCE-POST.
+Optional POST-INDEX is the position of the post in a list."
+  (add-text-properties 0 (length formatted-post)
                        `(dank-post-id ,(dank-post-id source-post)
                                       dank-post-subreddit ,(dank-post-subreddit source-post)
-                                      dank-post-pos ,pos
+                                      dank-post-index ,post-index
                                       dank-post-permalink ,(dank-post-permalink source-post)
                                       dank-post-title ,(dank-post-title source-post))
-                       rendered-post))
+                       formatted-post)
+  formatted-post)
 
 (defun dank-post-parse (post)
   "Parse POST into a `dank-post'."

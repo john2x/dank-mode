@@ -50,15 +50,14 @@
 
 (dank-defrender dank-comments-render-current-post dank-comments-buffer (&optional clear-buffer)
   (let* ((inhibit-read-only t)
-         (rendered-post (concat (dank-post-render dank-comments-current-post) "\n"))
-         (rendered-content (dank-post-render-content dank-comments-current-post)))
-    (dank-post-propertize rendered-post dank-comments-current-post 1)
+         (formatted-post (concat (dank-post-format dank-comments-current-post 1) "\n"))
+         (formatted-content (dank-post-format-content dank-comments-current-post)))
     (when clear-buffer
       (erase-buffer))
     (save-excursion
       (goto-char (point-max))
-      (insert rendered-post)
-      (insert rendered-content))))
+      (insert formatted-post)
+      (insert formatted-content))))
 
 (dank-defrender dank-comments-render-current-comments dank-comments-buffer (&optional clear-buffer)
   (when clear-buffer

@@ -100,11 +100,10 @@ POST-INDEX is the number (\"position\") of the post."
   (when (buffer-live-p dank-posts-buffer)
     (with-current-buffer dank-posts-buffer
       (let* ((inhibit-read-only t)
-             (rendered-post (concat (dank-post-render post) "\n")))
-        (dank-post-propertize rendered-post post post-index)
+             (formatted-post (concat (dank-post-format post post-index) "\n")))
         (save-excursion
           (goto-char (point-max))
-          (insert rendered-post))))))
+          (insert formatted-post))))))
 
 (dank-defrender dank-posts-render-error dank-posts-buffer (err)
   (let ((inhibit-read-only t))

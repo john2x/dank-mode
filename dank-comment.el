@@ -39,9 +39,9 @@
                          :replies (if (stringp replies) '()
                                     (mapcar replies-map-fn children-depth))))))
 
-(defun dank-comment-render-header (comment)
-  "Render COMMENT header.
-The comment body will need to be rendered separately, since it's
+(defun dank-comment-format-header (comment)
+  "Format COMMENT header.
+The comment body will need to be formatted separately, since it's
 formatting/indentation will depend on its position."
   (let* ((author (dank-comment-author comment))
          (score (dank-comment-score comment))
