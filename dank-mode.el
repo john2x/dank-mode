@@ -18,6 +18,7 @@
 (defun dank--render-post (post)
   "")
 
+;;;###autoload
 (defun dank-mode ()
   (interactive)
   ;; TODO: if the buffer is already open in another window, switch to that window instead

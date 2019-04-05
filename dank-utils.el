@@ -32,4 +32,13 @@ Passes MESSAGE-FMT to `format-message'."
                 ,@body)
             (message "Render failed"))))
 
+(defun dank-utils-find-by-text-prop (prop value &optional direction)
+  "Search current buffer for a range of text that has text property PROP and VALUE.
+Optional DIRECTION can be either 'up, 'down, or nil.
+If DIRECTION is nil, then the search starts at the top of the buffer.
+If DIRECTION is 'up, the search starts from the current point postion going up.
+If DIRECTION is 'down, the search starts from the current point position going down.
+Returns the range of the text, if found, or nil if not found (until the end or beginning of the buffer).")
+
+
 (provide 'dank-utils)
