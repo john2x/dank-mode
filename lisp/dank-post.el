@@ -2,6 +2,7 @@
 (require 'dank-faces)
 
 (cl-defstruct dank-post
+  "Struct for a Reddit post."
   name id title link permalink text age date author subreddit score num_comments
   domain post_type nsfw spoiler link_flair author_flair
   gilded stickied locked)

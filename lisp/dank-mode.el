@@ -19,9 +19,9 @@
   "")
 
 ;;;###autoload
-(defun dank-mode ()
-  (interactive)
-  ;; TODO: if the buffer is already open in another window, switch to that window instead
+(define-derived-mode dank-mode
+  fundamental-mode "dank-mode"
+  "Major mode to browse Reddit."
   (unless dank-mode-initialized
     (dank-mode-init))
   (dank-posts-init nil))
