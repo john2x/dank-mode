@@ -2,7 +2,12 @@
 
 Emacs major mode to browse Reddit.
 
+** Development
 
+Copy =auth.example.json= to =auth.json= and replace the values with
+your credentials.
+
+* TODO
 ** Features
 
 *** Post listing
@@ -74,3 +79,7 @@ These libraries are not part of Emacs 25.
 - Use web-server.el to do the oauth dance
   http://eschulte.github.io/emacs-web-server
 - Custom Emacs distribution with dank-mode bundled (paid?)
+** Known bugs
+*** dank-posts-mode
+- [ ] navigating to previous post when pointer is on an empty
+  line/last line skips the last post
