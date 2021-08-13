@@ -19,9 +19,8 @@
   "")
 
 ;;;###autoload
-(define-derived-mode dank-mode
-  fundamental-mode "dank-mode"
-  "Major mode to browse Reddit."
+(defun dank-mode ()
+  (interactive)
   (unless dank-mode-initialized
     (dank-mode-init))
   (dank-posts-init nil))
