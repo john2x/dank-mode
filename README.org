@@ -60,6 +60,25 @@ your credentials.
 - [ ] view link contents directly in emacs
 - [ ] multi-subreddits
 
+** Milestones
+*** v1
+v1 will focus on read-only usage
+- loading the frontpage (hot, new, best, etc.)
+- loading a subreddit (hot, new, best, etc.)
+- loading a post's comments (hot, new, best, etc.)
+- loading additional comments in a thread
+- loading post content in eww or browser
+*** v2
+v2 will focus on interaction
+- vote on posts
+- vote on comments
+- submit comments/replies
+- submit posts (links, self-posts, flairs)
+*** stretch goals
+- viewing user profiles
+- viewing/sending direct messages
+*** probably out of scope
+- moderating features
 ** Inspiration
 
 - Magit
@@ -69,9 +88,9 @@ your credentials.
 
 These libraries are not part of Emacs 25.
 
-- s.el (GPLv3) https://github.com/magnars/dash.el
-- dash.el (GPLv3) https://github.com/magnars/s.el
-- request.el (GPLv3) https://github.com/tkf/emacs-request
+- dash.el (GPLv3) https://github.com/magnars/dash.el (ELPA)
+- s.el (GPLv3) https://github.com/magnars/s.el (MELPA)
+- request.el (GPLv3) https://github.com/tkf/emacs-request (MELPA)
 
 ** Ideas
 
