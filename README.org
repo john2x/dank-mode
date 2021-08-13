@@ -75,6 +75,7 @@ v2 will focus on interaction
 - submit comments/replies
 - submit posts (links, self-posts, flairs)
 *** stretch goals
+- anonymous browsing
 - viewing user profiles
 - viewing/sending direct messages
 *** probably out of scope
