@@ -22,6 +22,12 @@
 (defvar-local dank-posts-current-before nil)
 (defvar-local dank-posts-current-page-posts nil)
 
+(defvar dank-posts-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map "n" 'dank-posts-navigate-next-post)
+    (define-key map "p" 'dank-posts-navigate-prev-post)
+    (define-key map (kbd "C-V") 'dank-posts-load-next-page)
+    map))
 
 (define-derived-mode dank-posts-mode special-mode "dank-posts-mode")
 
