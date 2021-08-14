@@ -33,8 +33,10 @@
 (define-derived-mode dank-posts-mode special-mode "dank-posts-mode")
 
 (defun dank-posts-init (&optional subreddit)
-  "Initialize dank-posts-mode buffer to SUBREDDIT."
-  (message "init %s..." subreddit)
+  "Initialize dank-posts-mode buffer to SUBREDDIT.
+If SUBREDDIT is nil, a frontpage buffer is initialized.
+If a buffer already exists, switch to that buffer."
+  (message "Initializing dank-posts-mode buffer for %s..." (or subreddit "frontpage"))
   (let ((buf (concat "*dank-posts* " (if subreddit (concat "/r/" subreddit) "frontpage"))))
     (if (get-buffer buf)
         (switch-to-buffer buf)
@@ -50,6 +52,7 @@
 
 
 (defun dank-posts-reset-state (subreddit sorting limit)
+  "Reset state of the current dank-posts buffer."
   (setq-local dank-posts-current-subreddit subreddit)
   (setq-local dank-posts-current-sorting sorting)
   (setq-local dank-posts-current-start-count 0)
