@@ -26,7 +26,8 @@
   (let ((map (make-sparse-keymap)))
     (define-key map "n" 'dank-posts-navigate-next-post)
     (define-key map "p" 'dank-posts-navigate-prev-post)
-    (define-key map (kbd "C-V") 'dank-posts-load-next-page)
+    (define-key map (kbd "C-S-v") 'dank-posts-fetch-next-page)
+    (define-key map "R" 'dank-posts-refresh)
     map))
 
 (define-derived-mode dank-posts-mode special-mode "dank-posts-mode")
@@ -206,7 +207,7 @@ POST-INDEX is the number (\"position\") of the post."
   (beginning-of-line)
   (point))
 
-(defun dank-posts-load-next-page ()
+(defun dank-posts-fetch-next-page ()
   (interactive)
   (dank-posts-set-page-posts dank-posts-current-subreddit
                              dank-posts-current-sorting
