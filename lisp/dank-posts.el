@@ -224,10 +224,15 @@ POST-INDEX is the number (\"position\") of the post."
 (defun dank-posts-refresh ()
   (interactive)
   (dank-posts-reset-state dank-posts-current-subreddit dank-posts-current-sorting
-                            dank-posts-page-items-limit)
+                          dank-posts-page-items-limit)
   (dank-posts-render-current-page t))
 
-(defun dank-posts-goto-subreddit ())
+(defun dank-posts-from-post-goto-subreddit ()
+  "Navigate to a dank-posts-mode buffer for a post's subreddit under pointer."
+  (interactive)
+  (let* ((post-props (dank-posts-post-properties-at-point))
+         (subreddit (plist-get post-props 'dank-post-subreddit)))
+    (dank-posts-init subreddit)))
 
 (defun dank-posts-goto-post-comments (subreddit post-id &optional sorting title)
   (dank-comments-init-post-comments subreddit post-id sorting title))
