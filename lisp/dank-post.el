@@ -10,7 +10,7 @@
 ;; Rendering
 
 (defvar dank-post-template
-  "${title}\n    | ${score} points | ${num_comments} comments | ${link_flair}${nsfw}${spoiler}${post_type}${domain}\n    | submitted ${age} by ${author}${author_flair} to ${subreddit}")
+  "${title}\n    | ${score} points | ${num_comments} comments | ${link_flair}${nsfw}${spoiler}${post_type}${domain}\n    | ${subreddit} by ${author}${author_flair} submitted ${age}")
 
 (defun dank-post-format (post &optional post-index)
   "Format POST as string using `dank-post-template'.
