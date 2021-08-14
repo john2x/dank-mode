@@ -30,7 +30,8 @@
     (define-key map "R" 'dank-posts-refresh)
     map))
 
-(define-derived-mode dank-posts-mode special-mode "dank-posts-mode")
+(define-derived-mode dank-posts-mode special-mode "dank-posts-mode"
+  "Major mode for browsing reddit posts.")
 
 (defun dank-posts-init (&optional subreddit)
   "Initialize dank-posts-mode buffer to SUBREDDIT.
