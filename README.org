@@ -16,7 +16,7 @@ your credentials.
 - [X] post items font-lock
 - [X] refresh current subreddit
 - [ ] visit other subreddits
-- [ ] visit other subreddits via links on post items
+- [X] visit other subreddits via links on post items
 **** Interaction
 - [ ] upvote/downvote posts
 - [ ] subscribe/unsubscribe from subreddit
@@ -68,6 +68,7 @@ v1 will focus on read-only usage
 - loading a post's comments (hot, new, best, etc.)
 - loading additional comments in a thread
 - loading post content in eww or browser
+- loading a user's list of subreddits
 *** v2
 v2 will focus on interaction
 - vote on posts
@@ -75,8 +76,10 @@ v2 will focus on interaction
 - submit comments/replies
 - submit posts (links, self-posts, flairs)
 *** stretch goals
-- anonymous browsing
+- evil-mode bindings
 - viewing user profiles
+- transient bindings
+- anonymous browsing
 - viewing/sending direct messages
 *** probably out of scope
 - moderating features
