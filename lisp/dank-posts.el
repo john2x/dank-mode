@@ -49,7 +49,7 @@ If a buffer already exists, switch to that buffer."
             (dank-posts-reset-state subreddit dank-posts-default-sorting dank-posts-page-items-limit)
           (dank-backend-error (progn (dank-posts-render-error err)
                                      (signal (car err) (cdr err)))))
-        (dank-posts-render-current-page)))))
+        (dank-posts-render-current-page dank-posts-current-page-posts)))))
 
 
 (defun dank-posts-reset-state (subreddit sorting limit)
@@ -92,8 +92,8 @@ Store the results in `dank-posts-current-page-posts'."
     (dank-posts-set-header-line)))
 
 
-(dank-defrender dank-posts-render-current-page dank-posts-buffer (&optional clear-buffer)
-  "Render contents of `dank-posts-current-page-posts' into `dank-posts-buffer'.
+(dank-defrender dank-posts-render-current-page dank-posts-buffer (posts &optional clear-buffer)
+  "Render contents of POSTS into `dank-posts-buffer'.
 Clears `dank-posts-buffer' before rendering."
   (when clear-buffer
     (let ((inhibit-read-only t))
@@ -101,15 +101,15 @@ Clears `dank-posts-buffer' before rendering."
   (let* ((ordinals (number-sequence dank-posts-current-start-count dank-posts-current-end-count))
          ;; merge ordinals and posts lists into one list of pairs '(ord post)
          (ords-posts (mapcar* #'list ordinals dank-posts-current-page-posts)))
-    (mapc (lambda (ord-post) (dank-posts-append-post (car ord-post) (cadr ord-post)))
+    (mapc (lambda (ord-post) (dank-posts-append-post-to-buffer dank-posts-buffer (car ord-post) (cadr ord-post)))
           ords-posts)))
 
 
-(defun dank-posts-append-post (post-index post)
-  "Append POST into `dank-posts-buffer'.
+(defun dank-posts-append-post-to-buffer (buf post-index post)
+  "Append POST into BUF.
 POST-INDEX is the number (\"position\") of the post."
-  (when (buffer-live-p dank-posts-buffer)
-    (with-current-buffer dank-posts-buffer
+  (when (buffer-live-p buf)
+    (with-current-buffer buf
       (let* ((inhibit-read-only t)
              (formatted-post (concat (dank-post-format post post-index) "\n")))
         (save-excursion
@@ -117,6 +117,7 @@ POST-INDEX is the number (\"position\") of the post."
           (insert formatted-post))))))
 
 (dank-defrender dank-posts-render-error dank-posts-buffer (err)
+  "Render contents of ERR into `dank-posts-buffer'."
   (let ((inhibit-read-only t))
     (erase-buffer)
     (insert (format "%s\n" err))
@@ -220,13 +221,13 @@ POST-INDEX is the number (\"position\") of the post."
                              dank-posts-current-after
                              nil)
   (goto-char (point-max))
-  (dank-posts-render-current-page))
+  (dank-posts-render-current-page dank-posts-current-page-posts))
 
 (defun dank-posts-refresh ()
   (interactive)
   (dank-posts-reset-state dank-posts-current-subreddit dank-posts-current-sorting
                           dank-posts-page-items-limit)
-  (dank-posts-render-current-page t))
+  (dank-posts-render-current-page dank-posts-current-page-posts t))
 
 (defun dank-posts-from-post-goto-subreddit ()
   "Navigate to a dank-posts-mode buffer for a post's subreddit under pointer."
