@@ -28,6 +28,8 @@
     (define-key map "p" 'dank-posts-navigate-prev-post)
     (define-key map (kbd "C-c C-v") 'dank-posts-fetch-next-page)
     (define-key map (kbd "C-c C-r") 'dank-posts-refresh)
+    (define-key map (kbd "C-c C-c") 'dank-posts-goto-post-comments-at-point)
+    (define-key map (kbd "C-c C-s") 'dank-posts-goto-subreddit-at-point)
     map))
 
 (define-derived-mode dank-posts-mode special-mode "dank-posts-mode"
