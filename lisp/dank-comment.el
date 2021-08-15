@@ -10,10 +10,10 @@
   parent_id count)
 
 (defvar dank-comment-metadata-template
-  "${indent}[${author} (${score} | ${age})${edited}${gilded}]")
+  "${indent}[/u/${author} (${score} points | ${age})${edited} ${gilded} depth: ${depth}]")
 
 (defvar dank-comment-body-template
-  "${indent}|${body}")
+  "${indent}${body}")
 
 (defun dank-comment-parse (comment &optional depth)
   "Parse COMMENT into a `dank-comment'."
@@ -46,13 +46,15 @@
   "Format COMMENT metadata.
 The comment body will need to be formatted separately, since it's
 formatting/indentation will depend on its position."
+  (message "depth: %s" (dank-comment-depth comment))
   (let* ((author (dank-comment-author comment))
          (score (dank-comment-score comment))
          (age (dank-comment-age comment))
          (edited (or nil ""))
          (gilded (dank-comment-gilded comment))
          (indent (or (-repeat (dank-comment-depth comment) "  ") ""))
-         (format-context `(author ,author age ,age score ,score edited ,edited gilded ,gilded indent ,indent)))
+         (depth (dank-comment-depth comment))
+         (format-context `(author ,author age ,age score ,score edited ,edited gilded ,gilded indent ,indent depth ,depth)))
     (message "%s" format-context)
     (dank-utils-format-plist dank-comment-metadata-template format-context)))
 
@@ -60,7 +62,8 @@ formatting/indentation will depend on its position."
   "Format COMMENT body.
 The comment body will need to be formatted separately, since it's
 formatting/indentation will depend on its position."
-  (let* ((body (dank-comment-body comment))
+  (let* ((body (with-temp-buffer (save-excursion (insert (dank-comment-body comment)))
+                                 (xml-parse-string)))
          (indent (or (-repeat (dank-comment-depth comment) "  ") ""))
          (format-context `(body ,body indent ,indent)))
     (dank-utils-format-plist dank-comment-body-template format-context)))

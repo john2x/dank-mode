@@ -7,6 +7,11 @@
 (require 's)
 (require 'dash)
 
+(defcustom dank-comments-default-depth 5
+  "Default depth of the comment tree to initially fetch.")
+(defcustom dank-comments-body-fill-width 120
+  "Fill width for rendering the comment body.")
+
 (defvar-local dank-comments-buffer nil)
 (defvar-local dank-comments-current-post-id nil)
 (defvar-local dank-comments-current-subreddit nil)
@@ -35,7 +40,7 @@
     (dank-comments-render-current-comments dank-comments-current-comments)))
 
 (defun dank-comments-set-current-post-and-comments (subreddit post-id &optional sorting)
-  (let* ((post-comments (dank-backend-post-and-comments-listing subreddit post-id sorting))
+  (let* ((post-comments (dank-backend-post-and-comments-listing subreddit post-id sorting '(:depth ,dank-comments-default-depth)))
          (post (dank-post-parse (car post-comments)))
          (comments (mapcar #'dank-comment-parse (cdr post-comments))))
     (message "%s" post)
@@ -78,7 +83,7 @@
           (insert formatted-comment-metadata)
           (insert formatted-comment-body)
           (when (dank-comment-replies comment)
-            (message "%s" (dank-comment-replies comment))))))))
+            (dank-comments-render-current-comments (dank-comment-replies comment))))))))
 
 (dank-defrender dank-comments-render-error dank-comments-buffer (err)
   "Render the ERR message in the current buffer and show recommended actions."
