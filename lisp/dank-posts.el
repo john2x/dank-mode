@@ -26,8 +26,8 @@
   (let ((map (make-sparse-keymap)))
     (define-key map "n" 'dank-posts-navigate-next-post)
     (define-key map "p" 'dank-posts-navigate-prev-post)
-    (define-key map (kbd "C-S-v") 'dank-posts-fetch-next-page)
-    (define-key map "R" 'dank-posts-refresh)
+    (define-key map (kbd "C-c C-v") 'dank-posts-fetch-next-page)
+    (define-key map (kbd "C-c C-r") 'dank-posts-refresh)
     map))
 
 (define-derived-mode dank-posts-mode special-mode "dank-posts-mode"
@@ -229,7 +229,7 @@ POST-INDEX is the number (\"position\") of the post."
                           dank-posts-page-items-limit)
   (dank-posts-render-current-page dank-posts-current-page-posts t))
 
-(defun dank-posts-from-post-goto-subreddit ()
+(defun dank-posts-goto-subreddit-at-point ()
   "Navigate to a dank-posts-mode buffer for a post's subreddit under pointer."
   (interactive)
   (let* ((post-props (dank-posts-post-properties-at-point))
@@ -237,7 +237,7 @@ POST-INDEX is the number (\"position\") of the post."
     (dank-posts-init subreddit)))
 
 (defun dank-posts-goto-post-comments (subreddit post-id &optional sorting title)
-  (dank-comments-init-post-comments subreddit post-id sorting title))
+  (dank-comments-init subreddit post-id sorting title))
 
 (defun dank-posts-post-properties-at-point ()
   (interactive)

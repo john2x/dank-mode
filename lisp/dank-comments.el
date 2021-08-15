@@ -8,33 +8,31 @@
 (require 'dash)
 
 (defvar-local dank-comments-buffer nil)
-(defvar-local dank-comments-post-id nil)
-(defvar-local dank-comments-subreddit nil)
-(defvar-local dank-comments-sorting nil)
-
+(defvar-local dank-comments-current-post-id nil)
+(defvar-local dank-comments-current-subreddit nil)
+(defvar-local dank-comments-current-sorting nil)
 (defvar-local dank-comments-current-post nil)
 (defvar-local dank-comments-current-comments nil)
 
+(define-derived-mode dank-comments-mode special-mode "dank-comments-mode"
+  "Major mode for reading reddit post comments.")
 
-(defvar dank-comments-global-var nil)
-(define-derived-mode dank-comments-mode special-mode "dank-comments-mode")
-
-(defun dank-comments-init-post-comments (subreddit post-id permalink &optional sorting)
+(defun dank-comments-init (subreddit post-id permalink &optional sorting)
   "Initialize dank-comments-buffer with POST-ID."
   (let ((buf (concat "*dank-comments* " permalink)))
-    (message "init post comments %s..." buf)
+    (message "Initializing post comments buffer %s..." buf)
     (switch-to-buffer buf)
     (dank-comments-mode)
     (setq dank-comments-buffer (current-buffer))
-    (setq dank-comments-subreddit subreddit)
-    (setq dank-comments-post-id post-id)
-    (setq dank-comments-sorting sorting)
+    (setq dank-comments-current-subreddit subreddit)
+    (setq dank-comments-current-post-id post-id)
+    (setq dank-comments-current-sorting sorting)
     (condition-case err
         (dank-comments-set-current-post-and-comments subreddit post-id sorting)
       (dank-backend-error (progn (dank-comments-render-error err)
                                  (signal (car err) (cdr err)))))
-    (dank-comments-render-current-post t)
-    (dank-comments-render-current-comments)))
+    (dank-comments-render-current-post dank-comments-current-post t)
+    (dank-comments-render-current-comments dank-comments-current-comments)))
 
 (defun dank-comments-set-current-post-and-comments (subreddit post-id &optional sorting)
   (let* ((post-comments (dank-backend-post-and-comments-listing subreddit post-id sorting))
@@ -48,7 +46,8 @@
 (defun dank-comments--insert-comment-tree (parent children)
   )
 
-(dank-defrender dank-comments-render-current-post dank-comments-buffer (&optional clear-buffer)
+(dank-defrender dank-comments-render-current-post dank-comments-buffer (post &optional clear-buffer)
+  "Render the post contents in the current buffer."
   (let* ((inhibit-read-only t)
          (formatted-post (concat (dank-post-format dank-comments-current-post 1) "\n"))
          (formatted-content (dank-post-format-content dank-comments-current-post)))
@@ -59,12 +58,27 @@
       (insert formatted-post)
       (insert formatted-content))))
 
-(dank-defrender dank-comments-render-current-comments dank-comments-buffer (&optional clear-buffer)
+(dank-defrender dank-comments-render-current-comments dank-comments-buffer (comments &optional clear-buffer)
   (when clear-buffer
     (let ((inhibit-read-only t))
       (erase-buffer)))
-  ;(mapc dank-comments-insert-post dank-comments-current-comments)
-  )
+  (mapc (lambda (comment)
+          (dank-comments-insert-comment-to-buffer dank-comments-buffer comment))
+        comments))
+
+(defun dank-comments-insert-comment-to-buffer (buf comment &optional point)
+  "Insert COMMENT into BUF at optional POINT."
+  (when (buffer-live-p buf)
+    (with-current-buffer buf
+      (let* ((inhibit-read-only t)
+             (formatted-comment-metadata (concat (dank-comment-format-metadata comment) "\n"))
+             (formatted-comment-body (concat (dank-comment-format-body comment) "\n")))
+        (save-excursion
+          (goto-char (or point (point-max)))
+          (insert formatted-comment-metadata)
+          (insert formatted-comment-body)
+          (when (dank-comment-replies comment)
+            (message "%s" (dank-comment-replies comment))))))))
 
 (dank-defrender dank-comments-render-error dank-comments-buffer (err)
   "Render the ERR message in the current buffer and show recommended actions."

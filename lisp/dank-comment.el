@@ -6,11 +6,14 @@
   name id body edited text age date author subreddit score
   author_flair gilded replies depth)
 
-(cl-defstruct dank-comment-more
+(cl-defstruct dank-comment-load-more-placeholder
   parent_id count)
 
-(defvar dank-comment-header-template
-  "${author} (${score} | ${age})${edited}${gilded}")
+(defvar dank-comment-metadata-template
+  "${indent}[${author} (${score} | ${age})${edited}${gilded}]")
+
+(defvar dank-comment-body-template
+  "${indent}|${body}")
 
 (defun dank-comment-parse (comment &optional depth)
   "Parse COMMENT into a `dank-comment'."
@@ -39,17 +42,28 @@
                          :replies (if (stringp replies) '()
                                     (mapcar replies-map-fn children-depth))))))
 
-(defun dank-comment-format-header (comment)
-  "Format COMMENT header.
+(defun dank-comment-format-metadata (comment)
+  "Format COMMENT metadata.
 The comment body will need to be formatted separately, since it's
 formatting/indentation will depend on its position."
   (let* ((author (dank-comment-author comment))
          (score (dank-comment-score comment))
          (age (dank-comment-age comment))
-         (edited nil)
+         (edited (or nil ""))
          (gilded (dank-comment-gilded comment))
-         (format-context `(author ,author age ,age score ,score edited ,edited gilded ,gilded)))
-    (dank-utils-format-plist dank-comment-header-template format-context)))
+         (indent (or (-repeat (dank-comment-depth comment) "  ") ""))
+         (format-context `(author ,author age ,age score ,score edited ,edited gilded ,gilded indent ,indent)))
+    (message "%s" format-context)
+    (dank-utils-format-plist dank-comment-metadata-template format-context)))
+
+(defun dank-comment-format-body (comment)
+  "Format COMMENT body.
+The comment body will need to be formatted separately, since it's
+formatting/indentation will depend on its position."
+  (let* ((body (dank-comment-body comment))
+         (indent (or (-repeat (dank-comment-depth comment) "  ") ""))
+         (format-context `(body ,body indent ,indent)))
+    (dank-utils-format-plist dank-comment-body-template format-context)))
 
 (defun dank-comment-propertize (rendered-comment source-comment &optional pos)
   (add-text-properties 0 (length rendered-comment)
