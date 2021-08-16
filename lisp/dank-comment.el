@@ -26,8 +26,8 @@
          (replies-map-fn (lambda (child-depth)
                            (dank-comment-parse (car child-depth) (cadr child-depth)))))
     (if (string= kind "more")
-        (make-dank-comment-more :parent_id (plist-get comment :parent_id)
-                                :count (plist-get comment :count))
+        (make-dank-comment-load-more-placeholder :parent_id (plist-get comment :parent_id)
+                                                 :count (plist-get comment :count))
       (make-dank-comment :id (plist-get comment :id)
                          :name (plist-get comment :name)
                          :depth depth
