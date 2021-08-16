@@ -33,7 +33,8 @@
     map))
 
 (define-derived-mode dank-posts-mode special-mode "dank-posts-mode"
-  "Major mode for browsing reddit posts.")
+  "Major mode for browsing reddit posts."
+  (setq show-trailing-whitespace nil))
 
 (defun dank-posts-init (&optional subreddit)
   "Initialize dank-posts-mode buffer to SUBREDDIT.

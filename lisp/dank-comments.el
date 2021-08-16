@@ -20,7 +20,8 @@
 (defvar-local dank-comments-current-comments nil)
 
 (define-derived-mode dank-comments-mode special-mode "dank-comments-mode"
-  "Major mode for reading reddit post comments.")
+  "Major mode for reading reddit post comments."
+  (setq show-trailing-whitespace nil))
 
 (defun dank-comments-init (subreddit post-id permalink &optional sorting)
   "Initialize dank-comments-buffer with POST-ID."
