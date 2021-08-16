@@ -50,8 +50,11 @@ Returns the range of the text, if found, or nil if not found (until the end or b
       (xml-parse-string) ;; unescape HTML in body
       (beginning-of-buffer)
       (while (not (eobp))
+        ;; this is probably not ideal with large comment trees
         (markdown-fill-paragraph)
         (markdown-fill-forward-paragraph))
+      (beginning-of-buffer)
+      (replace-regexp "^" (string-join (-repeat (* 2 depth) " ")))
       (buffer-string))
     ;; TODO: insert indent at the start of each line
     ))

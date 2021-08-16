@@ -52,7 +52,7 @@ formatting/indentation will depend on its position."
          (age (dank-comment-age comment))
          (edited (or nil ""))
          (gilded (dank-comment-gilded comment))
-         (indent (or (-repeat (dank-comment-depth comment) "  ") ""))
+         (indent (or (string-join (-repeat (dank-comment-depth comment) "  ")) ""))
          (depth (dank-comment-depth comment))
          (format-context `(author ,author age ,age score ,score edited ,edited gilded ,gilded indent ,indent depth ,depth)))
     (message "%s" format-context)
