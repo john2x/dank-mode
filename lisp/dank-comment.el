@@ -58,15 +58,16 @@ formatting/indentation will depend on its position."
     (message "%s" format-context)
     (dank-utils-format-plist dank-comment-metadata-template format-context)))
 
-(defun dank-comment-format-body (comment)
+(defun dank-comment-format-body (comment fill-column)
   "Format COMMENT body.
 The comment body will need to be formatted separately, since it's
 formatting/indentation will depend on its position."
-  (let* ((body (with-temp-buffer (save-excursion (insert (dank-comment-body comment)))
-                                 (xml-parse-string)))
-         (indent (or (-repeat (dank-comment-depth comment) "  ") ""))
-         (format-context `(body ,body indent ,indent)))
-    (dank-utils-format-plist dank-comment-body-template format-context)))
+  (let* ((body (dank-comment-body comment))
+         (depth (dank-comment-depth comment))
+         (filled-body (dank-utils-markdown-fill-paragraph-and-indent body depth fill-column)) ;; fill the body
+         )
+    ;(dank-utils-format-plist dank-comment-body-template format-context)
+    filled-body))
 
 (defun dank-comment-propertize (rendered-comment source-comment &optional pos)
   (add-text-properties 0 (length rendered-comment)

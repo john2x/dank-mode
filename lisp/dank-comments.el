@@ -77,7 +77,7 @@
     (with-current-buffer buf
       (let* ((inhibit-read-only t)
              (formatted-comment-metadata (concat (dank-comment-format-metadata comment) "\n"))
-             (formatted-comment-body (concat (dank-comment-format-body comment) "\n")))
+             (formatted-comment-body (concat (dank-comment-format-body comment dank-comments-body-fill-width) "\n")))
         (save-excursion
           (goto-char (or point (point-max)))
           (insert formatted-comment-metadata)

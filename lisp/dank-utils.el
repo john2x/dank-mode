@@ -1,4 +1,6 @@
 (require 's)
+(require 'xml)
+(require 'markdown-mode)
 
 (defun dank-warning (type &rest message-fmt)
   "Convenience method to print warning messages of TYPE for dank-reddit and return nil.
@@ -40,5 +42,18 @@ If DIRECTION is 'up, the search starts from the current point postion going up.
 If DIRECTION is 'down, the search starts from the current point position going down.
 Returns the range of the text, if found, or nil if not found (until the end or beginning of the buffer).")
 
+(defun dank-utils-markdown-fill-paragraph-and-indent (body depth fill-column)
+  "Use `markdown-fill-paragraph' on Markdown BODY up to FILL-COLUMN width.  Indent BODY by INDENT at the same time."
+  (let ((fill-column (- fill-column (* 2 depth)))) ;; subtract twice of depth from fill-column because the indent will take up part of the fill width
+    (with-temp-buffer
+      (save-excursion (insert body))
+      (xml-parse-string) ;; unescape HTML in body
+      (beginning-of-buffer)
+      (while (not (eobp))
+        (markdown-fill-paragraph)
+        (markdown-fill-forward-paragraph))
+      (buffer-string))
+    ;; TODO: insert indent at the start of each line
+    ))
 
 (provide 'dank-utils)
