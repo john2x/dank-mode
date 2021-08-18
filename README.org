@@ -8,6 +8,17 @@ Copy =auth.example.json= to =auth.json= and replace the values with
 your credentials.
 
 * TODO
+- [ ] Figure out how to render post content properly. Probably best to
+  fill it like comments.
+- [ ] Use fill width for separators so the background face fills up
+  the space.
+- [ ] Start propertizing comment metadata and body
+- [ ] Change how buffers are rendered. Use temp buffer and copy
+  content to the active buffer. Printing large comment trees does not
+  look good when writing to the active buffer directly.
+- [ ] Render 'load more' comments.
+- [ ] Interact with 'load more' comments.
+- [ ] Start folding comment trees.
 ** Features
 
 *** Post listing
@@ -92,9 +103,10 @@ v2 will focus on interaction
 
 These libraries are not part of Emacs 25.
 
-- dash.el (GPLv3) https://github.com/magnars/dash.el (ELPA)
+- dash.el (GPLv3) https://github.com/magnars/dash.el (GNU ELPA)
 - s.el (GPLv3) https://github.com/magnars/s.el (MELPA)
 - request.el (GPLv3) https://github.com/tkf/emacs-request (MELPA)
+- markdown-mode (GPLv3) https://jblevins.org/projects/markdown-mode/ (MELPA)
 
 ** Ideas
 
