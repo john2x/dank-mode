@@ -56,7 +56,7 @@
   "Render the post contents in the current buffer."
   (let* ((inhibit-read-only t)
          (formatted-post (concat (dank-post-format dank-comments-current-post 1) "\n"))
-         (formatted-content (dank-post-format-content dank-comments-current-post)))
+         (formatted-content (dank-comment-format-post-content dank-comments-current-post dank-comments-body-fill-width)))
     (when clear-buffer
       (erase-buffer))
     (save-excursion

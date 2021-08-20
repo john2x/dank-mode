@@ -41,16 +41,6 @@ Optional POST-INDEX is the position of the post in a list."
          (formatted-post (dank-utils-format-plist dank-post-template format-context)))
     (dank-post--propertize formatted-post post post-index)))
 
-(defun dank-post-format-content (post)
-  "Format POST content as string."
-  (concat
-   (propertize "\n" 'font-lock-face 'dank-faces-separator)
-   (if (string= (dank-post-post_type post) "self")
-       (dank-post-text post) ;; TODO: propertize markdown
-     (dank-post-link post)) ;; TODO: propertize link
-   "\n"
-   (propertize "\n" 'font-lock-face 'dank-faces-separator)))
-
 (defun dank-post--propertize (formatted-post source-post &optional post-index)
   "Assign FORMATTED-POST text properties from SOURCE-POST.
 Optional POST-INDEX is the position of the post in a list."
