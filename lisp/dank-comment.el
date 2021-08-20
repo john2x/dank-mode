@@ -10,7 +10,7 @@
   parent_id count)
 
 (defvar dank-comment-metadata-template
-  "${indent}[/u/${author} (${score} points | ${age})${edited} ${gilded} depth: ${depth}]")
+  "${indent}- /u/${author} (${score} points | ${age})${edited} ${gilded}")
 
 (defvar dank-comment-body-template
   "${indent}${body}")
