@@ -45,7 +45,7 @@ Optional POST-INDEX is the position of the post in a list."
   "Format POST content as string."
   (concat
    (propertize "\n" 'font-lock-face 'dank-faces-separator)
-   (if (string= (dank-post-post_type post) "self-text")
+   (if (string= (dank-post-post_type post) "self")
        (dank-post-text post) ;; TODO: propertize markdown
      (dank-post-link post)) ;; TODO: propertize link
    "\n"
