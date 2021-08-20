@@ -14,6 +14,7 @@
 
 (defun dank-post-format (post &optional post-index)
   "Format POST as string using `dank-post-template'.
+Also applies font-lock properties.
 Optional POST-INDEX is the position of the post in a list."
   (let* ((title (propertize (dank-post-title post) 'font-lock-face 'dank-faces-post-title))
          (age (propertize (dank-post-age post) 'font-lock-face 'dank-faces-age))
@@ -39,10 +40,10 @@ Optional POST-INDEX is the position of the post in a list."
                                  nsfw ,nsfw spoiler ,spoiler domain ,domain post_type ,post_type
                                  link_flair ,link_flair))
          (formatted-post (dank-utils-format-plist dank-post-template format-context)))
-    (dank-post--propertize formatted-post post post-index)))
+    (dank-post--propertize-metadata formatted-post post post-index)))
 
-(defun dank-post--propertize (formatted-post source-post &optional post-index)
-  "Assign FORMATTED-POST text properties from SOURCE-POST.
+(defun dank-post--propertize-metadata (formatted-post source-post &optional post-index)
+  "Assign FORMATTED-POST metadata properties from SOURCE-POST.
 Optional POST-INDEX is the position of the post in a list."
   (add-text-properties 0 (length formatted-post)
                        `(dank-post-id ,(dank-post-id source-post)
@@ -58,7 +59,7 @@ Optional POST-INDEX is the position of the post in a list."
   (let* ((post (plist-get post :data)))
     (make-dank-post :id (plist-get post :id)
                     :name (plist-get post :name)
-                    :title (s-trim (plist-get post :title))
+                    :title (dank-utils-escape-html (s-trim (plist-get post :title)))
                     :link (plist-get post :url)
                     :text (plist-get post :selftext)
                     :age (dank-utils-timestamp-ago (plist-get post :created_utc))
