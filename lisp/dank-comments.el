@@ -26,25 +26,35 @@
 (defun dank-comments-init (subreddit post-id permalink &optional sorting)
   "Initialize dank-comments-buffer with POST-ID."
   (let ((buf (concat "*dank-comments* " permalink)))
-    (message "Initializing post comments buffer %s..." buf)
-    (switch-to-buffer buf)
-    (dank-comments-mode)
-    (setq dank-comments-buffer (current-buffer))
-    (setq dank-comments-current-subreddit subreddit)
-    (setq dank-comments-current-post-id post-id)
-    (setq dank-comments-current-sorting sorting)
-    (condition-case err
-        (dank-comments-set-current-post-and-comments subreddit post-id sorting)
-      (dank-backend-error (progn (dank-comments-render-error err)
-                                 (signal (car err) (cdr err)))))
-    (dank-comments-render-current-post dank-comments-current-post t)
-    (dank-comments-render-current-comments dank-comments-current-comments dank-comments-current-post)))
+    (if (get-buffer buf)
+        (progn
+          (message "Switched to existing dank-comments-mode buffer %s" permalink)
+          (switch-to-buffer buf))
+      (progn
+        (message "Initializing post comments buffer %s..." buf)
+        (switch-to-buffer buf)
+        (dank-comments-mode)
+        (setq dank-comments-buffer (current-buffer))
+        (setq dank-comments-current-subreddit subreddit)
+        (setq dank-comments-current-post-id post-id)
+        (setq dank-comments-current-sorting sorting)
+        (condition-case err
+            (dank-comments-reset-state)
+          (dank-backend-error (progn (dank-comments-render-error err)
+                                     (signal (car err) (cdr err)))))
+        (dank-comments-render-current-post dank-comments-current-post t)
+        (dank-comments-render-current-comments dank-comments-current-comments dank-comments-current-post)))))
+
+(defun dank-comments-reset-state ()
+  "Reset state of the current dank-posts buffer."
+  (setq dank-comments-current-comments nil
+        dank-comments-current-post nil)
+  (dank-comments-set-current-post-and-comments dank-comments-current-subreddit dank-comments-current-post-id dank-comments-current-sorting))
 
 (defun dank-comments-set-current-post-and-comments (subreddit post-id &optional sorting)
   (let* ((post-comments (dank-backend-post-and-comments-listing subreddit post-id sorting '(:depth ,dank-comments-default-depth)))
          (post (dank-post-parse (car post-comments)))
          (comments (mapcar #'dank-comment-parse (cdr post-comments))))
-    (message "%s" post)
     (setq dank-comments-current-post post)
     (setq dank-comments-current-comments comments)))
 
@@ -92,5 +102,11 @@
     (erase-buffer)
     (insert (format "%s\n" err))
     (insert "TODO: show recommended actions (either [q]uit or retry)")))
+
+(defun dank-comments-refresh ()
+  (interactive)
+  (dank-comments-reset-state)
+  (dank-comments-render-current-post dank-comments-current-post t)
+  (dank-comments-render-current-comments dank-comments-current-comments dank-comments-current-post))
 
 (provide 'dank-comments)
