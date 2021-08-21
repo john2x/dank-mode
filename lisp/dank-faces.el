@@ -27,9 +27,9 @@
   "Face for post age."
   :group 'dank-faces)
 
-(defface dank-faces-author
+(defface dank-faces-post-author
   '((t :inherit font-lock-keyword-face))
-  "Face for author username."
+  "Face for post author username."
   :group 'dank-faces)
 
 (defface dank-faces-subreddit
@@ -63,8 +63,18 @@
   :group 'dank-faces)
 
 (defface dank-faces-separator
-  '((t :background "gray" :box (:style released-button)))
+  '((t :background "light gray"))
   "Face for separators."
+  :group 'dank-faces)
+
+(defface dank-faces-comment-author
+  '((t :inherit font-lock-string-face :background "white smoke"))
+  "Face for comment author username."
+  :group 'dank-faces)
+
+(defface dank-faces-comment-metadata
+  '((t :background "white smoke"))
+  "Face for comment metadata."
   :group 'dank-faces)
 
 (provide 'dank-faces)

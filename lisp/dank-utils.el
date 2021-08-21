@@ -59,7 +59,8 @@ Returns the range of the text, if found, or nil if not found (until the end or b
     ))
 
 (defun dank-utils-escape-html (s)
-  "Escape HTML from s."
+  "Escape HTML from S.
+TODO: optimize this."
   (with-temp-buffer
     (insert s)
     (beginning-of-buffer)

@@ -10,7 +10,7 @@
   parent_id count)
 
 (defvar dank-comment-metadata-template
-  "${indent}- /u/${author} (${score} points | ${age})${edited} ${gilded}")
+  "${indent}- ${author} (${score} points | ${age})${edited}")
 
 (defvar dank-comment-body-template
   "${indent}${body}")
@@ -54,19 +54,19 @@
 
 (defun dank-comment-format-metadata (comment)
   "Format COMMENT metadata.
+Also applies font-lock properties.
 The comment body will need to be formatted separately, since it's
 formatting/indentation will depend on its position."
-  (message "depth: %s" (dank-comment-depth comment))
-  (let* ((author (dank-comment-author comment))
-         (score (dank-comment-score comment))
-         (age (dank-comment-age comment))
+  (let* ((author (propertize (concat "/u/" (dank-comment-author comment)) 'font-lock-face 'dank-faces-comment-author))
+         (score (propertize (number-to-string (dank-comment-score comment)) 'font-lock-face 'dank-faces-comment-metadata))
+         (age (propertize (dank-comment-age comment) 'font-lock-face 'dank-faces-comment-metadata))
          (edited (or nil ""))
-         (gilded (dank-comment-gilded comment))
-         (indent (or (string-join (-repeat (dank-comment-depth comment) "  ")) ""))
+         (gilded (number-to-string (dank-comment-gilded comment)))
+         (indent (or (s-repeat (dank-comment-depth comment) "  ") ""))
          (depth (dank-comment-depth comment))
-         (format-context `(author ,author age ,age score ,score edited ,edited gilded ,gilded indent ,indent depth ,depth)))
-    (message "%s" format-context)
-    (dank-utils-format-plist dank-comment-metadata-template format-context)))
+         (format-context `(author ,author age ,age score ,score edited ,edited gilded ,gilded indent ,indent depth ,depth))
+         (formatted-metadata (dank-utils-format-plist (propertize dank-comment-metadata-template 'font-lock-face 'dank-faces-comment-metadata) format-context)))
+    formatted-metadata))
 
 (defun dank-comment-format-body (comment fill-column)
   "Format COMMENT body.
