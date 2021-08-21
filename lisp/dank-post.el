@@ -18,7 +18,7 @@ Also applies font-lock properties.
 Optional POST-INDEX is the position of the post in a list."
   (let* ((title (propertize (dank-post-title post) 'font-lock-face 'dank-faces-post-title))
          (age (propertize (dank-post-age post) 'font-lock-face 'dank-faces-age))
-         (author (propertize (dank-post-author post) 'font-lock-face 'dank-faces-author))
+         (author (propertize (concat "/u/" (dank-post-author post)) 'font-lock-face 'dank-faces-post-author))
          (author_flair (if (and (dank-post-author_flair post) (not (eq (dank-post-author_flair post) "")))
                            (propertize (concat " [" (dank-post-author_flair post) "]") 'font-lock-face 'dank-faces-flair)
                          ""))
