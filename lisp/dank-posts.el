@@ -40,11 +40,13 @@
   "Initialize dank-posts-mode buffer to SUBREDDIT.
 If SUBREDDIT is nil, a frontpage buffer is initialized.
 If a buffer already exists, switch to that buffer."
-  (message "Initializing dank-posts-mode buffer for %s..." (or subreddit "frontpage"))
   (let ((buf (concat "*dank-posts* " (if subreddit (concat "/r/" subreddit) "frontpage"))))
     (if (get-buffer buf)
-        (switch-to-buffer buf)
+        (progn
+          (message "Switched to existing dank-posts-mode buffer for %s..." (or subreddit "frontpage"))
+          (switch-to-buffer buf))
       (progn
+        (message "Initializing dank-posts-mode buffer for %s..." (or subreddit "frontpage"))
         (switch-to-buffer buf)
         (dank-posts-mode)
         (setq dank-posts-buffer (current-buffer))
