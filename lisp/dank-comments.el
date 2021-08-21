@@ -34,10 +34,10 @@
         (message "Initializing post comments buffer %s..." buf)
         (switch-to-buffer buf)
         (dank-comments-mode)
-        (setq dank-comments-buffer (current-buffer))
-        (setq dank-comments-current-subreddit subreddit)
-        (setq dank-comments-current-post-id post-id)
-        (setq dank-comments-current-sorting sorting)
+        (setq dank-comments-buffer (current-buffer)
+              dank-comments-current-subreddit subreddit
+              dank-comments-current-post-id post-id
+              dank-comments-current-sorting sorting)
         (condition-case err
             (dank-comments-reset-state)
           (dank-backend-error (progn (dank-comments-render-error err)
@@ -55,8 +55,8 @@
   (let* ((post-comments (dank-backend-post-and-comments-listing subreddit post-id sorting '(:depth ,dank-comments-default-depth)))
          (post (dank-post-parse (car post-comments)))
          (comments (mapcar #'dank-comment-parse (cdr post-comments))))
-    (setq dank-comments-current-post post)
-    (setq dank-comments-current-comments comments)))
+    (setq dank-comments-current-post post
+          dank-comments-current-comments comments)))
 
 
 (defun dank-comments--insert-comment-tree (parent children)
@@ -102,6 +102,10 @@
     (erase-buffer)
     (insert (format "%s\n" err))
     (insert "TODO: show recommended actions (either [q]uit or retry)")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; navigation functions ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun dank-comments-refresh ()
   (interactive)

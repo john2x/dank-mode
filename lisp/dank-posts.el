@@ -59,14 +59,14 @@ If a buffer already exists, switch to that buffer."
 
 (defun dank-posts-reset-state (subreddit sorting limit)
   "Reset state of the current dank-posts buffer."
-  (setq-local dank-posts-current-subreddit subreddit)
-  (setq-local dank-posts-current-sorting sorting)
-  (setq-local dank-posts-current-start-count 0)
-  (setq-local dank-posts-current-end-count 0)
-  (setq-local dank-posts-current-after nil)
-  (setq-local dank-posts-current-before nil)
-  (setq-local dank-posts-current-page-posts nil)
-  (setq-local dank-posts-current-all-posts nil)
+  (setq dank-posts-current-subreddit subreddit
+        dank-posts-current-sorting sorting
+        dank-posts-current-start-count 0
+        dank-posts-current-end-count 0
+        dank-posts-current-after nil
+        dank-posts-current-before nil
+        dank-posts-current-page-posts nil
+        dank-posts-current-all-posts nil)
   (dank-posts-set-page-posts subreddit sorting limit))
 
 
@@ -76,24 +76,24 @@ Store the results in `dank-posts-current-page-posts'."
   (let* ((posts (dank-backend-post-listing subreddit sorting
                                            :limit limit :after after :before before :count count))
          (posts (mapcar #'dank-post-parse posts)))
-    (setq-local dank-posts-current-page-posts posts)
-    (setq-local dank-posts-current-all-posts (append dank-posts-current-page-posts posts))
-    (setq-local dank-posts-current-subreddit subreddit)
-    (setq-local dank-posts-current-sorting sorting)
+    (setq dank-posts-current-page-posts posts
+          dank-posts-current-all-posts (append dank-posts-current-page-posts posts)
+          dank-posts-current-subreddit subreddit
+          dank-posts-current-sorting sorting)
     ;; update navigation references
     (if (not before)
         (progn
-          (setq-local dank-posts-current-start-count (+ 1 dank-posts-current-end-count))
-          (setq-local dank-posts-current-end-count (+ dank-posts-current-end-count
-                                                      dank-posts-page-items-limit)))
+          (setq dank-posts-current-start-count (+ 1 dank-posts-current-end-count)
+                dank-posts-current-end-count (+ dank-posts-current-end-count
+                                                            dank-posts-page-items-limit)))
       (progn
-        (setq-local dank-posts-current-end-count (- dank-posts-current-start-count 1))
-        (setq-local dank-posts-current-start-count (- dank-posts-current-end-count
-                                                      dank-posts-page-items-limit))))
+        (setq dank-posts-current-end-count (- dank-posts-current-start-count 1)
+              dank-posts-current-start-count (- dank-posts-current-end-count
+                                                            dank-posts-page-items-limit))))
     (if (<= dank-posts-current-start-count 0)
         (setq dank-posts-current-start-count 1))
-    (setq-local dank-posts-current-after (dank-post-name (car (last posts))))
-    (setq-local dank-posts-current-before (dank-post-name (car posts)))
+    (setq dank-posts-current-after (dank-post-name (car (last posts)))
+          dank-posts-current-before (dank-post-name (car posts)))
     (dank-posts-set-header-line)))
 
 
