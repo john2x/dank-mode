@@ -52,12 +52,14 @@
    "\n"
    (propertize (concat (s-repeat fill-column " ") "\n") 'font-lock-face 'dank-faces-separator)))
 
-(defun dank-comment-format-metadata (comment)
+(defun dank-comment-format-metadata (comment post-author)
   "Format COMMENT metadata.
 Also applies font-lock properties.
 The comment body will need to be formatted separately, since it's
-formatting/indentation will depend on its position."
-  (let* ((author (propertize (concat "/u/" (dank-comment-author comment)) 'font-lock-face 'dank-faces-comment-author))
+formatting/indentation will depend on its position.
+POST-AUTHOR is used to apply a different face to the comment author."
+  (let* ((author-face (if (string= (dank-comment-author comment) post-author) 'dank-faces-comment-author-op 'dank-faces-comment-author))
+         (author (propertize (concat "/u/" (dank-comment-author comment)) 'font-lock-face author-face))
          (score (propertize (number-to-string (dank-comment-score comment)) 'font-lock-face 'dank-faces-comment-metadata))
          (age (propertize (dank-comment-age comment) 'font-lock-face 'dank-faces-comment-metadata))
          (edited (or nil ""))

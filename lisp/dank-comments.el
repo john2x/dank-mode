@@ -38,7 +38,7 @@
       (dank-backend-error (progn (dank-comments-render-error err)
                                  (signal (car err) (cdr err)))))
     (dank-comments-render-current-post dank-comments-current-post t)
-    (dank-comments-render-current-comments dank-comments-current-comments)))
+    (dank-comments-render-current-comments dank-comments-current-comments dank-comments-current-post)))
 
 (defun dank-comments-set-current-post-and-comments (subreddit post-id &optional sorting)
   (let* ((post-comments (dank-backend-post-and-comments-listing subreddit post-id sorting '(:depth ,dank-comments-default-depth)))
@@ -64,27 +64,27 @@
       (insert formatted-post)
       (insert formatted-content))))
 
-(dank-defrender dank-comments-render-current-comments dank-comments-buffer (comments &optional clear-buffer)
+(dank-defrender dank-comments-render-current-comments dank-comments-buffer (comments post &optional clear-buffer)
   (when clear-buffer
     (let ((inhibit-read-only t))
       (erase-buffer)))
   (mapc (lambda (comment)
-          (dank-comments-insert-comment-to-buffer dank-comments-buffer comment))
+          (dank-comments-insert-comment-to-buffer dank-comments-buffer comment post))
         comments))
 
-(defun dank-comments-insert-comment-to-buffer (buf comment &optional point)
+(defun dank-comments-insert-comment-to-buffer (buf comment post &optional point)
   "Insert COMMENT into BUF at optional POINT."
   (when (buffer-live-p buf)
     (with-current-buffer buf
       (let* ((inhibit-read-only t)
-             (formatted-comment-metadata (concat (dank-comment-format-metadata comment) "\n"))
+             (formatted-comment-metadata (concat (dank-comment-format-metadata comment (dank-post-author post)) "\n"))
              (formatted-comment-body (concat (dank-comment-format-body comment dank-comments-body-fill-width) "\n")))
         (save-excursion
           (goto-char (or point (point-max)))
           (insert formatted-comment-metadata)
           (insert formatted-comment-body)
           (when (dank-comment-replies comment)
-            (dank-comments-render-current-comments (dank-comment-replies comment))))))))
+            (dank-comments-render-current-comments (dank-comment-replies comment) post)))))))
 
 (dank-defrender dank-comments-render-error dank-comments-buffer (err)
   "Render the ERR message in the current buffer and show recommended actions."

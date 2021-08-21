@@ -28,7 +28,7 @@
   :group 'dank-faces)
 
 (defface dank-faces-post-author
-  '((t :inherit font-lock-keyword-face))
+  '((t :inherit font-lock-keyword-face :weight bold))
   "Face for post author username."
   :group 'dank-faces)
 
@@ -70,6 +70,11 @@
 (defface dank-faces-comment-author
   '((t :inherit font-lock-string-face :background "white smoke"))
   "Face for comment author username."
+  :group 'dank-faces)
+
+(defface dank-faces-comment-author-op
+  '((t :inherit dank-faces-post-author :background "white smoke"))
+  "Face for comment author username when they are the post author."
   :group 'dank-faces)
 
 (defface dank-faces-comment-metadata
