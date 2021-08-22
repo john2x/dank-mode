@@ -19,6 +19,17 @@
 (defvar-local dank-comments-current-post nil)
 (defvar-local dank-comments-current-comments nil)
 
+(defvar dank-comments-mode-map
+  (let ((map (make-sparse-keymap)))
+    ;(define-key map "n" 'dank-posts-navigate-next-post)
+    ;(define-key map "p" 'dank-posts-navigate-prev-post)
+    ;(define-key map (kbd "C-c C-v") 'dank-posts-fetch-next-page)
+    (define-key map (kbd "C-c C-r") 'dank-comments-refresh)
+    ;(define-key map (kbd "C-c C-c") 'dank-posts-goto-post-comments-at-point)
+    ;(define-key map (kbd "C-c C-/") 'dank-posts-goto-subreddit-at-point)
+    (define-key map (kbd "C-c q") 'kill-current-buffer)
+    map))
+
 (define-derived-mode dank-comments-mode special-mode "dank-comments-mode"
   "Major mode for reading reddit post comments."
   (setq show-trailing-whitespace nil))
