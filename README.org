@@ -8,16 +8,19 @@ Copy =auth.example.json= to =auth.json= and replace the values with
 your credentials.
 
 * TODO
-- [ ] Figure out how to render post content properly. Probably best to
+- [X] Figure out how to render post content properly. Probably best to
   fill it like comments.
-- [ ] Use fill width for separators so the background face fills up
+- [X] Use fill width for separators so the background face fills up
   the space.
-- [ ] Start propertizing comment metadata and body
+- [X] Start propertizing comment metadata and body
 - [ ] Change how buffers are rendered. Use temp buffer and copy
   content to the active buffer. Printing large comment trees does not
   look good when writing to the active buffer directly.
-- [ ] Render 'load more' comments.
+  - Can the message printing be stopped?
+- [X] Render 'load more' comments.
+  - [X] indent them properly
 - [ ] Interact with 'load more' comments.
+  - load in new buffer? or use narrowing?
 - [ ] Start folding comment trees.
 ** Features
 
