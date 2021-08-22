@@ -15,6 +15,9 @@
 (defvar dank-comment-body-template
   "${indent}${body}")
 
+(defvar dank-comment-load-more-placeholder-template
+  "[Load more comments (opens in new buffer)]")
+
 (defun dank-comment-parse (comment &optional depth)
   "Parse COMMENT into a `dank-comment'."
   (let* ((depth (or depth 0))
@@ -80,6 +83,10 @@ formatting/indentation will depend on its position."
          )
     ;(dank-utils-format-plist dank-comment-body-template format-context)
     filled-body))
+
+(defun dank-comment-format-load-more-placeholder (load-more-placeholder)
+  "Format LOAD-MORE-PLACEHOLDER."
+  dank-comment-load-more-placeholder-template)
 
 (defun dank-comment-propertize (rendered-comment source-comment &optional pos)
   (add-text-properties 0 (length rendered-comment)
