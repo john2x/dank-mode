@@ -84,13 +84,15 @@ formatting/indentation will depend on its position."
          (filled-body (dank-utils-markdown-fill-paragraph-and-indent body depth fill-column)) ;; fill the body
          )
     ;(dank-utils-format-plist dank-comment-body-template format-context)
-    (dank-comment--propertize-metadata filled-body comment)))
+    (dank-comment--propertize-comment-with-metadata filled-body comment)))
 
 (defun dank-comment-format-load-more-placeholder (load-more-placeholder)
   "Format LOAD-MORE-PLACEHOLDER."
-  (concat (s-repeat (dank-comment-load-more-placeholder-depth load-more-placeholder) "  ") "|> " dank-comment-load-more-placeholder-template))
+  (dank-comment--propertize-load-more-placeholder-with-metadata
+   (concat (s-repeat (dank-comment-load-more-placeholder-depth load-more-placeholder) "  ") "|> " dank-comment-load-more-placeholder-template)
+   load-more-placeholder))
 
-(defun dank-comment--propertize-metadata (formatted-comment source-comment)
+(defun dank-comment--propertize-comment-with-metadata (formatted-comment source-comment)
   "Assign FORMATTED-COMMENT with metadata from SOURCE-COMMENT."
   (add-text-properties 0 (length formatted-comment)
                        `(dank-comment-id ,(dank-comment-id source-comment)
@@ -99,5 +101,12 @@ formatting/indentation will depend on its position."
                        formatted-comment)
   formatted-comment)
 
+(defun dank-comment--propertize-load-more-placeholder-with-metadata (formatted-placeholder source-placeholder)
+  "Assign FORMATTED-PLACEHOLDER with metadata from SOURCE-PLACEHOLDER."
+  (add-text-properties 0 (length formatted-placeholder)
+                       `(dank-comment-parent-id ,(dank-comment-load-more-placeholder-parent_id source-placeholder)
+                                                dank-comment-depth ,(dank-comment-load-more-placeholder-depth source-placeholder))
+                       formatted-placeholder)
+  formatted-placeholder)
 
 (provide 'dank-comment)
