@@ -78,26 +78,32 @@
   (let ((inhibit-read-only t))
     (when clear-buffer
       (erase-buffer))
+    (goto-char (point-max))
     (insert ;; insert comments into a temp buffer and insert that into the real buffer
      (with-temp-buffer
-       (mapc (lambda (comment)
-               (dank-comments-insert-comment-to-buffer (current-buffer) comment post))
-             comments)
+       (dank-comments--insert-comments-in-current-buffer comments (dank-post-author post))
        (buffer-string)))))
 
-(defun dank-comments-insert-comment-to-buffer (buf comment post &optional point)
-  "Insert COMMENT into BUF at optional POINT."
-  (when (buffer-live-p buf)
-    (with-current-buffer buf
-      (let* ((inhibit-read-only t)
-             (formatted-comment-metadata (concat (dank-comment-format-metadata comment (dank-post-author post)) "\n"))
+(defun dank-comments--insert-comments-in-current-buffer (comments post-author)
+  "Insert a COMMENT-TREE into the current buffer (preferably a temp buffer)."
+  (when comments
+    (let* ((comment (car comments)))
+      (dank-comments--insert-comment-in-current-buffer comment post-author)
+      (when (eq (type-of comment) 'dank-comment)
+        (dank-comments--insert-comments-in-current-buffer (dank-comment-replies comment) post-author))
+      (dank-comments--insert-comments-in-current-buffer (cdr comments) post-author))))
+
+(defun dank-comments--insert-comment-in-current-buffer (comment post-author &optional point)
+  "Insert COMMENT into the current temporary buffer at optional POINT."
+  (if (eq (type-of comment) 'dank-comment)
+      (let* ((formatted-comment-metadata (concat (dank-comment-format-metadata comment post-author) "\n"))
              (formatted-comment-body (concat (dank-comment-format-body comment dank-comments-body-fill-width) "\n")))
-        (save-excursion
-          (goto-char (or point (point-max)))
-          (insert formatted-comment-metadata)
-          (insert formatted-comment-body)
-          (when (dank-comment-replies comment)
-            (dank-comments-render-current-comments (dank-comment-replies comment) post)))))))
+        (goto-char (or point (point-max)))
+        (insert formatted-comment-metadata)
+        (insert formatted-comment-body))
+    (let ((formatted-load-more-placeholder (concat (dank-comment-format-load-more-placeholder comment) "\n")))
+      (goto-char (or point (point-max)))
+      (insert formatted-load-more-placeholder))))
 
 (dank-defrender dank-comments-render-error dank-comments-buffer (err)
   "Render the ERR message in the current buffer and show recommended actions."
