@@ -75,12 +75,15 @@
       (insert formatted-content))))
 
 (dank-defrender dank-comments-render-current-comments dank-comments-buffer (comments post &optional clear-buffer)
-  (when clear-buffer
-    (let ((inhibit-read-only t))
-      (erase-buffer)))
-  (mapc (lambda (comment)
-          (dank-comments-insert-comment-to-buffer dank-comments-buffer comment post))
-        comments))
+  (let ((inhibit-read-only t))
+    (when clear-buffer
+      (erase-buffer))
+    (insert ;; insert comments into a temp buffer and insert that into the real buffer
+     (with-temp-buffer
+       (mapc (lambda (comment)
+               (dank-comments-insert-comment-to-buffer (current-buffer) comment post))
+             comments)
+       (buffer-string)))))
 
 (defun dank-comments-insert-comment-to-buffer (buf comment post &optional point)
   "Insert COMMENT into BUF at optional POINT."
