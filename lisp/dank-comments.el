@@ -54,7 +54,8 @@
           (dank-backend-error (progn (dank-comments-render-error err)
                                      (signal (car err) (cdr err)))))
         (dank-comments-render-current-post dank-comments-current-post t)
-        (dank-comments-render-current-comments dank-comments-current-comments dank-comments-current-post)))))
+        (dank-comments-render-current-comments dank-comments-current-comments dank-comments-current-post)
+        (goto-char 0)))))
 
 (defun dank-comments-reset-state ()
   "Reset state of the current dank-posts buffer."
@@ -131,6 +132,7 @@
   (interactive)
   (dank-comments-reset-state)
   (dank-comments-render-current-post dank-comments-current-post t)
-  (dank-comments-render-current-comments dank-comments-current-comments dank-comments-current-post))
+  (dank-comments-render-current-comments dank-comments-current-comments dank-comments-current-post)
+  (goto-char 0))
 
 (provide 'dank-comments)
