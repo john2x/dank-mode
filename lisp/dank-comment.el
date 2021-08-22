@@ -4,7 +4,7 @@
 
 (cl-defstruct dank-comment
   name id body edited text age date author subreddit score
-  author_flair gilded replies depth)
+  author_flair gilded replies depth parent_id)
 
 (cl-defstruct dank-comment-load-more-placeholder
   parent_id count depth)
@@ -43,6 +43,7 @@
                          :subreddit (plist-get comment :subreddit)
                          :author_flair (plist-get comment :author_flair_text)
                          :gilded (plist-get comment :gilded)
+                         :parent_id (plist-get comment :parent_id)
                          :replies (if (stringp replies) '()
                                     (mapcar replies-map-fn children-depth))))))
 
@@ -72,7 +73,7 @@ POST-AUTHOR is used to apply a different face to the comment author."
          (depth (dank-comment-depth comment))
          (format-context `(author ,author age ,age score ,score edited ,edited gilded ,gilded indent ,indent depth ,depth))
          (formatted-metadata (dank-utils-format-plist (propertize dank-comment-metadata-template 'font-lock-face 'dank-faces-comment-metadata) format-context)))
-    formatted-metadata))
+    (dank-comment--propertize-metadata formatted-metadata comment)))
 
 (defun dank-comment-format-body (comment fill-column)
   "Format COMMENT body.
@@ -83,17 +84,20 @@ formatting/indentation will depend on its position."
          (filled-body (dank-utils-markdown-fill-paragraph-and-indent body depth fill-column)) ;; fill the body
          )
     ;(dank-utils-format-plist dank-comment-body-template format-context)
-    filled-body))
+    (dank-comment--propertize-metadata filled-body comment)))
 
 (defun dank-comment-format-load-more-placeholder (load-more-placeholder)
   "Format LOAD-MORE-PLACEHOLDER."
   (concat (s-repeat (dank-comment-load-more-placeholder-depth load-more-placeholder) "  ") "|> " dank-comment-load-more-placeholder-template))
 
-(defun dank-comment-propertize (rendered-comment source-comment &optional pos)
-  (add-text-properties 0 (length rendered-comment)
+(defun dank-comment--propertize-metadata (formatted-comment source-comment)
+  "Assign FORMATTED-COMMENT with metadata from SOURCE-COMMENT."
+  (add-text-properties 0 (length formatted-comment)
                        `(dank-comment-id ,(dank-comment-id source-comment)
-                                         dank-comment-post ,pos)
-                       rendered-comment))
+                                         dank-comment-parent-id ,(dank-comment-parent_id source-comment)
+                                         dank-comment-depth ,(dank-comment-depth source-comment))
+                       formatted-comment)
+  formatted-comment)
 
 
 (provide 'dank-comment)
