@@ -7,7 +7,7 @@
   author_flair gilded replies depth)
 
 (cl-defstruct dank-comment-load-more-placeholder
-  parent_id count)
+  parent_id count depth)
 
 (defvar dank-comment-metadata-template
   "${indent}- ${author} (${score} points | ${age})${edited}")
@@ -16,7 +16,7 @@
   "${indent}${body}")
 
 (defvar dank-comment-load-more-placeholder-template
-  "[Load more comments (opens in new buffer)]")
+  "[More comments]")
 
 (defun dank-comment-parse (comment &optional depth)
   "Parse COMMENT into a `dank-comment'."
@@ -30,7 +30,8 @@
                            (dank-comment-parse (car child-depth) (cadr child-depth)))))
     (if (string= kind "more")
         (make-dank-comment-load-more-placeholder :parent_id (plist-get comment :parent_id)
-                                                 :count (plist-get comment :count))
+                                                 :count (plist-get comment :count)
+                                                 :depth depth)
       (make-dank-comment :id (plist-get comment :id)
                          :name (plist-get comment :name)
                          :depth depth
@@ -86,7 +87,7 @@ formatting/indentation will depend on its position."
 
 (defun dank-comment-format-load-more-placeholder (load-more-placeholder)
   "Format LOAD-MORE-PLACEHOLDER."
-  dank-comment-load-more-placeholder-template)
+  (concat (s-repeat (dank-comment-load-more-placeholder-depth load-more-placeholder) "  ") "|> " dank-comment-load-more-placeholder-template))
 
 (defun dank-comment-propertize (rendered-comment source-comment &optional pos)
   (add-text-properties 0 (length rendered-comment)

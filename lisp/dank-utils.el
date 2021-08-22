@@ -53,7 +53,7 @@ Returns the range of the text, if found, or nil if not found (until the end or b
         (markdown-fill-paragraph)
         (markdown-fill-forward-paragraph))
       (beginning-of-buffer)
-      (replace-regexp "^" (concat (string-join (-repeat (* 2 depth) " ")) (or indent-guide "| ")))
+      (replace-regexp "^" (concat (string-join (-repeat depth "  ")) (or indent-guide "| ")))
       (buffer-string))
     ;; TODO: insert indent at the start of each line
     ))
