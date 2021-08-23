@@ -12,6 +12,7 @@
 
 (defcustom dank-posts-default-subreddit nil "")
 (defcustom dank-posts-default-sorting 'hot "")
+(defcustom dank-posts-highlight-post-under-point-enabled 't "")
 
 (defvar-local dank-posts-buffer nil)
 (defvar-local dank-posts-current-subreddit dank-posts-default-subreddit)
@@ -55,7 +56,8 @@ If a buffer already exists, switch to that buffer."
             (dank-posts-reset-state subreddit dank-posts-default-sorting dank-posts-page-items-limit)
           (dank-backend-error (progn (dank-posts-render-error err)
                                      (signal (car err) (cdr err)))))
-        (dank-posts-render-current-page dank-posts-current-page-posts)))))
+        (dank-posts-render-current-page dank-posts-current-page-posts)
+        (dank-posts-highlight-post-under-point)))))
 
 
 (defun dank-posts-reset-state (subreddit sorting limit)
@@ -146,26 +148,21 @@ POST-INDEX is the number (\"position\") of the post."
                                             count ,dank-posts-current-end-count))))))
 
 ;; this highlighting logic is copied from ledger-mode
+;; an overlay needs to be set once in the buffer and moved around
 (defvar-local dank-posts-post-highlight-overlay (list))
-
-(defun dank-posts--make-highlight-overlay ()
-  (let ((ovl (make-overlay 1 1)))
-    (overlay-put ovl 'font-lock-face 'dank-faces-highlight)
-    (overlay-put ovl 'priority '(nil . 99))
-    ovl))
-
 (defun dank-posts-highlight-post-under-point ()
   "Highlight post under point."
-  (unless dank-posts-post-highlight-overlay
-    (setq dank-posts-post-highlight-overlay (dank-posts--make-highlight-overlay)))
-  (let ((exts (dank-posts--find-post-extents (point))))
-    (let ((b (car exts))
-          (e (cadr exts))
-          (p (point)))
-      (if (and (> (- e b) 1)
-               (<= p e) (>= p b))
-          (move-overlay dank-posts-post-highlight-overlay b (+ 1 e))
-        (move-overlay dank-posts-post-highlight-overlay 1 1)))))
+  (when dank-posts-highlight-post-under-point-enabled
+    (unless dank-posts-post-highlight-overlay
+      (setq dank-posts-post-highlight-overlay (dank-utils-make-highlight-overlay)))
+    (let ((exts (dank-posts--find-post-extents (point))))
+      (let ((b (car exts))
+            (e (cadr exts))
+            (p (point)))
+        (if (and (> (- e b) 1)
+                 (<= p e) (>= p b))
+            (move-overlay dank-posts-post-highlight-overlay b (+ 1 e))
+          (move-overlay dank-posts-post-highlight-overlay 1 1))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; navigation functions ;;
@@ -208,7 +205,8 @@ POST-INDEX is the number (\"position\") of the post."
   (dank-posts--navigate-beginning-of-post)
   (previous-line)
   (dank-posts--navigate-beginning-of-post)
-  (point))
+  (point)
+  (dank-posts-highlight-post-under-point))
 
 (defun dank-posts-navigate-next-post ()
   "Move point to the beginning of next post."
@@ -216,7 +214,8 @@ POST-INDEX is the number (\"position\") of the post."
   (dank-posts--navigate-end-of-post)
   (next-line)
   (beginning-of-line)
-  (point))
+  (point)
+  (dank-posts-highlight-post-under-point))
 
 (defun dank-posts-fetch-next-page ()
   (interactive)
@@ -227,13 +226,15 @@ POST-INDEX is the number (\"position\") of the post."
                              dank-posts-current-after
                              nil)
   (goto-char (point-max))
-  (dank-posts-render-current-page dank-posts-current-page-posts))
+  (dank-posts-render-current-page dank-posts-current-page-posts)
+  (dank-posts-highlight-post-under-point))
 
 (defun dank-posts-refresh ()
   (interactive)
   (dank-posts-reset-state dank-posts-current-subreddit dank-posts-current-sorting
                           dank-posts-page-items-limit)
-  (dank-posts-render-current-page dank-posts-current-page-posts t))
+  (dank-posts-render-current-page dank-posts-current-page-posts t)
+  (dank-posts-highlight-post-under-point))
 
 (defun dank-posts-goto-subreddit-at-point ()
   "Navigate to a dank-posts-mode buffer for a post's subreddit under pointer."
