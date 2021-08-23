@@ -18,6 +18,9 @@
 (defvar dank-comment-load-more-placeholder-template
   "[More comments]")
 
+(defvar dank-comments-header-line-format-template
+  "/r/${subreddit} - ${sorting}")
+
 (defun dank-comment-parse (comment &optional depth)
   "Parse COMMENT into a `dank-comment'."
   (let* ((depth (or depth 0))
@@ -73,7 +76,7 @@ POST-AUTHOR is used to apply a different face to the comment author."
          (depth (dank-comment-depth comment))
          (format-context `(author ,author age ,age score ,score edited ,edited gilded ,gilded indent ,indent depth ,depth))
          (formatted-metadata (dank-utils-format-plist (propertize dank-comment-metadata-template 'font-lock-face 'dank-faces-comment-metadata) format-context)))
-    (dank-comment--propertize-metadata formatted-metadata comment)))
+    (dank-comment--propertize-comment-with-metadata formatted-metadata comment)))
 
 (defun dank-comment-format-body (comment fill-column)
   "Format COMMENT body.

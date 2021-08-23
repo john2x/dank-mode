@@ -68,11 +68,9 @@
          (post (dank-post-parse (car post-comments)))
          (comments (mapcar #'dank-comment-parse (cdr post-comments))))
     (setq dank-comments-current-post post
-          dank-comments-current-comments comments)))
+          dank-comments-current-comments comments)
+    (dank-comments-set-header-line)))
 
-
-(defun dank-comments--insert-comment-tree (parent children)
-  )
 
 (dank-defrender dank-comments-render-current-post dank-comments-buffer (post &optional clear-buffer)
   "Render the post contents in the current buffer."
@@ -124,6 +122,14 @@
     (insert (format "%s\n" err))
     (insert "TODO: show recommended actions (either [q]uit or retry)")))
 
+(defun dank-comments-set-header-line ()
+  "Set the header line of a dank-comments buffer."
+  (when (buffer-live-p dank-comments-buffer)
+    (with-current-buffer dank-comments-buffer
+      (setq header-line-format (dank-utils-format-plist
+                                dank-comments-header-line-format-template
+                                `(subreddit ,dank-comments-current-subreddit
+                                            sorting ,(symbol-name dank-posts-current-sorting)))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; navigation functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
