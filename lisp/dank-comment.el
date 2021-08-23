@@ -53,7 +53,8 @@
 (defun dank-comment-format-post-content (post fill-column)
   "Format POST content as string."
   (concat
-   (propertize (concat (s-repeat fill-column " ") "\n") 'font-lock-face 'dank-faces-separator)
+   "\n"
+   ;(propertize (concat (s-repeat fill-column " ") "\n") 'font-lock-face 'dank-faces-separator)
    (if (string= (dank-post-post_type post) "self")
        (dank-utils-markdown-fill-paragraph-and-indent (dank-post-text post) 0 fill-column "")
      (dank-post-link post)) ;; TODO: propertize link
