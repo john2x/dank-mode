@@ -13,15 +13,30 @@ your credentials.
 - [X] Use fill width for separators so the background face fills up
   the space.
 - [X] Start propertizing comment metadata and body
-- [ ] Change how buffers are rendered. Use temp buffer and copy
+- [X] Change how buffers are rendered. Use temp buffer and copy
   content to the active buffer. Printing large comment trees does not
   look good when writing to the active buffer directly.
   - Can the message printing be stopped?
 - [X] Render 'load more' comments.
   - [X] indent them properly
+- [X] Show header in comments buffer
+  - /r/subreddit - sorting
+- [X] Add back highlighting of post under point
+- [ ] Add highlighting of comment under point
+- [ ] Navigation methods for comment tree
+  - [ ] Move between comments directly above/below
+  - [ ] Jump to parent
+  - [ ] Jump to next parent
+  - [ ] Jump between siblings
 - [ ] Interact with 'load more' comments.
   - load in new buffer? or use narrowing?
+  - narrowing would be better because it can keep the comments within the main buffer
+  - for narrowing to work, need to add hooks to remove the first level of indentation
 - [ ] Start folding comment trees.
+- [ ] Command to load a user's subscriptions. This can be used to for
+  autocomplete when switching subreddits.
+- [ ] Change post sorting
+- [ ] Change comment sorting
 ** Features
 
 *** Post listing
