@@ -11,6 +11,7 @@
   "Default depth of the comment tree to initially fetch.")
 (defcustom dank-comments-body-fill-width 120
   "Fill width for rendering the comment body.")
+(defcustom dank-comments-highlight-under-point-enabled 't "")
 
 (defvar-local dank-comments-buffer nil)
 (defvar-local dank-comments-current-post-id nil)
@@ -130,6 +131,25 @@
                                 dank-comments-header-line-format-template
                                 `(subreddit ,dank-comments-current-subreddit
                                             sorting ,(symbol-name dank-posts-current-sorting)))))))
+
+;; this highlighting logic is copied from ledger-mode
+;; an overlay needs to be set once in the buffer and moved around
+(defvar-local dank-comments-highlight-overlay (list))
+(defun dank-comments-highlight-under-point ()
+  "Highlight comment under point."
+  (when dank-comments-highlight-under-point-enabled
+    (unless dank-comments-highlight-overlay
+      (setq dank-comments-highlight-overlay (dank-utils-make-highlight-overlay)))
+    (let ((exts (dank-comments--find-comment-extents (point))))
+      (let ((b (car exts))
+            (e (cadr exts))
+            (p (point)))
+        (message "%s %s %s" b e p)
+        (if (and (> (- e b) 1)
+                 (<= p e))
+            (move-overlay dank-comments-highlight-overlay b (+ 1 e))
+          (move-overlay dank-comments-highlight-overlay 1 1))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; navigation functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -138,10 +158,12 @@
   "Move point to the beginning of the current comment."
   (interactive)
   (beginning-of-line)
-  (let ((sreg "[-+] /u/"))
-    (unless (looking-at sreg)
-      (re-search-backward sreg nil t)
-      (beginning-of-line)))
+  (if (looking-at " *[-+] /u/")
+      ; When point is behind the start of a comment, just move to the start
+      (beginning-of-line-text)
+    (let ((sreg "[-+] /u/"))
+      (unless (looking-at sreg)
+        (re-search-backward sreg nil t))))
   (beginning-of-line-text)
   (backward-char 2)
   (point))
@@ -156,13 +178,12 @@
   (let ((sreg "[-+] /u/"))
     ; Look for the start of the next comment then move up
     (unless (looking-at sreg)
-      (re-search-forward sreg nil t)
-      (beginning-of-line)))
+      (re-search-forward sreg nil t)))
   (previous-line)
   (end-of-line)
   (point))
 
-(defun dank-commments--find-comment-extents (pos)
+(defun dank-comments--find-comment-extents (pos)
   "Return list containing point for beginning and end of comment containing POS."
   ;; find the header then do beginning-of-line-text
   (interactive "d")
