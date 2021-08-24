@@ -134,6 +134,43 @@
 ;; navigation functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun dank-comments--navigate-beginning-of-comment ()
+  "Move point to the beginning of the current comment."
+  (interactive)
+  (beginning-of-line)
+  (let ((sreg "[-+] /u/"))
+    (unless (looking-at sreg)
+      (re-search-backward sreg nil t)
+      (beginning-of-line)))
+  (beginning-of-line-text)
+  (backward-char 2)
+  (point))
+
+(defun dank-comments--navigate-end-of-comment ()
+  "Move point to the end of the current comment."
+  (interactive)
+  (let ((sreg " *[-+] /u/"))
+    ; When point is already behind the start of a comment, move down first
+    (when (looking-at sreg)
+      (next-line)))
+  (let ((sreg "[-+] /u/"))
+    ; Look for the start of the next comment then move up
+    (unless (looking-at sreg)
+      (re-search-forward sreg nil t)
+      (beginning-of-line)))
+  (previous-line)
+  (end-of-line)
+  (point))
+
+(defun dank-commments--find-comment-extents (pos)
+  "Return list containing point for beginning and end of comment containing POS."
+  ;; find the header then do beginning-of-line-text
+  (interactive "d")
+  (save-excursion
+    (goto-char pos)
+    (list (dank-comments--navigate-beginning-of-comment)
+          (dank-comments--navigate-end-of-comment))))
+
 (defun dank-comments-refresh ()
   (interactive)
   (dank-comments-reset-state)
