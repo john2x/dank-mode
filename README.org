@@ -7,7 +7,7 @@ Emacs major mode to browse Reddit.
 Copy =auth.example.json= to =auth.json= and replace the values with
 your credentials.
 
-* TODO
+* TODO v1
 - [X] Figure out how to render post content properly. Probably best to
   fill it like comments.
 - [X] Use fill width for separators so the background face fills up
@@ -22,7 +22,7 @@ your credentials.
 - [X] Show header in comments buffer
   - /r/subreddit - sorting
 - [X] Add back highlighting of post under point
-- [ ] Add highlighting of comment under point
+- [X] Add highlighting of comment under point
 - [ ] Navigation methods for comment tree
   - [ ] Move between comments directly above/below
   - [ ] Jump to parent
@@ -33,10 +33,11 @@ your credentials.
   - narrowing would be better because it can keep the comments within the main buffer
   - for narrowing to work, need to add hooks to remove the first level of indentation
 - [ ] Start folding comment trees.
-- [ ] Command to load a user's subscriptions. This can be used to for
+- [ ] Command to load a user's subscriptions. This can be used for
   autocomplete when switching subreddits.
 - [ ] Change post sorting
 - [ ] Change comment sorting
+- [ ] Anonymous browsing
 ** Features
 
 *** Post listing
@@ -98,6 +99,7 @@ v1 will focus on read-only usage
 - loading additional comments in a thread
 - loading post content in eww or browser
 - loading a user's list of subreddits
+- anonymous browsing
 *** v2
 v2 will focus on interaction
 - vote on posts
@@ -108,7 +110,6 @@ v2 will focus on interaction
 - evil-mode bindings
 - viewing user profiles
 - transient bindings
-- anonymous browsing
 - viewing/sending direct messages
 *** probably out of scope
 - moderating features
