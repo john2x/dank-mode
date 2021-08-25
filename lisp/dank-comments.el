@@ -24,6 +24,7 @@
   (let ((map (make-sparse-keymap)))
     (define-key map "n" 'dank-comments-navigate-next-comment)
     (define-key map "p" 'dank-comments-navigate-prev-comment)
+    (define-key map "P" 'dank-comments-navigate-to-parent)
     ;(define-key map (kbd "C-c C-v") 'dank-posts-fetch-next-page)
     (define-key map (kbd "C-c C-r") 'dank-comments-refresh)
     ;(define-key map (kbd "C-c C-c") 'dank-posts-goto-post-comments-at-point)
@@ -209,6 +210,18 @@
   (beginning-of-line-text)
   (point)
   (dank-comments-highlight-under-point))
+
+(defun dank-comments-navigate-to-parent ()
+  "Move point to the parent of the current comment."
+  (interactive)
+  (let* ((comment-props (text-properties-at (point)))
+         (parent-id (plist-get comment-props 'dank-comment-parent-id)))
+    (when (and parent-id (string-prefix-p "t1_" parent-id))
+      (previous-line)
+      (while (not (string-equal (substring parent-id 3) (plist-get (text-properties-at (point)) 'dank-comment-id)))
+        (previous-line))
+      (dank-comments--navigate-beginning-of-comment)
+      (dank-comments-highlight-under-point))))
 
 (defun dank-comments-refresh ()
   (interactive)

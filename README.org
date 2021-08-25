@@ -25,7 +25,7 @@ your credentials.
 - [X] Add highlighting of comment under point
 - [-] Navigation methods for comment tree
   - [X] Move between comments directly above/below
-  - [ ] Jump to parent
+  - [X] Jump to parent
   - [ ] Jump to next parent
   - [ ] Jump between siblings
 - [ ] Interact with 'load more' comments.
