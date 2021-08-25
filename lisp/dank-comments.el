@@ -22,8 +22,8 @@
 
 (defvar dank-comments-mode-map
   (let ((map (make-sparse-keymap)))
-    ;(define-key map "n" 'dank-posts-navigate-next-post)
-    ;(define-key map "p" 'dank-posts-navigate-prev-post)
+    (define-key map "n" 'dank-comments-navigate-next-comment)
+    (define-key map "p" 'dank-comments-navigate-prev-comment)
     ;(define-key map (kbd "C-c C-v") 'dank-posts-fetch-next-page)
     (define-key map (kbd "C-c C-r") 'dank-comments-refresh)
     ;(define-key map (kbd "C-c C-c") 'dank-posts-goto-post-comments-at-point)
@@ -191,6 +191,24 @@
     (goto-char pos)
     (list (dank-comments--navigate-beginning-of-comment)
           (dank-comments--navigate-end-of-comment))))
+
+(defun dank-comments-navigate-prev-comment ()
+  "Move point to the beginning of the previous comment directly above."
+  (interactive)
+  (dank-comments--navigate-beginning-of-comment)
+  (previous-line)
+  (dank-comments--navigate-beginning-of-comment)
+  (point)
+  (dank-comments-highlight-under-point))
+
+(defun dank-comments-navigate-next-comment ()
+  "Move point to the beginning of the next comment directly below."
+  (interactive)
+  (dank-comments--navigate-end-of-comment)
+  (next-line)
+  (beginning-of-line-text)
+  (point)
+  (dank-comments-highlight-under-point))
 
 (defun dank-comments-refresh ()
   (interactive)

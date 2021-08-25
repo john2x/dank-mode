@@ -23,8 +23,8 @@ your credentials.
   - /r/subreddit - sorting
 - [X] Add back highlighting of post under point
 - [X] Add highlighting of comment under point
-- [ ] Navigation methods for comment tree
-  - [ ] Move between comments directly above/below
+- [-] Navigation methods for comment tree
+  - [X] Move between comments directly above/below
   - [ ] Jump to parent
   - [ ] Jump to next parent
   - [ ] Jump between siblings
