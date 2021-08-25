@@ -175,12 +175,12 @@
   (let ((sreg " *[-+] /u/"))
     ; When point is already behind the start of a comment, move down first
     (when (looking-at sreg)
-      (next-line)))
+      (next-logical-line)))
   (let ((sreg "[-+] /u/"))
     ; Look for the start of the next comment then move up
     (unless (looking-at sreg)
       (re-search-forward sreg nil t)))
-  (previous-line)
+  (previous-logical-line)
   (end-of-line)
   (point))
 
@@ -197,7 +197,7 @@
   "Move point to the beginning of the previous comment directly above."
   (interactive)
   (dank-comments--navigate-beginning-of-comment)
-  (previous-line)
+  (previous-logical-line)
   (dank-comments--navigate-beginning-of-comment)
   (point)
   (dank-comments-highlight-under-point))
@@ -206,7 +206,7 @@
   "Move point to the beginning of the next comment directly below."
   (interactive)
   (dank-comments--navigate-end-of-comment)
-  (next-line)
+  (next-logical-line)
   (beginning-of-line-text)
   (point)
   (dank-comments-highlight-under-point))
@@ -217,9 +217,9 @@
   (let* ((comment-props (text-properties-at (point)))
          (parent-id (plist-get comment-props 'dank-comment-parent-id)))
     (when (and parent-id (string-prefix-p "t1_" parent-id))
-      (previous-line)
+      (previous-logical-line)
       (while (not (string-equal (substring parent-id 3) (plist-get (text-properties-at (point)) 'dank-comment-id)))
-        (previous-line))
+        (previous-logical-line))
       (dank-comments--navigate-beginning-of-comment)
       (dank-comments-highlight-under-point))))
 
