@@ -23,11 +23,10 @@ your credentials.
   - /r/subreddit - sorting
 - [X] Add back highlighting of post under point
 - [X] Add highlighting of comment under point
-- [-] Navigation methods for comment tree
+- [X] Navigation methods for comment tree
   - [X] Move between comments directly above/below
   - [X] Jump to parent
-  - [ ] Jump to next parent
-  - [ ] Jump between siblings
+  - [X] Jump between siblings
 - [ ] Interact with 'load more' comments.
   - load in new buffer? or use narrowing?
   - narrowing would be better because it can keep the comments within the main buffer
