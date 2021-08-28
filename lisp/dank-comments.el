@@ -28,10 +28,10 @@
     (define-key map (kbd "M-n") 'dank-comments-navigate-next-sibling)
     (define-key map (kbd "M-p") 'dank-comments-navigate-prev-sibling)
     ;(define-key map (kbd "C-c C-v") 'dank-posts-fetch-next-page)
-    (define-key map (kbd "C-c C-r") 'dank-comments-refresh)
+    (define-key map (kbd "C-x C-r") 'dank-comments-refresh)
     ;(define-key map (kbd "C-c C-c") 'dank-posts-goto-post-comments-at-point)
     ;(define-key map (kbd "C-c C-/") 'dank-posts-goto-subreddit-at-point)
-    (define-key map (kbd "C-c q") 'kill-current-buffer)
+    (define-key map (kbd "C-x q") 'kill-current-buffer)
     map))
 
 (define-derived-mode dank-comments-mode special-mode "dank-comments-mode"
