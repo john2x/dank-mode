@@ -160,30 +160,38 @@
   "Move point to the beginning of the current comment."
   (interactive)
   (beginning-of-line)
-  (if (looking-at " *[-+] /u/")
-      ; When point is behind the start of a comment, just move to the start
+  ;; TODO: maybe change this to look at text properties
+  (if (looking-at " *[-+] \\(/u/\\|\\[More\\)")
+      ;; When point is behind the start of a comment, just move to the start
       (beginning-of-line-text)
-    (let ((sreg "[-+] /u/"))
+    (let ((sreg "[-+] \\(/u/\\|\\[More\\)"))
       (unless (looking-at sreg)
         (re-search-backward sreg nil t))))
   (beginning-of-line-text)
-  (backward-char 2)
+  (when (string-equal (char-to-string (char-after)) "/")
+    (backward-char 2))
   (point))
 
 (defun dank-comments--navigate-end-of-comment ()
   "Move point to the end of the current comment."
   (interactive)
-  (let ((sreg " *[-+] /u/"))
-    ; When point is already behind the start of a comment, move down first
-    (when (looking-at sreg)
-      (next-logical-line)))
-  (let ((sreg "[-+] /u/"))
-    ; Look for the start of the next comment then move up
-    (unless (looking-at sreg)
-      (re-search-forward sreg nil t)))
-  (previous-logical-line)
-  (end-of-line)
-  (point))
+  (if (looking-at " *\\+ \\[More comments\\]")
+      (progn
+        (end-of-line)
+        (point))
+    (progn
+      ;; TODO: maybe change this to look at text properties
+      (let ((sreg " *[-+] \\(/u/\\|\\[More\\)"))
+        ;; When point is already behind the start of a comment, move down first
+        (when (looking-at sreg)
+          (next-logical-line)))
+      (let ((sreg "[-+] \\(/u/\\|\\[More\\)"))
+        ;; Look for the start of the next comment then move up
+        (unless (looking-at sreg)
+          (re-search-forward sreg nil t)))
+      (previous-logical-line)
+      (end-of-line)
+      (point))))
 
 (defun dank-comments--find-comment-extents (pos)
   "Return list containing point for beginning and end of comment containing POS."
@@ -209,6 +217,7 @@
   (dank-comments--navigate-end-of-comment)
   (next-logical-line)
   (beginning-of-line-text)
+  (dank-comments--navigate-beginning-of-comment)
   (point)
   (dank-comments-highlight-under-point))
 

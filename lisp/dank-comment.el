@@ -16,7 +16,7 @@
   "${indent}${body}")
 
 (defvar dank-comment-load-more-placeholder-template
-  "[More comments]")
+  "+ [More comments]")
 
 (defvar dank-comments-header-line-format-template
   "/r/${subreddit} - ${sorting}")
@@ -93,7 +93,7 @@ formatting/indentation will depend on its position."
 (defun dank-comment-format-load-more-placeholder (load-more-placeholder)
   "Format LOAD-MORE-PLACEHOLDER."
   (dank-comment--propertize-load-more-placeholder-with-metadata
-   (concat (s-repeat (dank-comment-load-more-placeholder-depth load-more-placeholder) "  ") "|> " dank-comment-load-more-placeholder-template)
+   (concat (s-repeat (dank-comment-load-more-placeholder-depth load-more-placeholder) "  ") dank-comment-load-more-placeholder-template)
    load-more-placeholder))
 
 (defun dank-comment--propertize-comment-with-metadata (formatted-comment source-comment)
