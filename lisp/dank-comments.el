@@ -25,6 +25,7 @@
     (define-key map "n" 'dank-comments-navigate-next-comment)
     (define-key map "p" 'dank-comments-navigate-prev-comment)
     (define-key map "P" 'dank-comments-navigate-to-parent)
+    (define-key map (kbd "M-n") 'dank-comments-navigate-next-sibling)
     ;(define-key map (kbd "C-c C-v") 'dank-posts-fetch-next-page)
     (define-key map (kbd "C-c C-r") 'dank-comments-refresh)
     ;(define-key map (kbd "C-c C-c") 'dank-posts-goto-post-comments-at-point)
@@ -222,6 +223,33 @@
         (previous-logical-line))
       (dank-comments--navigate-beginning-of-comment)
       (dank-comments-highlight-under-point))))
+
+(defun dank-comments-navigate-next-sibling ()
+  "Move point to the beginning of the next sibling comment."
+  (interactive)
+  (let* ((current-point (point))
+         (comment-props (text-properties-at (point)))
+         (depth (plist-get comment-props 'dank-comment-depth))
+         (comment-id (plist-get comment-props 'dank-comment-id))
+         (parent-id (plist-get comment-props 'dank-comment-parent-id)))
+    (end-of-line)
+    (backward-char)
+    ;; keep moving down when we are still on the same comment, or
+    ;; until we are no longer under the same parent and a lower depth
+    (while (or (string-equal (plist-get (text-properties-at (point)) 'dank-comment-id) comment-id) ; 
+               (and (not (string-equal (plist-get (text-properties-at (point)) 'dank-comment-parent-id) parent-id))
+                    (>= (plist-get (text-properties-at (point)) 'dank-comment-depth) depth)))
+      (next-logical-line)
+      (beginning-of-line))
+    ;; when we are no longer under the parent of where we started from, go back to where we started from
+    (when (not (string-equal (plist-get (text-properties-at (point)) 'dank-comment-parent-id) parent-id))
+      (backward-char (- (point) current-point)))
+    (dank-comments--navigate-beginning-of-comment)
+    (dank-comments-highlight-under-point)))
+
+(defun dank-comments-navigate-prev-sibling ()
+  "Move point tot he beginning of the previous sibling comment."
+  )
 
 (defun dank-comments-refresh ()
   (interactive)
