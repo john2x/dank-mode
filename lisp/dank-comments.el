@@ -147,7 +147,6 @@
       (let ((b (car exts))
             (e (cadr exts))
             (p (point)))
-        (message "%s %s %s" b e p)
         (if (and (> (- e b) 1)
                  (<= p e))
             (move-overlay dank-comments-highlight-overlay b (+ 1 e))
@@ -202,6 +201,16 @@
     (goto-char pos)
     (list (dank-comments--navigate-beginning-of-comment)
           (dank-comments--navigate-end-of-comment))))
+
+(defun dank-comments--find-comment-tree-extents (pos)
+  "Return a list containing point for beginning and end of a comment tree at POS."
+  (interactive "d")
+  (save-excursion
+    (goto-char pos)
+    (list (dank-comments--navigate-beginning-of-comment)
+          (progn (dank-comments-navigate-next-sibling)
+                 (dank-comments-navigate-prev-comment)
+                 (dank-comments--navigate-end-of-comment)))))
 
 (defun dank-comments-navigate-prev-comment ()
   "Move point to the beginning of the previous comment directly above."
@@ -276,6 +285,20 @@
       (forward-char (- current-point (point))))
     (dank-comments--navigate-beginning-of-comment)
     (dank-comments-highlight-under-point)))
+
+(defun dank-comments-collapse-comment-tree ()
+  "Collapse the comment tree at point."
+  (interactive)
+  ;; TODO: move start of extent one line down or end of line to keep the parent header visible
+  ;; TODO: change the '-' to a '+'? or add ellipses at the end?
+  (let* ((exts (dank-comments--find-comment-tree-extents (point)))
+         (b (car exts))
+         (e (cadr exts))
+         (ovl (make-overlay b e)))
+    (overlay-put ovl 'invisible t)))
+
+(defun dank-comments-expand-comment-tree ()
+  "Expand the collapsed comment tree at point.")
 
 (defun dank-comments-refresh ()
   (interactive)
