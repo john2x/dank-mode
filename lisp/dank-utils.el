@@ -74,4 +74,8 @@ TODO: optimize this."
     (overlay-put ovl 'priority '(nil . 99))
     ovl))
 
+(defun dank-utils-get-prop (point property)
+  "Get the value of a PROPERTY at POINT."
+  (plist-get (text-properties-at point) property))
+
 (provide 'dank-utils)

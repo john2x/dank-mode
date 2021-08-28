@@ -239,20 +239,15 @@ POST-INDEX is the number (\"position\") of the post."
 (defun dank-posts-goto-subreddit-at-point ()
   "Navigate to a dank-posts-mode buffer for a post's subreddit under pointer."
   (interactive)
-  (let* ((post-props (dank-posts-post-properties-at-point))
-         (subreddit (plist-get post-props 'dank-post-subreddit)))
+  (let* ((subreddit (dank-utils-get-prop (point) 'dank-post-subreddit)))
     (dank-posts-init subreddit)))
 
 (defun dank-posts-goto-post-comments (subreddit post-id &optional sorting title)
   (dank-comments-init subreddit post-id sorting title))
 
-(defun dank-posts-post-properties-at-point ()
-  (interactive)
-  (text-properties-at (point)))
-
 (defun dank-posts-goto-post-comments-at-point ()
   (interactive)
-  (let* ((post-props (dank-posts-post-properties-at-point))
+  (let* ((post-props (text-properties-at (point)))
          (post-id (plist-get post-props 'dank-post-id))
          (subreddit (plist-get post-props 'dank-post-subreddit))
          (permalink (plist-get post-props 'dank-post-permalink))

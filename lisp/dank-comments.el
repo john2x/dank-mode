@@ -224,11 +224,10 @@
 (defun dank-comments-navigate-to-parent ()
   "Move point to the parent of the current comment."
   (interactive)
-  (let* ((comment-props (text-properties-at (point)))
-         (parent-id (plist-get comment-props 'dank-comment-parent-id)))
+  (let* ((parent-id (dank-utils-get-prop (point) 'dank-comment-parent-id)))
     (when (and parent-id (string-prefix-p "t1_" parent-id))
       (previous-logical-line)
-      (while (not (string-equal (substring parent-id 3) (plist-get (text-properties-at (point)) 'dank-comment-id)))
+      (while (not (string-equal (substring parent-id 3) (dank-utils-get-prop (point) 'dank-comment-id)))
         (previous-logical-line))
       (dank-comments--navigate-beginning-of-comment)
       (dank-comments-highlight-under-point))))
@@ -237,28 +236,28 @@
   "Move point to the beginning of the next sibling comment."
   (interactive)
   (let* ((current-point (point))
-         (comment-props (text-properties-at (point)))
-         (depth (plist-get comment-props 'dank-comment-depth))
-         (comment-id (plist-get comment-props 'dank-comment-id))
-         (parent-id (plist-get comment-props 'dank-comment-parent-id)))
+         (depth (dank-utils-get-prop (point) 'dank-comment-depth))
+         (comment-id (dank-utils-get-prop (point) 'dank-comment-id))
+         (parent-id (dank-utils-get-prop (point) 'dank-comment-parent-id)))
     (end-of-line)
     (backward-char)
     ;; keep moving down when we are still on the same comment, or
     ;; until we are no longer under the same parent and a lower depth
-    (while (or (string-equal (plist-get (text-properties-at (point)) 'dank-comment-id) comment-id) ; 
-               (and (not (string-equal (plist-get (text-properties-at (point)) 'dank-comment-parent-id) parent-id))
-                    (>= (plist-get (text-properties-at (point)) 'dank-comment-depth) depth)))
+    (while (or (string-equal (dank-utils-get-prop (point) 'dank-comment-id) comment-id)
+               (and (not (string-equal (dank-utils-get-prop (point) 'dank-comment-parent-id) parent-id))
+                    (>= (dank-utils-get-prop (point) 'dank-comment-depth) depth)))
       (next-logical-line)
       (beginning-of-line))
     ;; when we are no longer under the parent of where we started from, go back to where we started from
-    (when (not (string-equal (plist-get (text-properties-at (point)) 'dank-comment-parent-id) parent-id))
+    (when (not (string-equal (dank-utils-get-prop (point) 'dank-comment-parent-id) parent-id))
       (backward-char (- (point) current-point)))
     (dank-comments--navigate-beginning-of-comment)
     (dank-comments-highlight-under-point)))
 
 (defun dank-comments-navigate-prev-sibling ()
   "Move point tot he beginning of the previous sibling comment."
-  )
+  (interactive)
+  ())
 
 (defun dank-comments-refresh ()
   (interactive)
