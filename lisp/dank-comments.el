@@ -19,6 +19,7 @@
 (defvar-local dank-comments-current-sorting nil)
 (defvar-local dank-comments-current-post nil)
 (defvar-local dank-comments-current-comments nil)
+(defvar-local dank-comments-tree-fold-overlays '())
 
 (defvar dank-comments-mode-map
   (let ((map (make-sparse-keymap)))
@@ -31,6 +32,7 @@
     (define-key map (kbd "C-x C-r") 'dank-comments-refresh)
     ;(define-key map (kbd "C-c C-c") 'dank-posts-goto-post-comments-at-point)
     ;(define-key map (kbd "C-c C-/") 'dank-posts-goto-subreddit-at-point)
+    (define-key map (kbd "TAB") 'dank-comments-toggle-comment-tree-fold)
     (define-key map (kbd "C-x q") 'kill-current-buffer)
     map))
 
@@ -144,12 +146,12 @@
     (unless dank-comments-highlight-overlay
       (setq dank-comments-highlight-overlay (dank-utils-make-highlight-overlay)))
     (let ((exts (dank-comments--find-comment-extents (point))))
-      (let ((b (car exts))
-            (e (cadr exts))
+      (let ((start (car exts))
+            (end (cadr exts))
             (p (point)))
-        (if (and (> (- e b) 1)
-                 (<= p e))
-            (move-overlay dank-comments-highlight-overlay b (+ 1 e))
+        (if (and (> (- end start) 1)
+                 (<= p end))
+            (move-overlay dank-comments-highlight-overlay start (+ 1 end))
           (move-overlay dank-comments-highlight-overlay 1 1))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -160,7 +162,7 @@
   "Move point to the beginning of the current comment."
   (interactive)
   (beginning-of-line)
-  ;; TODO: maybe change this to look at text properties
+  ;; TODO: maybe change this to look at text properties instead of regex
   (if (looking-at " *[-+] \\(/u/\\|\\[More\\)")
       ;; When point is behind the start of a comment, just move to the start
       (beginning-of-line-text)
@@ -180,7 +182,7 @@
         (end-of-line)
         (point))
     (progn
-      ;; TODO: maybe change this to look at text properties
+      ;; TODO: maybe change this to look at text properties instead of regex
       (let ((sreg " *[-+] \\(/u/\\|\\[More\\)"))
         ;; When point is already behind the start of a comment, move down first
         (when (looking-at sreg)
@@ -202,12 +204,18 @@
     (list (dank-comments--navigate-beginning-of-comment)
           (dank-comments--navigate-end-of-comment))))
 
-(defun dank-comments--find-comment-tree-extents (pos)
-  "Return a list containing point for beginning and end of a comment tree at POS."
+(defun dank-comments--find-comment-tree-extents (pos &optional start-at-end-of-first-header)
+  "Return a list containing point for beginning and end of a comment tree at POS.
+When START-AT-END-OF-FIRST-HEADER is non-nil, exclude the body of the header of the
+top comment from the extent range."
   (interactive "d")
   (save-excursion
     (goto-char pos)
-    (list (dank-comments--navigate-beginning-of-comment)
+    (list (progn (dank-comments--navigate-beginning-of-comment)
+                 (when start-at-end-of-first-header
+                   (end-of-line)
+                   (backward-char)
+                   (point)))
           (progn (dank-comments-navigate-next-sibling)
                  (dank-comments-navigate-prev-comment)
                  (dank-comments--navigate-end-of-comment)))))
@@ -289,16 +297,35 @@
 (defun dank-comments-collapse-comment-tree ()
   "Collapse the comment tree at point."
   (interactive)
-  ;; TODO: move start of extent one line down or end of line to keep the parent header visible
   ;; TODO: change the '-' to a '+'? or add ellipses at the end?
-  (let* ((exts (dank-comments--find-comment-tree-extents (point)))
-         (b (car exts))
-         (e (cadr exts))
-         (ovl (make-overlay b e)))
-    (overlay-put ovl 'invisible t)))
+  ;; TODO: change style
+  (let* ((exts (dank-comments--find-comment-tree-extents (point) t))
+         (comment-id (dank-utils-get-prop (point) 'dank-comment-id))
+         (start (car exts))
+         (end (cadr exts))
+         (existing-ovl (cdr (assoc comment-id dank-comments-tree-fold-overlays)))
+         (ovl (if existing-ovl (move-overlay existing-ovl start end) (make-overlay start end))))
+    (overlay-put ovl 'dank-comments-tree-state 'collapsed)
+    (overlay-put ovl 'dank-comments-tree-id comment-id)
+    (overlay-put ovl 'after-string "...")
+    (overlay-put ovl 'invisible t)
+    (add-to-list 'dank-comments-tree-fold-overlays `(,comment-id . ,ovl))))
 
 (defun dank-comments-expand-comment-tree ()
-  "Expand the collapsed comment tree at point.")
+  "Expand the collapsed comment tree at point."
+  (interactive)
+  (let* ((comment-id (dank-utils-get-prop (point) 'dank-comment-id))
+         (ovl (cdr (assoc comment-id dank-comments-tree-fold-overlays))))
+    (when ovl
+      (delete-overlay ovl))))
+
+(defun dank-comments-toggle-comment-tree-fold ()
+  "Collapse or expand comment tree at point."
+  (interactive)
+  (let ((existing-ovl (cdr (assoc comment-id dank-comments-tree-fold-overlays))))
+    (if (and existing-ovl (overlay-get existing-ovl 'invisible))
+        (dank-comments-expand-comment-tree)
+      (dank-comments-collapse-comment-tree))))
 
 (defun dank-comments-refresh ()
   (interactive)
