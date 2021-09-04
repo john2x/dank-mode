@@ -70,6 +70,7 @@ TODO: optimize this."
 (defun dank-utils-make-highlight-overlay ()
   "Return an overlay for highlighting text ranges."
   (let ((ovl (make-overlay 1 1)))
+    (overlay-put ovl 'category 'dank-point-highlight)
     (overlay-put ovl 'font-lock-face 'dank-faces-highlight)
     (overlay-put ovl 'priority '(nil . 99))
     ovl))
