@@ -259,11 +259,12 @@ top comment from the extent range."
          (parent-id (dank-utils-get-prop (point) 'dank-comment-parent-id)))
     (end-of-line)
     (backward-char)
-    ;; keep moving down when we are still on the same comment, or
-    ;; until we are no longer under the same parent and a lower depth
-    (while (or (string-equal (dank-utils-get-prop (point) 'dank-comment-id) comment-id)
-               (and (not (string-equal (dank-utils-get-prop (point) 'dank-comment-parent-id) parent-id))
-                    (>= (dank-utils-get-prop (point) 'dank-comment-depth) depth)))
+    ;; keep moving down when we are not at the end of the buffer and
+    ;; still on the same comment or until we are no longer under the same parent and a lower depth
+    (while (and (not (eobp))
+                (or (string-equal (dank-utils-get-prop (point) 'dank-comment-id) comment-id)
+                    (and (not (string-equal (dank-utils-get-prop (point) 'dank-comment-parent-id) parent-id))
+                         (>= (dank-utils-get-prop (point) 'dank-comment-depth) depth))))
       (next-logical-line)
       (beginning-of-line))
     ;; when we are no longer under the parent of where we started from, go back to where we started from
