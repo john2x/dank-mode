@@ -177,23 +177,27 @@
 (defun dank-comments--navigate-end-of-comment ()
   "Move point to the end of the current comment."
   (interactive)
-  (if (looking-at " *\\+ \\[More comments\\]")
+  (let ((comment-id (dank-utils-get-prop (point) 'dank-comment-id)))
+    (if (looking-at " *\\+ \\[More comments\\]")
+        (progn
+          (end-of-line)
+          (point))
       (progn
+        ;; TODO: maybe change this to look at text properties instead of regex
+        (let ((sreg " *[-+] \\(/u/\\|\\[More\\)"))
+          ;; When point is already behind the start of a comment, move down first
+          (when (looking-at sreg)
+            (next-logical-line)))
+        (let ((sreg "[-+] \\(/u/\\|\\[More\\)"))
+          ;; Look for the start of the next comment then move up
+          (unless (looking-at sreg)
+            (re-search-forward sreg nil t)))
+        ;; if we did not find a next comment, we are at the end of the buffer
+        (if (string-equal comment-id (dank-utils-get-prop (point) 'dank-comment-id))
+            (end-of-buffer))
+        (previous-logical-line)
         (end-of-line)
-        (point))
-    (progn
-      ;; TODO: maybe change this to look at text properties instead of regex
-      (let ((sreg " *[-+] \\(/u/\\|\\[More\\)"))
-        ;; When point is already behind the start of a comment, move down first
-        (when (looking-at sreg)
-          (next-logical-line)))
-      (let ((sreg "[-+] \\(/u/\\|\\[More\\)"))
-        ;; Look for the start of the next comment then move up
-        (unless (looking-at sreg)
-          (re-search-forward sreg nil t)))
-      (previous-logical-line)
-      (end-of-line)
-      (point))))
+        (point)))))
 
 (defun dank-comments--find-comment-extents (pos)
   "Return list containing point for beginning and end of comment containing POS."
