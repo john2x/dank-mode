@@ -27,11 +27,13 @@ your credentials.
   - [X] Move between comments directly above/below
   - [X] Jump to parent
   - [X] Jump between siblings
+- [X] Start folding comment trees.
+- [ ] Narrow comment trees.
 - [ ] Interact with 'load more' comments.
   - load in new buffer? or use narrowing?
   - narrowing would be better because it can keep the comments within the main buffer
   - for narrowing to work, need to add hooks to remove the first level of indentation
-- [ ] Start folding comment trees.
+- [ ] When quitting a buffer, jump back to where we came from.
 - [ ] Command to load a user's subscriptions. This can be used for
   autocomplete when switching subreddits.
 - [ ] Change post sorting
