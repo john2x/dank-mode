@@ -334,13 +334,14 @@ no next sibling, the next comment that has a lower depth."
          (end (cadr exts))
          (existing-ovl (cdr (assoc comment-id dank-comments-tree-fold-overlays)))
          (ovl (if existing-ovl (move-overlay existing-ovl start end) (make-overlay start end))))
-    (overlay-put ovl 'category 'dank-comments-tree)
-    (overlay-put ovl 'dank-comments-tree-state 'collapsed)
-    (overlay-put ovl 'dank-comments-tree-id comment-id)
-    (overlay-put ovl 'after-string "...")
-    (overlay-put ovl 'invisible t)
-    (add-to-list 'dank-comments-tree-fold-overlays `(,comment-id . ,ovl))
-    (dank-comments-highlight-under-point)))
+    (when comment-id
+      (overlay-put ovl 'category 'dank-comments-tree)
+      (overlay-put ovl 'dank-comments-tree-state 'collapsed)
+      (overlay-put ovl 'dank-comments-tree-id comment-id)
+      (overlay-put ovl 'after-string "...")
+      (overlay-put ovl 'invisible t)
+      (add-to-list 'dank-comments-tree-fold-overlays `(,comment-id . ,ovl))))
+  (dank-comments-highlight-under-point))
 
 (defun dank-comments-expand-comment-tree ()
   "Expand the collapsed comment tree at point."
