@@ -7,7 +7,7 @@
   author_flair gilded replies depth parent_id)
 
 (cl-defstruct dank-comment-load-more-placeholder
-  parent_id count depth)
+  id parent_id count depth children_ids)
 
 (defvar dank-comment-metadata-template
   "${indent}- ${author} (${score} points | ${age})${edited} ")
@@ -32,9 +32,11 @@
          (replies-map-fn (lambda (child-depth)
                            (dank-comment-parse (car child-depth) (cadr child-depth)))))
     (if (string= kind "more")
-        (make-dank-comment-load-more-placeholder :parent_id (plist-get comment :parent_id)
+        (make-dank-comment-load-more-placeholder :id (plist-get comment :id)
+                                                 :parent_id (plist-get comment :parent_id)
                                                  :count (plist-get comment :count)
-                                                 :depth depth)
+                                                 :depth depth
+                                                 :children_ids (plist-get comment :children))
       (make-dank-comment :id (plist-get comment :id)
                          :name (plist-get comment :name)
                          :depth depth
