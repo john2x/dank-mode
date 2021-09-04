@@ -215,14 +215,16 @@ top comment from the extent range."
   (interactive "d")
   (save-excursion
     (goto-char pos)
-    (list (progn (dank-comments--navigate-beginning-of-comment)
-                 (when start-at-end-of-first-header
-                   (end-of-line)
-                   (backward-char)
-                   (point)))
-          (progn (dank-comments-navigate-next-sibling)
-                 (dank-comments-navigate-prev-comment)
-                 (dank-comments--navigate-end-of-comment)))))
+    (let ((current-id (dank-utils-get-prop (point) 'dank-comment-id)))
+      (list (progn (dank-comments--navigate-beginning-of-comment)
+                   (when start-at-end-of-first-header
+                     (end-of-line)
+                     (backward-char)
+                     (point)))
+            (progn (dank-comments-navigate-next-root)
+                   (unless (string-equal current-id (dank-utils-get-prop (point) 'dank-comment-id))
+                       (dank-comments-navigate-prev-comment))
+                   (dank-comments--navigate-end-of-comment))))))
 
 (defun dank-comments-navigate-prev-comment ()
   "Move point to the beginning of the previous comment directly above."
@@ -296,6 +298,27 @@ top comment from the extent range."
     ;; when we are no longer under the parent of where we started from, go back to where we started from
     (when (not (string-equal (dank-utils-get-prop (point) 'dank-comment-parent-id) parent-id))
       (forward-char (- current-point (point))))
+    (dank-comments--navigate-beginning-of-comment)
+    (dank-comments-highlight-under-point)))
+
+(defun dank-comments-navigate-next-root ()
+  "Move point to the beginning of the next root comment.
+The next root comment is either the next sibling, or if there is
+no next sibling, the next comment that has a lower depth."
+  (interactive)
+  (let* ((current-point (point))
+         (depth (dank-utils-get-prop (point) 'dank-comment-depth))
+         (comment-id (dank-utils-get-prop (point) 'dank-comment-id))
+         (parent-id (dank-utils-get-prop (point) 'dank-comment-parent-id)))
+    (end-of-line)
+    (backward-char)
+    ;; keep moving down when we are not at the end of the buffer and
+    ;; still on the same comment or until we are no longer under the same parent and a lower depth
+    (while (and (not (eobp))
+                (or (string-equal (dank-utils-get-prop (point) 'dank-comment-id) comment-id)
+                    (> (dank-utils-get-prop (point) 'dank-comment-depth) depth)))
+      (next-logical-line)
+      (beginning-of-line))
     (dank-comments--navigate-beginning-of-comment)
     (dank-comments-highlight-under-point)))
 
