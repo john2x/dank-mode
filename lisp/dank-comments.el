@@ -16,7 +16,7 @@
 (defvar-local dank-comments-buffer nil)
 (defvar-local dank-comments-current-post-id nil)
 (defvar-local dank-comments-current-subreddit nil)
-(defvar-local dank-comments-current-sorting nil)
+(defvar-local dank-comments-current-sorting 'hot)
 (defvar-local dank-comments-current-post nil)
 (defvar-local dank-comments-current-comments nil)
 (defvar-local dank-comments-tree-fold-overlays '())
