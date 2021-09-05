@@ -113,4 +113,24 @@ Valid keywords are: :depth (integer), :limit (integer)."
            (comments (plist-get (plist-get (aref resp 1) :data) :children)))
       `(,post . ,comments))))
 
+(defun dank-backend-more-children (link-id children-ids sorting &rest request-params)
+  "Fetch more comments from LINK-ID.
+CHILDREN-IDS is the list of children ids to fetch.
+
+SORTING must be a symbol of either 'hot, 'new, 'top.
+
+REQUEST-PARAMS is plist of request parameters that Reddit's 'morechildren' API takes."
+  (let ((depth (plist-get request-params :depth))
+        (limit-children (plist-get request-params :limit-children))
+        (url "/api/morechildren"))
+    (let* ((params (if depth (cons `(depth . ,depth) '()) '()))
+           (params (if limit-children (cons `(limit_children . ,limit-children) params) params))
+           (params (cons `(api_type . "json") params))
+           (params (cons `(sorting . ,(symbol-name sorting)) params))
+           (params (cons `(children . ,children-ids) params))
+           (params (cons `(link_id . ,link-id) params))
+           (resp (dank-backend-authenticated-request url :type "GET" :params params))
+           (things (plist-get (plist-get (plist-get resp :json) :data) :things)))
+      things)))
+
 (provide 'dank-backend)
