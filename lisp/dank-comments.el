@@ -65,9 +65,11 @@
 
 (defun dank-comments-reset-state ()
   "Reset state of the current dank-posts buffer."
+  (mapcar (lambda (c)
+            (delete-overlay (cdr c)))
+          dank-comments-tree-fold-overlays)
   (setq dank-comments-current-comments nil
-        dank-comments-current-post nil
-        dank-comments-tree-fold-overlays '())
+        dank-comments-current-post nil)
   (dank-comments-set-current-post-and-comments dank-comments-current-subreddit dank-comments-current-post-id dank-comments-current-sorting))
 
 (defun dank-comments-set-current-post-and-comments (subreddit post-id &optional sorting)
