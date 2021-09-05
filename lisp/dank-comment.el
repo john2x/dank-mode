@@ -102,6 +102,7 @@ formatting/indentation will depend on its position."
   "Assign FORMATTED-COMMENT with metadata from SOURCE-COMMENT."
   (add-text-properties 0 (length formatted-comment)
                        `(dank-comment-id ,(dank-comment-id source-comment)
+                                         dank-comment-type comment
                                          dank-comment-parent-id ,(dank-comment-parent_id source-comment)
                                          dank-comment-depth ,(dank-comment-depth source-comment))
                        formatted-comment)
@@ -111,6 +112,10 @@ formatting/indentation will depend on its position."
   "Assign FORMATTED-PLACEHOLDER with metadata from SOURCE-PLACEHOLDER."
   (add-text-properties 0 (length formatted-placeholder)
                        `(dank-comment-parent-id ,(dank-comment-load-more-placeholder-parent_id source-placeholder)
+                                                dank-comment-type more
+                                                dank-comment-id ,(dank-comment-load-more-placeholder-id source-placeholder)
+                                                dank-comment-children-ids ,(dank-comment-load-more-placeholder-children_ids source-placeholder)
+                                                dank-comment-count ,(dank-comment-load-more-placeholder-count source-placeholder)
                                                 dank-comment-depth ,(dank-comment-load-more-placeholder-depth source-placeholder))
                        formatted-placeholder)
   formatted-placeholder)
