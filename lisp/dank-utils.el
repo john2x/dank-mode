@@ -54,9 +54,7 @@ Returns the range of the text, if found, or nil if not found (until the end or b
         (markdown-fill-forward-paragraph))
       (beginning-of-buffer)
       (replace-regexp "^" (concat (string-join (-repeat depth "  ")) (or indent-guide "| ")))
-      (buffer-string))
-    ;; TODO: insert indent at the start of each line
-    ))
+      (buffer-string))))
 
 (defun dank-utils-escape-html (s)
   "Escape HTML from S.

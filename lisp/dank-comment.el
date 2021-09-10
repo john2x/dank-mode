@@ -82,9 +82,7 @@ POST-AUTHOR is used to apply a different face to the comment author."
     (dank-comment--propertize-comment-with-metadata formatted-metadata comment)))
 
 (defun dank-comment-format-body (comment fill-column)
-  "Format COMMENT body.
-The comment body will need to be formatted separately, since it's
-formatting/indentation will depend on its position."
+  "Format COMMENT body."
   (let* ((body (dank-comment-body comment))
          (depth (dank-comment-depth comment))
          (filled-body (dank-utils-markdown-fill-paragraph-and-indent body depth fill-column)) ;; fill the body
