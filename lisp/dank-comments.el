@@ -80,6 +80,20 @@
           dank-comments-current-comments comments)
     (dank-comments-set-header-line)))
 
+(defun dank-comments-insert-more-comments-at-point ()
+  "Fetch more comments for the placeholder at point and insert
+the contents in its place."
+  (interactive)
+  (when (eq (dank-utils-get-prop (point) 'dank-comment-type) 'more)
+    (let* ((post-id (concat "t3_" dank-comments-current-post-id))
+           (current-depth (dank-utils-get-prop (point) 'dank-comment-depth))
+           (children-ids (dank-utils-get-prop (point) 'dank-comment-children-ids))
+           (children-ids (string-join children-ids ","))
+           (comments (dank-backend-more-children post-id children-ids dank-comments-current-sorting))
+           (comments (mapcar (lambda (c) (dank-comment-parse c current-depth)) comments)))
+      (dank-comments-render-current-comments comments dank-comments-current-post nil (point))
+      ;; TODO: move point back to the start
+      )))
 
 (dank-defrender dank-comments-render-current-post dank-comments-buffer (post &optional clear-buffer)
   "Render the post contents in the current buffer."
@@ -93,11 +107,14 @@
       (insert formatted-post)
       (insert formatted-content))))
 
-(dank-defrender dank-comments-render-current-comments dank-comments-buffer (comments post &optional clear-buffer)
+(dank-defrender dank-comments-render-current-comments dank-comments-buffer (comments post &optional clear-buffer insert-at-pos)
   (let ((inhibit-read-only t))
     (when clear-buffer
       (erase-buffer))
-    (goto-char (point-max))
+    (if insert-at-pos  ;; when inserting more children comments
+        (progn (goto-char insert-at-pos)
+               (kill-whole-line))
+      (goto-char (point-max)))
     (insert ;; insert comments into a temp buffer and insert that into the real buffer
      (with-temp-buffer
        (dank-comments--insert-comments-in-current-buffer comments (dank-post-author post))
