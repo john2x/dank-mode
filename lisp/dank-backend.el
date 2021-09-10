@@ -129,6 +129,7 @@ REQUEST-PARAMS is plist of request parameters that Reddit's 'morechildren' API t
            (params (cons `(sorting . ,(symbol-name sorting)) params))
            (params (cons `(children . ,children-ids) params))
            (params (cons `(link_id . ,link-id) params))
+           (params (cons `(limit_children . "False") params))
            (resp (dank-backend-authenticated-request url :type "GET" :params params))
            (things (plist-get (plist-get (plist-get resp :json) :data) :things)))
       things)))
