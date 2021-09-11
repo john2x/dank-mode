@@ -21,16 +21,13 @@
 (defvar dank-comments-header-line-format-template
   "/r/${subreddit} - ${sorting}")
 
-(defun dank-comment-parse (comment &optional depth)
+(defun dank-comment-parse (comment)
   "Parse COMMENT into a `dank-comment'."
-  (let* ((depth (or depth 0))
-         (kind (plist-get comment :kind))
+  (let* ((kind (plist-get comment :kind))
          (comment (plist-get comment :data))
+         (depth (plist-get comment :depth))
          (replies (plist-get comment :replies))
-         (children (plist-get (plist-get replies :data) :children))
-         (children-depth (mapcar* #'list children (-repeat (length children) (+ depth 1))))
-         (replies-map-fn (lambda (child-depth)
-                           (dank-comment-parse (car child-depth) (cadr child-depth)))))
+         (children (plist-get (plist-get replies :data) :children)))
     (if (string= kind "more")
         (make-dank-comment-load-more-placeholder :id (plist-get comment :id)
                                                  :parent_id (plist-get comment :parent_id)
@@ -50,7 +47,7 @@
                          :gilded (plist-get comment :gilded)
                          :parent_id (plist-get comment :parent_id)
                          :replies (if (stringp replies) '()
-                                    (mapcar replies-map-fn children-depth))))))
+                                    (mapcar #'dank-comment-parse children))))))
 
 (defun dank-comment-format-post-content (post fill-column)
   "Format POST content as string."

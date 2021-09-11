@@ -87,13 +87,14 @@ the contents in its place."
   (when (eq (dank-utils-get-prop (point) 'dank-comment-type) 'more)
     (let* ((post-id (concat "t3_" dank-comments-current-post-id))
            (current-depth (dank-utils-get-prop (point) 'dank-comment-depth))
-           (children-ids (dank-utils-get-prop (point) 'dank-comment-children-ids))
-           (children-ids (string-join children-ids ","))
-           (comments (dank-backend-more-children post-id children-ids dank-comments-current-sorting))
-           (comments (mapcar (lambda (c) (dank-comment-parse c current-depth)) comments)))
-      (dank-comments-render-current-comments comments dank-comments-current-post nil (point))
-      ;; TODO: move point back to the start
-      )))
+           (children-ids (string-join (dank-utils-get-prop (point) 'dank-comment-children-ids) ","))
+           (comments-raw (dank-backend-more-children post-id children-ids dank-comments-current-sorting))
+           (comments (mapcar #'dank-comment-parse comments-raw)))
+      (message "%s" comments-raw)
+      (save-excursion
+        (dank-comments-render-current-comments comments dank-comments-current-post nil (point)))
+      (beginning-of-line-text)
+      (dank-comments-highlight-under-point))))
 
 (dank-defrender dank-comments-render-current-post dank-comments-buffer (post &optional clear-buffer)
   "Render the post contents in the current buffer."
