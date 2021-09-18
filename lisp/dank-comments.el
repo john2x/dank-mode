@@ -90,7 +90,6 @@ the contents in its place."
            (children-ids (string-join (dank-utils-get-prop (point) 'dank-comment-children-ids) ","))
            (comments-raw (dank-backend-more-children post-id children-ids dank-comments-current-sorting))
            (comments (mapcar #'dank-comment-parse comments-raw)))
-      (message "%s" comments-raw)
       (save-excursion
         (dank-comments-render-current-comments comments dank-comments-current-post nil (point)))
       (beginning-of-line-text)

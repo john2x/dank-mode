@@ -43,17 +43,25 @@ If DIRECTION is 'down, the search starts from the current point position going d
 Returns the range of the text, if found, or nil if not found (until the end or beginning of the buffer).")
 
 (defun dank-utils-markdown-fill-paragraph-and-indent (body depth fill-column &optional indent-guide)
-  "Use `markdown-fill-paragraph' on Markdown BODY up to FILL-COLUMN width.  Indent BODY by INDENT at the same time."
-  (let ((fill-column (- fill-column (* 2 depth)))) ;; subtract twice of depth from fill-column because the indent will take up part of the fill width
+  "Use `markdown-fill-paragraph' on Markdown BODY up to FILL-COLUMN width.  Indent BODY by DEPTH at the same time."
+  (let ((fill-column (- fill-column (* 2 depth))) ;; subtract twice of depth from fill-column because the indent will take up part of the fill width
+        (fill-prefix (concat (string-join (-repeat depth "  ")) "| ")))
     (with-temp-buffer
-      (save-excursion (insert (dank-utils-escape-html body)))
+      (insert body)
+      (beginning-of-buffer)
+      (xml-parse-string)
       (beginning-of-buffer)
       (while (not (eobp))
         ;; this is probably not ideal with large comment trees
         (markdown-fill-paragraph)
-        (markdown-fill-forward-paragraph))
+        (markdown-fill-forward-paragraph 1))
+      (when (> depth 0)
+        (beginning-of-buffer)
+        (while (not (eobp))
+          (beginning-of-line)
+          (insert fill-prefix)
+          (forward-line)))
       (beginning-of-buffer)
-      (replace-regexp "^" (concat (string-join (-repeat depth "  ")) (or indent-guide "| ")))
       (buffer-string))))
 
 (defun dank-utils-escape-html (s)
