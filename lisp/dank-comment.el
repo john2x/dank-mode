@@ -91,9 +91,10 @@ POST-AUTHOR is used to apply a different face to the comment author."
   "Format LOAD-MORE-PLACEHOLDER."
   (let* ((count (dank-comment-load-more-placeholder-count load-more-placeholder))
          (format-context `(count ,count))
-         (formatted (dank-utils-format-plist dank-comment-load-more-placeholder-template format-context)))
+         (formatted (dank-utils-format-plist dank-comment-load-more-placeholder-template format-context 'dank-faces-comment-more))
+         (formatted (concat (s-repeat (dank-comment-load-more-placeholder-depth load-more-placeholder) "  ") formatted)))
     (dank-comment--propertize-load-more-placeholder-with-metadata
-     (concat (s-repeat (dank-comment-load-more-placeholder-depth load-more-placeholder) "  ") formatted)
+     formatted
      load-more-placeholder)))
 
 (defun dank-comment--propertize-comment-with-metadata (formatted-comment source-comment)

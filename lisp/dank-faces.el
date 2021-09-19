@@ -82,4 +82,9 @@
   "Face for comment metadata."
   :group 'dank-faces)
 
+(defface dank-faces-comment-more
+  '((t :inherit font-lock-comment-face))
+  "Face for comment 'more' placeholder."
+  :group 'dank-faces)
+
 (provide 'dank-faces)
