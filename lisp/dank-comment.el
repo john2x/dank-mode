@@ -10,10 +10,7 @@
   id parent_id count depth children_ids)
 
 (defvar dank-comment-metadata-template
-  "${indent}- ${author} (${score} points | ${age})${edited} ")
-
-(defvar dank-comment-body-template
-  "${indent}${body}")
+  "- ${author} (${score} points | ${age})${edited} ")
 
 (defvar dank-comment-load-more-placeholder-template
   "+ [${count} more comments]")
@@ -74,7 +71,8 @@ POST-AUTHOR is used to apply a different face to the comment author."
          (gilded (number-to-string (dank-comment-gilded comment)))
          (depth (dank-comment-depth comment))
          (format-context `(author (,author . ,author-face) age ,age score ,score edited ,edited gilded ,gilded depth ,depth))
-         (formatted-metadata (dank-utils-format-plist dank-comment-metadata-template format-context 'dank-faces-comment-metadata)))
+         (formatted-metadata (dank-utils-format-plist dank-comment-metadata-template format-context 'dank-faces-comment-metadata))
+         (formatted-metadata (concat (s-repeat depth "  ") formatted-metadata)))
     (dank-comment--propertize-comment-with-metadata formatted-metadata comment)))
 
 (defun dank-comment-format-body (comment fill-column)
@@ -83,7 +81,6 @@ POST-AUTHOR is used to apply a different face to the comment author."
          (depth (dank-comment-depth comment))
          (filled-body (dank-utils-markdown-fill-paragraph-and-indent body depth fill-column)) ;; fill the body
          )
-    ;(dank-utils-format-plist dank-comment-body-template format-context)
     (dank-comment--propertize-comment-with-metadata filled-body comment)))
 
 (defun dank-comment-format-load-more-placeholder (load-more-placeholder)
