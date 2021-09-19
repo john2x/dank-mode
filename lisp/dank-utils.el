@@ -8,21 +8,27 @@ Passes MESSAGE-FMT to `format-message'."
   (progn (display-warning type (apply 'format-message message-fmt) :warning "*dank-mode warnings*")
          nil))
 
-(defun dank-utils-format-plist (template plist &optional base-face)
+(defun dank-utils-format-plist (template plist &optional before-face after-face)
   "Format string TEMPLATE with data from PLIST.
 
 Values in the PLIST can be a cons cell where the cdr is the face
-to apply on that part of the template.  Optional BASE-FACE will
-apply that face to the template during formatting."
-  (s-format (if  base-face
-                (propertize template 'font-lock-face base-face)
-              template)
-            (lambda (var &optional extra)
-              (let ((value (plist-get extra (intern var))))
-                (if (eq (type-of value) 'cons)
-                    (propertize (car value) 'font-lock-face (cdr value))
-                  (if base-face (propertize value 'font-lock-face base-face) value))))
-            plist))
+to apply on that part of the template.  Optional BEFORE-FACE will
+apply that face to the template before formatting (and during, if
+that value has no specific face provided).  Optional AFTER-FACE
+will be applied after the template is rendered. Useful for
+applying background faces."
+  (let ((formatted (s-format (if  before-face
+                                 (propertize template 'font-lock-face before-face)
+                               template)
+                             (lambda (var &optional extra)
+                               (let ((value (plist-get extra (intern var))))
+                                 (if (eq (type-of value) 'cons)
+                                     (propertize (car value) 'font-lock-face (cdr value))
+                                   (if before-face (propertize value 'font-lock-face before-face) value))))
+                             plist)))
+    (if after-face
+        (propertize formatted 'font-lock-face after-face)
+      formatted)))
 
 (defun dank-utils-timestamp-ago (timestamp)
   "Return the 'time-ago' string of TIMESTAMP."

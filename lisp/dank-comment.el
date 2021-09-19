@@ -67,15 +67,14 @@ The comment body will need to be formatted separately, since it's
 formatting/indentation will depend on its position.
 POST-AUTHOR is used to apply a different face to the comment author."
   (let* ((author-face (if (string= (dank-comment-author comment) post-author) 'dank-faces-comment-author-op 'dank-faces-comment-author))
-         (author (propertize (concat "/u/" (dank-comment-author comment)) 'font-lock-face author-face))
-         (score (propertize (number-to-string (dank-comment-score comment)) 'font-lock-face 'dank-faces-comment-metadata))
-         (age (propertize (dank-comment-age comment) 'font-lock-face 'dank-faces-comment-metadata))
+         (author (concat "/u/" (dank-comment-author comment)))
+         (score (number-to-string (dank-comment-score comment)))
+         (age (dank-comment-age comment))
          (edited (or nil ""))
          (gilded (number-to-string (dank-comment-gilded comment)))
-         (indent (or (s-repeat (dank-comment-depth comment) "  ") ""))
          (depth (dank-comment-depth comment))
-         (format-context `(author ,author age ,age score ,score edited ,edited gilded ,gilded indent ,indent depth ,depth))
-         (formatted-metadata (dank-utils-format-plist (propertize dank-comment-metadata-template 'font-lock-face 'dank-faces-comment-metadata) format-context)))
+         (format-context `(author (,author . ,author-face) age ,age score ,score edited ,edited gilded ,gilded depth ,depth))
+         (formatted-metadata (dank-utils-format-plist dank-comment-metadata-template format-context 'dank-faces-comment-metadata)))
     (dank-comment--propertize-comment-with-metadata formatted-metadata comment)))
 
 (defun dank-comment-format-body (comment fill-column)
