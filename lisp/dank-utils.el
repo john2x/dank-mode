@@ -21,7 +21,7 @@ apply that face to the template during formatting."
               (let ((value (plist-get extra (intern var))))
                 (if (eq (type-of value) 'cons)
                     (propertize (car value) 'font-lock-face (cdr value))
-                  (if base-face (propertize (prin1-to-string value) 'font-lock-face base-face) value))))
+                  (if base-face (propertize value 'font-lock-face base-face) value))))
             plist))
 
 (defun dank-utils-timestamp-ago (timestamp)
