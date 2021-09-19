@@ -16,29 +16,26 @@
   "Format POST as string using `dank-post-template'.
 Also applies font-lock properties.
 Optional POST-INDEX is the position of the post in a list."
-  (let* ((title (propertize (dank-post-title post) 'font-lock-face 'dank-faces-post-title))
-         (age (propertize (dank-post-age post) 'font-lock-face 'dank-faces-age))
-         (author (propertize (concat "/u/" (dank-post-author post)) 'font-lock-face 'dank-faces-post-author))
+  (let* ((title (dank-post-title post))
+         (age (dank-post-age post))
+         (author (concat "/u/" (dank-post-author post)))
          (author_flair (if (and (dank-post-author_flair post) (not (eq (dank-post-author_flair post) "")))
-                           (propertize (concat " [" (dank-post-author_flair post) "]") 'font-lock-face 'dank-faces-flair)
+                           (concat " [" (dank-post-author_flair post) "]")
                          ""))
-         (subreddit (propertize (concat "/r/" (dank-post-subreddit post)) 'font-lock-face 'dank-faces-subreddit))
-         (score (propertize (format "%s" (dank-post-score post)) 'font-lock-face 'dank-faces-upvote))
-         (num_comments (propertize (format "%s" (dank-post-num_comments post)) 'font-lock-face 'dank-faces-downvote))
-         (nsfw (if (dank-post-nsfw post) (propertize "NSFW " 'font-lock-face 'dank-faces-nsfw) ""))
-         (spoiler (if (dank-post-spoiler post) (propertize "SPOILERS " 'font-lock-face 'dank-faces-nsfw) ""))
-         (post_type (propertize (if (string= (dank-post-post_type post) "self")
-                                    "self-text" (dank-post-post_type post))
-                                'font-lock-face 'dank-faces-post-type))
-         (domain (if (string= post_type "self-text") "" (concat " from " (propertize (dank-post-domain post)
-                                                                                     'font-lock-face
-                                                                                     'dank-faces-site-domain))))
+         (subreddit (concat "/r/" (dank-post-subreddit post)))
+         (score (format "%s" (dank-post-score post)))
+         (num_comments (format "%s" (dank-post-num_comments post)))
+         (nsfw (if (dank-post-nsfw post) "NSFW " ""))
+         (spoiler (if (dank-post-spoiler post) "SPOILERS " ""))
+         (post_type (if (string= (dank-post-post_type post) "self")
+                                    "self-text" (dank-post-post_type post)))
+         (domain (if (string= post_type "self-text") "" (concat " from " (dank-post-domain post))))
          (link_flair (if (dank-post-link_flair post)
-                         (propertize (concat "[" (dank-post-link_flair post) "] ") 'font-lock-face 'dank-faces-flair) ""))
-         (format-context `(title ,title age ,age author ,author author_flair ,author_flair
-                                 subreddit ,subreddit score ,score num_comments ,num_comments
-                                 nsfw ,nsfw spoiler ,spoiler domain ,domain post_type ,post_type
-                                 link_flair ,link_flair))
+                         (concat "[" (dank-post-link_flair post) "] ") ""))
+         (format-context `(title (,title . dank-faces-post-title) age (,age . dank-faces-age) author (,author . dank-faces-post-author) author_flair (,author_flair . dakn-faces-flair)
+                                 subreddit (,subreddit . dank-faces-subreddit) score (,score . dank-faces-upvote) num_comments (,num_comments . dank-faces-downvote)
+                                 nsfw (,nsfw . dank-faces-nsfw) spoiler (,spoiler . dank-faces-nsfw) domain (,domain . dank-faces-site-domain) post_type (,post_type . dank-faces-post-type)
+                                 link_flair (,link_flair . dank-faces-flair)))
          (formatted-post (dank-utils-format-plist dank-post-template format-context)))
     (dank-post--propertize-metadata formatted-post post post-index)))
 
