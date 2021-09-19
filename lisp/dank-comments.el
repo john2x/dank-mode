@@ -349,11 +349,12 @@ no next sibling, the next comment that has a lower depth."
   ;; TODO: change style
   (let* ((exts (dank-comments--find-comment-tree-extents (point) t))
          (comment-id (dank-utils-get-prop (point) 'dank-comment-id))
+         (comment-type (dank-utils-get-prop (point) 'dank-comment-type))
          (start (car exts))
          (end (cadr exts))
          (existing-ovl (cdr (assoc comment-id dank-comments-tree-fold-overlays)))
          (ovl (if existing-ovl (move-overlay existing-ovl start end) (make-overlay start end))))
-    (when comment-id
+    (when (and comment-id (eq comment-type 'comment))
       (overlay-put ovl 'category 'dank-comments-tree)
       (overlay-put ovl 'dank-comments-tree-state 'collapsed)
       (overlay-put ovl 'dank-comments-tree-id comment-id)
@@ -370,8 +371,9 @@ no next sibling, the next comment that has a lower depth."
   (move-beginning-of-line 1)
   (move-beginning-of-line 1)
   (let* ((comment-id (dank-utils-get-prop (point) 'dank-comment-id))
+         (comment-type (dank-utils-get-prop (point) 'dank-comment-type))
          (ovl (cdr (assoc comment-id dank-comments-tree-fold-overlays))))
-    (when ovl
+    (when (and comment-id ovl (eq comment-type 'comment))
       (overlay-put ovl 'after-string "")
       (overlay-put ovl 'dank-comments-tree-state 'expanded)
       (overlay-put ovl 'invisible nil)
