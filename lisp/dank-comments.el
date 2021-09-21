@@ -84,7 +84,8 @@
   "Fetch more comments for the placeholder at point and insert
 the contents in its place."
   (interactive)
-  (when (eq (dank-utils-get-prop (point) 'dank-comment-type) 'more)
+  (when (and (eq (dank-utils-get-prop (point) 'dank-comment-type) 'more)
+             (> (dank-utils-get-prop (point) 'dank-comment-count) 0))
     (let* ((post-id (concat "t3_" dank-comments-current-post-id))
            (current-depth (dank-utils-get-prop (point) 'dank-comment-depth))
            (children-ids (string-join (dank-utils-get-prop (point) 'dank-comment-children-ids) ","))
