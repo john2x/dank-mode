@@ -137,9 +137,9 @@ the contents in its place."
         (goto-char (or point (point-max)))
         (insert formatted-comment-metadata)
         (insert formatted-comment-body))
-    (let ((formatted-load-more-placeholder (concat (dank-comment-format-load-more-placeholder comment) "\n")))
+    (let ((formatted-more (concat (dank-comment-format-more comment) "\n")))
       (goto-char (or point (point-max)))
-      (insert formatted-load-more-placeholder))))
+      (insert formatted-more))))
 
 (dank-defrender dank-comments-render-error dank-comments-buffer (err)
   "Render the ERR message in the current buffer and show recommended actions."
@@ -183,10 +183,10 @@ the contents in its place."
   (interactive)
   (beginning-of-line)
   ;; TODO: maybe change this to look at text properties instead of regex
-  (if (looking-at " *[-+] \\(/u/\\|\\[[0-9]+ more\\)")
+  (if (looking-at " *[-+] \\(/u/\\|\\[[0-9]+ more\\|\\[Continue thread\\)")
       ;; When point is behind the start of a comment, just move to the start
       (beginning-of-line-text)
-    (let ((sreg "[-+] \\(/u/\\|\\[[0-9]+ more\\)"))
+    (let ((sreg "[-+] \\(/u/\\|\\[[0-9]+ more\\|\\[Continue thread\\)"))
       (unless (looking-at sreg)
         (re-search-backward sreg nil t))))
   (beginning-of-line-text)
@@ -198,17 +198,17 @@ the contents in its place."
   "Move point to the end of the current comment."
   (interactive)
   (let ((comment-id (dank-utils-get-prop (point) 'dank-comment-id)))
-    (if (looking-at " *\\+ \\[[0-9]+ more comments\\]")
+    (if (looking-at " *\\+ \\(\\[[0-9]+ more comments\\]\\|\\[Continue thread\\)")
         (progn
           (end-of-line)
           (point))
       (progn
         ;; TODO: maybe change this to look at text properties instead of regex
-        (let ((sreg " *[-+] \\(/u/\\|\\[[0-9]+ more\\)"))
+        (let ((sreg " *[-+] \\(/u/\\|\\[[0-9]+ more\\|\\[Continue thread\\)"))
           ;; When point is already behind the start of a comment, move down first
           (when (looking-at sreg)
             (next-logical-line)))
-        (let ((sreg "[-+] \\(/u/\\|\\[[0-9]+ more\\)"))
+        (let ((sreg "[-+] \\(/u/\\|\\[[0-9]+ more\\|\\[Continue thread\\)"))
           ;; Look for the start of the next comment then move up
           (unless (looking-at sreg)
             (re-search-forward sreg nil t)))

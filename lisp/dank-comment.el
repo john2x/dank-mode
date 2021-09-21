@@ -6,14 +6,17 @@
   name id body edited text age date author subreddit score
   author_flair gilded replies depth parent_id)
 
-(cl-defstruct dank-comment-load-more-placeholder
+(cl-defstruct dank-comment-more
   id parent_id count depth children_ids)
 
 (defvar dank-comment-metadata-template
   "- ${author} (${score} points | ${age})${edited} ")
 
-(defvar dank-comment-load-more-placeholder-template
+(defvar dank-comment-more-template
   "+ [${count} more comments]")
+
+(defvar dank-comment-continue-template
+  "+ [Continue thread in new buffer...]")
 
 (defvar dank-comments-header-line-format-template
   "/r/${subreddit} - ${sorting}")
@@ -26,11 +29,11 @@
          (replies (plist-get comment :replies))
          (children (plist-get (plist-get replies :data) :children)))
     (if (string= kind "more")
-        (make-dank-comment-load-more-placeholder :id (plist-get comment :id)
-                                                 :parent_id (plist-get comment :parent_id)
-                                                 :count (plist-get comment :count)
-                                                 :depth depth
-                                                 :children_ids (plist-get comment :children))
+        (make-dank-comment-more :id (plist-get comment :id)
+                                :parent_id (plist-get comment :parent_id)
+                                :count (plist-get comment :count)
+                                :depth depth
+                                :children_ids (plist-get comment :children))
       (make-dank-comment :id (plist-get comment :id)
                          :name (plist-get comment :name)
                          :depth depth
@@ -83,15 +86,14 @@ POST-AUTHOR is used to apply a different face to the comment author."
          )
     (dank-comment--propertize-comment-with-metadata filled-body comment)))
 
-(defun dank-comment-format-load-more-placeholder (load-more-placeholder)
-  "Format LOAD-MORE-PLACEHOLDER."
-  (let* ((count (dank-comment-load-more-placeholder-count load-more-placeholder))
+(defun dank-comment-format-more (more)
+  "Format MORE."
+  (let* ((count (dank-comment-more-count more))
          (format-context `(count ,(number-to-string count)))
-         (formatted (dank-utils-format-plist dank-comment-load-more-placeholder-template format-context 'dank-faces-comment-more))
-         (formatted (concat (s-repeat (dank-comment-load-more-placeholder-depth load-more-placeholder) "  ") formatted)))
-    (dank-comment--propertize-load-more-placeholder-with-metadata
-     formatted
-     load-more-placeholder)))
+         (template (if (> count 0) dank-comment-more-template dank-comment-continue-template))
+         (formatted (dank-utils-format-plist template format-context 'dank-faces-comment-more))
+         (formatted (concat (s-repeat (dank-comment-more-depth more) "  ") formatted)))
+    (dank-comment--propertize-more-with-metadata formatted more)))
 
 (defun dank-comment--propertize-comment-with-metadata (formatted-comment source-comment)
   "Assign FORMATTED-COMMENT with metadata from SOURCE-COMMENT."
@@ -103,15 +105,15 @@ POST-AUTHOR is used to apply a different face to the comment author."
                        formatted-comment)
   formatted-comment)
 
-(defun dank-comment--propertize-load-more-placeholder-with-metadata (formatted-placeholder source-placeholder)
+(defun dank-comment--propertize-more-with-metadata (formatted-placeholder source-placeholder)
   "Assign FORMATTED-PLACEHOLDER with metadata from SOURCE-PLACEHOLDER."
   (add-text-properties 0 (length formatted-placeholder)
-                       `(dank-comment-parent-id ,(dank-comment-load-more-placeholder-parent_id source-placeholder)
+                       `(dank-comment-parent-id ,(dank-comment-more-parent_id source-placeholder)
                                                 dank-comment-type more
-                                                dank-comment-id ,(dank-comment-load-more-placeholder-id source-placeholder)
-                                                dank-comment-children-ids ,(dank-comment-load-more-placeholder-children_ids source-placeholder)
-                                                dank-comment-count ,(dank-comment-load-more-placeholder-count source-placeholder)
-                                                dank-comment-depth ,(dank-comment-load-more-placeholder-depth source-placeholder))
+                                                dank-comment-id ,(dank-comment-more-id source-placeholder)
+                                                dank-comment-children-ids ,(dank-comment-more-children_ids source-placeholder)
+                                                dank-comment-count ,(dank-comment-more-count source-placeholder)
+                                                dank-comment-depth ,(dank-comment-more-depth source-placeholder))
                        formatted-placeholder)
   formatted-placeholder)
 
