@@ -37,18 +37,17 @@ your credentials.
   - not possible
 - [X] Command to load a user's subscriptions. This can be used for
   autocomplete when switching subreddits.
-- [ ] Open current post in browser
-  - [ ] Open comment thread
-  - [ ] Open link
+- [X] Open current post in browser
+  - [X] Open comment thread
+  - [X] Open link
+- [X] review dependencies
+  - [X] use different request library?
 - [ ] Open current post in Emacs
   - [ ] Open link in eww
   - [ ] Render image in Emacs
+- [ ] Usage instructions
 - [ ] Change post sorting
 - [ ] Change comment sorting
-- [ ] Narrow comment trees.
-- [ ] review dependencies
-  - [ ] use different request library?
-- [ ] Usage instructions
 ** Features
 
 *** Post listing
@@ -56,7 +55,7 @@ your credentials.
 - [X] load next page and append to current listing
 - [X] post items font-lock
 - [X] refresh current subreddit
-- [ ] visit other subreddits
+- [X] visit other subreddits
 - [X] visit other subreddits via links on post items
 **** Interaction
 - [ ] upvote/downvote posts
@@ -66,8 +65,8 @@ your credentials.
 - [ ] subreddit sidebar info (in split window)
 
 *** Post details
-- [ ] open self post contents in split window
-- [ ] open post link in browser
+- [X] open self post contents in split window
+- [X] open post link in browser
 **** Interaction
 - [ ] upvote/downvote posts
 - [ ] post comment
@@ -76,20 +75,20 @@ your credentials.
 - [ ] subreddit sidebar info (in split window)
 
 *** Comments
-- [ ] show comments in self post contents window
-- [ ] comments font-lock
-- [ ] comments pagination
-- [ ] nested comment threads
+- [X] show comments in self post contents window
+- [X] comments font-lock
+- [X] comments pagination
+- [X] nested comment threads
 **** Interaction
-- [ ] navigate to child/parent comment
-- [ ] navigate to sibling comment up/down
-- [ ] collapse comment tree
-- [ ] load more comments
+- [X] navigate to child/parent comment
+- [X] navigate to sibling comment up/down
+- [X] collapse comment tree
+- [X] load more comments
 - [ ] upvote/downvote comments
 - [ ] post reply
 
 *** Subreddits
-- [ ] subscribed subreddits list (separate mode)
+- [X] subscribed subreddits list (separate mode)
 
 *** Messages
 - [ ] list messages/replies (separate mode)
@@ -133,7 +132,6 @@ v2 will focus on interaction
 
 These libraries are not part of Emacs 25.
 
-- dash.el (GPLv3) https://github.com/magnars/dash.el (GNU ELPA)
 - s.el (GPLv3) https://github.com/magnars/s.el (MELPA)
 - request.el (GPLv3) https://github.com/tkf/emacs-request (MELPA)
 - markdown-mode (GPLv3) https://jblevins.org/projects/markdown-mode/ (MELPA)
