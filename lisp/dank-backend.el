@@ -4,9 +4,6 @@
 (require 'dank-cache)
 (require 'dank-auth)
 
-(cl-defstruct dank-post id slug url title body score user date)
-(cl-defstruct dank-comment id post-id url body score user date)
-
 (defconst dank-backend-host "https://oauth.reddit.com")
 
 (defvar-local dank-backend-buffer-history nil)
