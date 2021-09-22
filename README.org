@@ -35,9 +35,8 @@ your credentials.
 - [X] When quitting a buffer, jump back to where we came from.
 - [X] Anonymous browsing
   - not possible
-- [ ] Command to load a user's subscriptions. This can be used for
+- [X] Command to load a user's subscriptions. This can be used for
   autocomplete when switching subreddits.
-  - [ ] when unauthenticated, get list of subreddits from variable
 - [ ] Open current post in browser
   - [ ] Open comment thread
   - [ ] Open link
@@ -49,7 +48,7 @@ your credentials.
 - [ ] Narrow comment trees.
 - [ ] review dependencies
   - [ ] use different request library?
-
+- [ ] Usage instructions
 ** Features
 
 *** Post listing

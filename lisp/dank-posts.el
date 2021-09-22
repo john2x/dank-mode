@@ -9,7 +9,12 @@
 
 
 (defvar dank-posts-page-items-limit 25)
+(defvar dank-posts-subscribed-subreddits nil)
 
+(when (not dank-posts-subscribed-subreddits)
+  (setq dank-posts-subscribed-subreddits (dank-posts--get-subscribed-subreddits-names)))
+
+(defcustom dank-posts-known-subreddits dank-posts-subscribed-subreddits "")
 (defcustom dank-posts-default-subreddit nil "")
 (defcustom dank-posts-default-sorting 'hot "")
 (defcustom dank-posts-highlight-under-point-enabled 't "")
@@ -31,6 +36,7 @@
     (define-key map (kbd "C-x C-r") 'dank-posts-refresh)
     (define-key map (kbd "C-x C-o") 'dank-posts-goto-post-comments-at-point)
     (define-key map (kbd "C-x C-/") 'dank-posts-goto-subreddit-at-point)
+    (define-key map (kbd "C-x C-f") 'dank-posts-goto-subreddit)
     (define-key map (kbd "C-x q") 'kill-current-buffer)
     map))
 
@@ -242,6 +248,13 @@ POST-INDEX is the number (\"position\") of the post."
   (let* ((subreddit (dank-utils-get-prop (point) 'dank-post-subreddit)))
     (dank-posts-init subreddit)))
 
+(defun dank-posts-goto-subreddit (subreddit)
+  "Navigate to a dank-posts-mode for a specific subreddit."
+  (interactive (list (completing-read "Go to subreddit: " dank-posts-known-subreddits)))
+  (if (string-equal (substring subreddit 0 3) "/r/")
+      (dank-posts-init (substring subreddit 3 (- (string-width subreddit) 1)))
+    (dank-posts-init subreddit)))
+
 (defun dank-posts-goto-post-comments (subreddit post-id permalink &optional sorting)
   (dank-comments-init subreddit post-id permalink (current-buffer) sorting))
 
@@ -254,6 +267,10 @@ POST-INDEX is the number (\"position\") of the post."
          (title (plist-get post-props 'dank-post-title)))
     (dank-posts-goto-post-comments subreddit post-id permalink
                                    dank-posts-current-sorting)))
+
+(defun dank-posts--get-subscribed-subreddits-names ()
+  "Get the authenticated user's list of subscribed subreddits."
+  (sort (mapcar (lambda (s) (dank-subreddit-url s)) (mapcar #'dank-post-subreddit-parse (dank-backend-subreddits))) 'string<))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; interaction functions ;;
