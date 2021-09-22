@@ -22,7 +22,7 @@ README file.")
 (defcustom dank-auth-user-agent nil
   "User agent value to use when requesting the Reddit API.
 This can be set via `dank-auth-file'.  This variable is optional, and
-by default will be a concatenation of the string \"dank-mode/\" plus your
+by default will be a concatenation of the string \"Emacs dank-mode/\" plus your
 username.")
 (defvar dank-auth--token-expiry-threshold-seconds 300
   "The threshold in seconds to consider an access token as invalid.")
@@ -43,7 +43,7 @@ username.")
     (setq dank-auth-oauth-client-id (plist-get data :oauthClientId))
     (setq dank-auth-oauth-client-secret (plist-get data :oauthClientSecret))
     (setq dank-auth-user-agent (or (plist-get data :userAgent)
-                                   (concat "dank-mode/" dank-auth-username)))
+                                   (concat "Emacs dank-mode/" dank-auth-username)))
     data))
 
 (defun dank-auth-configured-p ()
