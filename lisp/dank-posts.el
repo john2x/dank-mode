@@ -245,10 +245,10 @@ POST-INDEX is the number (\"position\") of the post."
   (dank-posts-render-current-page dank-posts-current-page-posts t)
   (dank-posts-highlight-under-point))
 
-(defun dank-posts-goto-subreddit-at-point ()
+(defun dank-posts-goto-subreddit-at-point (point)
   "Navigate to a dank-posts-mode buffer for a post's subreddit under pointer."
-  (interactive)
-  (let* ((subreddit (dank-utils-get-prop (point) 'dank-post-subreddit)))
+  (interactive "d")
+  (let* ((subreddit (dank-utils-get-prop point 'dank-post-subreddit)))
     (dank-posts-init subreddit)))
 
 (defun dank-posts-goto-subreddit (subreddit)
@@ -261,9 +261,9 @@ POST-INDEX is the number (\"position\") of the post."
 (defun dank-posts-goto-post-comments (subreddit post-id permalink &optional sorting)
   (dank-comments-init subreddit post-id permalink (current-buffer) sorting))
 
-(defun dank-posts-goto-post-comments-at-point ()
-  (interactive)
-  (let* ((post-props (text-properties-at (point)))
+(defun dank-posts-goto-post-comments-at-point (point)
+  (interactive "d")
+  (let* ((post-props (text-properties-at point))
          (post-id (plist-get post-props 'dank-post-id))
          (subreddit (plist-get post-props 'dank-post-subreddit))
          (permalink (plist-get post-props 'dank-post-permalink))
@@ -276,13 +276,13 @@ POST-INDEX is the number (\"position\") of the post."
   (sort (mapcar (lambda (s) (dank-subreddit-url s)) (mapcar #'dank-post-subreddit-parse (dank-backend-subreddits))) 'string<))
 
 (defun dank-posts-browse-post-link-at-point (point)
-  "Open the post link at point in a browser."
+  "Open the post link at POINT in a browser."
   (interactive "d")
   (let* ((post-link (dank-utils-get-prop point 'dank-post-link)))
     (browse-url post-link)))
 
 (defun dank-posts-browse-post-comments-at-point (point)
-  "Open the post comments at point in a browser."
+  "Open the post comments at POINT in a browser."
   (interactive "d")
   (let ((post-permalink (dank-utils-get-prop point 'dank-post-permalink)))
     (browse-url (concat "https://old.reddit.com" post-permalink))))
