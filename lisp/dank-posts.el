@@ -6,6 +6,7 @@
 (require 'dank-comments)
 (require 's)
 (require 'dash)
+(require 'browse-url)
 
 
 (defvar dank-posts-page-items-limit 25)
@@ -37,6 +38,8 @@
     (define-key map (kbd "C-x C-o") 'dank-posts-goto-post-comments-at-point)
     (define-key map (kbd "C-x C-/") 'dank-posts-goto-subreddit-at-point)
     (define-key map (kbd "C-x C-f") 'dank-posts-goto-subreddit)
+    (define-key map (kbd "C-x b") 'dank-posts-browse-post-link-at-point)
+    (define-key map (kbd "C-x o") 'dank-posts-browse-post-comments-at-point)
     (define-key map (kbd "C-x q") 'kill-current-buffer)
     map))
 
@@ -271,6 +274,18 @@ POST-INDEX is the number (\"position\") of the post."
 (defun dank-posts--get-subscribed-subreddits-names ()
   "Get the authenticated user's list of subscribed subreddits."
   (sort (mapcar (lambda (s) (dank-subreddit-url s)) (mapcar #'dank-post-subreddit-parse (dank-backend-subreddits))) 'string<))
+
+(defun dank-posts-browse-post-link-at-point (point)
+  "Open the post link at point in a browser."
+  (interactive "d")
+  (let* ((post-link (dank-utils-get-prop point 'dank-post-link)))
+    (browse-url post-link)))
+
+(defun dank-posts-browse-post-comments-at-point (point)
+  "Open the post comments at point in a browser."
+  (interactive "d")
+  (let ((post-permalink (dank-utils-get-prop point 'dank-post-permalink)))
+    (browse-url (concat "https://old.reddit.com" post-permalink))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; interaction functions ;;

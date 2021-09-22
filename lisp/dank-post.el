@@ -51,7 +51,8 @@ Optional POST-INDEX is the position of the post in a list."
                                       dank-post-subreddit ,(dank-post-subreddit source-post)
                                       dank-post-index ,post-index
                                       dank-post-permalink ,(dank-post-permalink source-post)
-                                      dank-post-title ,(dank-post-title source-post))
+                                      dank-post-title ,(dank-post-title source-post)
+                                      dank-post-link ,(dank-post-link source-post))
                        formatted-post)
   formatted-post)
 
