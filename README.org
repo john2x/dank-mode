@@ -30,14 +30,21 @@ your credentials.
 - [X] Start folding comment trees.
 - [X] Interact with 'load more' comments.
   - insert in buffer
-- [ ] Interact with 0 'load more' comments
+- [X] Interact with 0 'load more' comments
   - open in new buffer
-- [ ] When quitting a buffer, jump back to where we came from.
+- [X] When quitting a buffer, jump back to where we came from.
+- [ ] Anonymous browsing
 - [ ] Command to load a user's subscriptions. This can be used for
   autocomplete when switching subreddits.
+  - [ ] when unauthenticated, get list of subreddits from variable
+- [ ] Open current post in browser
+  - [ ] Open comment thread
+  - [ ] Open link
+- [ ] Open current post in Emacs
+  - [ ] Open link in eww
+  - [ ] Render image in Emacs
 - [ ] Change post sorting
 - [ ] Change comment sorting
-- [ ] Anonymous browsing
 - [ ] Narrow comment trees.
 - [ ] review dependencies
   - [ ] use different request library?
