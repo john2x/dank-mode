@@ -101,12 +101,14 @@ SORTING must be a symbol of either 'hot, 'new, 'old, 'top, 'random, 'qa, 'confid
 REQUEST-PARAMS is plist of request parameters that Reddit's 'listing' API takes.
 e.g. (:depth 10 :limit 25)
 Valid keywords are: :depth (integer), :limit (integer)."
-  (let ((depth (plist-get request-params :depth))
-        (limit (plist-get request-params :limit))
-        (showedits (plist-get request-params :showedits))
-        (url (concat (when subreddit (concat "/r/" subreddit)) "/comments/" post-id)))
+  (let* ((depth (plist-get request-params :depth))
+         (limit (plist-get request-params :limit))
+         (comment (plist-get request-params :comment))
+         (showedits (plist-get request-params :showedits))
+         (url (concat "/r/" subreddit "/comments/" post-id "/" comment)))
     (let* ((params (if depth (cons `(depth . ,depth) '()) '()))
            (params (if limit (cons `(limit . ,limit) params) params))
+           (params (if comment (cons `(comment . ,comment) params) params))
            (params (cons `(sorting . ,(symbol-name sorting)) params))
            (resp (dank-backend-authenticated-request url :type "GET" :params params))
            (post (aref (plist-get (plist-get (aref resp 0) :data) :children) 0))

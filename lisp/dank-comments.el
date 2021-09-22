@@ -7,18 +7,20 @@
 (require 's)
 (require 'dash)
 
-(defcustom dank-comments-default-depth 5
+(defcustom dank-comments-default-depth 10
   "Default depth of the comment tree to initially fetch.")
 (defcustom dank-comments-body-fill-width 120
   "Fill width for rendering the comment body.")
 (defcustom dank-comments-highlight-under-point-enabled 't "")
 
 (defvar-local dank-comments-buffer nil)
+(defvar-local dank-comments-current-permalink nil)
 (defvar-local dank-comments-current-post-id nil)
 (defvar-local dank-comments-current-subreddit nil)
 (defvar-local dank-comments-current-sorting 'hot)
 (defvar-local dank-comments-current-post nil)
 (defvar-local dank-comments-current-comments nil)
+(defvar-local dank-comments-current-starting-comment-id nil)
 (defvar-local dank-comments-tree-fold-overlays '())
 
 (defvar dank-comments-mode-map
@@ -40,7 +42,7 @@
   "Major mode for reading reddit post comments."
   (setq show-trailing-whitespace nil))
 
-(defun dank-comments-init (subreddit post-id permalink &optional sorting)
+(defun dank-comments-init (subreddit post-id permalink &optional sorting starting-comment-id)
   "Initialize dank-comments-buffer with POST-ID."
   (let ((buf (concat "*dank-comments* " permalink)))
     (if (get-buffer buf)
@@ -54,6 +56,8 @@
         (setq dank-comments-buffer (current-buffer)
               dank-comments-current-subreddit subreddit
               dank-comments-current-post-id post-id
+              dank-comments-current-permalink permalink
+              dank-comments-current-starting-comment-id starting-comment-id
               dank-comments-current-sorting sorting)
         (condition-case err
             (dank-comments-reset-state)
@@ -70,10 +74,16 @@
           dank-comments-tree-fold-overlays)
   (setq dank-comments-current-comments nil
         dank-comments-current-post nil)
-  (dank-comments-set-current-post-and-comments dank-comments-current-subreddit dank-comments-current-post-id dank-comments-current-sorting))
+  (dank-comments-set-current-post-and-comments dank-comments-current-subreddit
+                                               dank-comments-current-post-id
+                                               dank-comments-current-sorting
+                                               dank-comments-current-starting-comment-id))
 
-(defun dank-comments-set-current-post-and-comments (subreddit post-id &optional sorting)
-  (let* ((post-comments (dank-backend-post-and-comments-listing subreddit post-id sorting '(:depth ,dank-comments-default-depth)))
+(defun dank-comments-set-current-post-and-comments (subreddit post-id &optional sorting starting-comment-id)
+  "Set the buffer local variables for the post and comments contents."
+  (let* ((post-comments (dank-backend-post-and-comments-listing subreddit post-id sorting
+                                                                :depth dank-comments-default-depth
+                                                                :comment starting-comment-id))
          (post (dank-post-parse (car post-comments)))
          (comments (mapcar #'dank-comment-parse (cdr post-comments))))
     (setq dank-comments-current-post post
@@ -81,8 +91,7 @@
     (dank-comments-set-header-line)))
 
 (defun dank-comments-insert-more-comments-at-point ()
-  "Fetch more comments for the placeholder at point and insert
-the contents in its place."
+  "Fetch more comments for the placeholder at point and insert the contents in its place."
   (interactive)
   (when (and (eq (dank-utils-get-prop (point) 'dank-comment-type) 'more)
              (> (dank-utils-get-prop (point) 'dank-comment-count) 0))
@@ -95,6 +104,16 @@ the contents in its place."
         (dank-comments-render-current-comments comments dank-comments-current-post nil (point)))
       (beginning-of-line-text)
       (dank-comments-highlight-under-point))))
+
+(defun dank-comments-continue-thread-at-point ()
+  "Fetch even more comments for the placeholder at point and open a new buffer for the tree."
+  (interactive)
+  (when (and (eq (dank-utils-get-prop (point) 'dank-comment-type) 'more)
+             (= (dank-utils-get-prop (point) 'dank-comment-count) 0))
+    (let* ((starting-comment-id (substring (dank-utils-get-prop (point) 'dank-comment-parent-id) 3))
+           (permalink (concat dank-comments-current-permalink starting-comment-id)))
+      (dank-comments-init dank-comments-current-subreddit dank-comments-current-post-id
+                          permalink dank-comments-current-sorting starting-comment-id))))
 
 (dank-defrender dank-comments-render-current-post dank-comments-buffer (post &optional clear-buffer)
   "Render the post contents in the current buffer."
@@ -156,6 +175,7 @@ the contents in its place."
       (setq header-line-format (dank-utils-format-plist
                                 dank-comments-header-line-format-template
                                 `(subreddit ,dank-comments-current-subreddit
+                                            starting-comment-id ,(or dank-comments-current-starting-comment-id "")
                                             sorting ,(symbol-name dank-posts-current-sorting)))))))
 
 ;; this highlighting logic is copied from ledger-mode
@@ -368,7 +388,6 @@ no next sibling, the next comment that has a lower depth."
   "Expand the collapsed comment tree at point."
   (interactive)
   ;; point might be at the end of the overlay with no text properties or overlay
-
   (move-beginning-of-line 1)
   (move-beginning-of-line 1)
   (let* ((comment-id (dank-utils-get-prop (point) 'dank-comment-id))
