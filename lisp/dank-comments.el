@@ -20,6 +20,7 @@
 (defvar-local dank-comments-current-sorting 'hot)
 (defvar-local dank-comments-current-post nil)
 (defvar-local dank-comments-current-comments nil)
+(defvar-local dank-comments-current-source-buffer nil)
 (defvar-local dank-comments-current-starting-comment-id nil)
 (defvar-local dank-comments-tree-fold-overlays '())
 
@@ -35,14 +36,14 @@
     ;(define-key map (kbd "C-c C-c") 'dank-posts-goto-post-comments-at-point)
     ;(define-key map (kbd "C-c C-/") 'dank-posts-goto-subreddit-at-point)
     (define-key map (kbd "TAB") 'dank-comments-toggle-comment-tree-fold)
-    (define-key map (kbd "C-x q") 'kill-current-buffer)
+    (define-key map (kbd "C-x q") 'dank-comments-kill-current-buffer)
     map))
 
 (define-derived-mode dank-comments-mode special-mode "dank-comments-mode"
   "Major mode for reading reddit post comments."
   (setq show-trailing-whitespace nil))
 
-(defun dank-comments-init (subreddit post-id permalink &optional sorting starting-comment-id)
+(defun dank-comments-init (subreddit post-id permalink source-buffer &optional sorting starting-comment-id)
   "Initialize dank-comments-buffer with POST-ID."
   (let ((buf (concat "*dank-comments* " permalink)))
     (if (get-buffer buf)
@@ -58,7 +59,8 @@
               dank-comments-current-post-id post-id
               dank-comments-current-permalink permalink
               dank-comments-current-starting-comment-id starting-comment-id
-              dank-comments-current-sorting sorting)
+              dank-comments-current-sorting sorting
+              dank-comments-current-source-buffer source-buffer)
         (condition-case err
             (dank-comments-reset-state)
           (dank-backend-error (progn (dank-comments-render-error err)
@@ -424,5 +426,12 @@ no next sibling, the next comment that has a lower depth."
   (dank-comments-render-current-post dank-comments-current-post t)
   (dank-comments-render-current-comments dank-comments-current-comments dank-comments-current-post)
   (goto-char 0))
+
+(defun dank-comments-kill-current-buffer ()
+  (interactive)
+  (let ((current-buffer (current-buffer)))
+    (when dank-comments-current-source-buffer
+      (switch-to-buffer dank-comments-current-source-buffer))
+    (kill-buffer current-buffer)))
 
 (provide 'dank-comments)

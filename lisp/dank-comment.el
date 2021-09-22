@@ -19,7 +19,7 @@
   "+ [Continue thread in new buffer...]")
 
 (defvar dank-comments-header-line-format-template
-  "/r/${subreddit} ${starting-comment-id} - ${sorting}")
+  "/r/${subreddit} - ${sorting} ${starting-comment-id}")
 
 (defun dank-comment-parse (comment)
   "Parse COMMENT into a `dank-comment'."
