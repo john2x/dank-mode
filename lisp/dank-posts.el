@@ -242,9 +242,8 @@ POST-INDEX is the number (\"position\") of the post."
   (let* ((subreddit (dank-utils-get-prop (point) 'dank-post-subreddit)))
     (dank-posts-init subreddit)))
 
-(defun dank-posts-goto-post-comments (subreddit post-id permalink &optional sorting title)
-  (dank-comments-init subreddit post-id permalink (current-buffer)
-                      sorting title))
+(defun dank-posts-goto-post-comments (subreddit post-id permalink &optional sorting)
+  (dank-comments-init subreddit post-id permalink (current-buffer) sorting))
 
 (defun dank-posts-goto-post-comments-at-point ()
   (interactive)
@@ -254,7 +253,7 @@ POST-INDEX is the number (\"position\") of the post."
          (permalink (plist-get post-props 'dank-post-permalink))
          (title (plist-get post-props 'dank-post-title)))
     (dank-posts-goto-post-comments subreddit post-id permalink
-                                   dank-posts-current-sorting title)))
+                                   dank-posts-current-sorting)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; interaction functions ;;

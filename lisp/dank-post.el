@@ -32,7 +32,7 @@ Optional POST-INDEX is the position of the post in a list."
          (domain (if (string= post_type "self-text") "" (concat " from " (dank-post-domain post))))
          (link_flair (if (dank-post-link_flair post)
                          (concat "[" (dank-post-link_flair post) "] ") ""))
-         (format-context `(title (,title . dank-faces-post-title) age (,age . dank-faces-age) author (,author . dank-faces-post-author) author_flair (,author_flair . dakn-faces-flair)
+         (format-context `(title (,title . dank-faces-post-title) age (,age . dank-faces-age) author (,author . dank-faces-post-author) author_flair (,author_flair . dank-faces-flair)
                                  subreddit (,subreddit . dank-faces-subreddit) score (,score . dank-faces-upvote) num_comments (,num_comments . dank-faces-downvote)
                                  nsfw (,nsfw . dank-faces-nsfw) spoiler (,spoiler . dank-faces-nsfw) domain (,domain . dank-faces-site-domain) post_type (,post_type . dank-faces-post-type)
                                  link_flair (,link_flair . dank-faces-flair)))
