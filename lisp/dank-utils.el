@@ -63,7 +63,7 @@ Returns the range of the text, if found, or nil if not found (until the end or b
 (defun dank-utils-markdown-fill-paragraph-and-indent (body depth fill-column &optional indent-guide)
   "Use `markdown-fill-paragraph' on Markdown BODY up to FILL-COLUMN width.  Indent BODY by DEPTH at the same time."
   (let ((fill-column (- fill-column (* 2 depth))) ;; subtract twice of depth from fill-column because the indent will take up part of the fill width
-        (fill-prefix (concat (string-join (make-list depth "  ")) "| ")))
+        (fill-prefix (concat (s-repeat depth "  ") "| ")))
     (with-temp-buffer
       (insert body)
       (beginning-of-buffer)
