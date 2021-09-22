@@ -416,8 +416,8 @@ no next sibling, the next comment that has a lower depth."
   (let* ((comment-id (dank-utils-get-prop point 'dank-comment-id))
          (existing-ovl (cdr (assoc comment-id dank-comments-tree-fold-overlays))))
     (if (and existing-ovl (overlay-get existing-ovl 'invisible))
-        (dank-comments-expand-comment-tree-at-point)
-      (dank-comments-collapse-comment-tree-at-point))))
+        (dank-comments-expand-comment-tree-at-point point)
+      (dank-comments-collapse-comment-tree-at-point point))))
 
 (defun dank-comments--point-on-last-sibling (pos)
   "Return non-nil if the comment under POS is the last sibling of the comment tree."
