@@ -36,15 +36,17 @@ username.")
 
 (defun dank-auth-load-auth-vars-from-file (path)
   "Read and set auth values from PATH."
-  (let* ((json-object-type 'plist)
-         (data (json-read-file path)))
-    (setq dank-auth-username (plist-get data :username))
-    (setq dank-auth-password (plist-get data :password))
-    (setq dank-auth-oauth-client-id (plist-get data :oauthClientId))
-    (setq dank-auth-oauth-client-secret (plist-get data :oauthClientSecret))
-    (setq dank-auth-user-agent (or (plist-get data :userAgent)
-                                   (concat "Emacs dank-mode/" dank-auth-username)))
-    data))
+  (when (file-exists-p path)
+    (let* ((json-object-type 'plist)
+           (data (json-read-file path)))
+      (when data
+        (setq dank-auth-username (plist-get data :username))
+        (setq dank-auth-password (plist-get data :password))
+        (setq dank-auth-oauth-client-id (plist-get data :oauthClientId))
+        (setq dank-auth-oauth-client-secret (plist-get data :oauthClientSecret))
+        (setq dank-auth-user-agent (or (plist-get data :userAgent)
+                                       (concat "Emacs dank-mode/" dank-auth-username)))
+        data))))
 
 (defun dank-auth-configured-p ()
   "Return t if the following auth vars are set.
