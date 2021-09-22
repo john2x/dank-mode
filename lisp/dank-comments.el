@@ -92,30 +92,41 @@
           dank-comments-current-comments comments)
     (dank-comments-set-header-line)))
 
-(defun dank-comments-insert-more-comments-at-point ()
-  "Fetch more comments for the placeholder at point and insert the contents in its place."
-  (interactive)
-  (when (and (eq (dank-utils-get-prop (point) 'dank-comment-type) 'more)
-             (> (dank-utils-get-prop (point) 'dank-comment-count) 0))
+(defun dank-comments-insert-more-comments-at-point (point)
+  "Fetch more comments for the placeholder at POINT and insert the contents in its place."
+  (interactive "d")
+  (when (and (eq (dank-utils-get-prop point 'dank-comment-type) 'more)
+             (> (dank-utils-get-prop point 'dank-comment-count) 0))
     (let* ((post-id (concat "t3_" dank-comments-current-post-id))
-           (current-depth (dank-utils-get-prop (point) 'dank-comment-depth))
-           (children-ids (string-join (dank-utils-get-prop (point) 'dank-comment-children-ids) ","))
+           (current-depth (dank-utils-get-prop point 'dank-comment-depth))
+           (children-ids (string-join (dank-utils-get-prop point 'dank-comment-children-ids) ","))
            (comments-raw (dank-backend-more-children post-id children-ids dank-comments-current-sorting))
            (comments (mapcar #'dank-comment-parse comments-raw)))
       (save-excursion
-        (dank-comments-render-current-comments comments dank-comments-current-post nil (point)))
+        (dank-comments-render-current-comments comments dank-comments-current-post nil point))
       (beginning-of-line-text)
       (dank-comments-highlight-under-point))))
 
-(defun dank-comments-continue-thread-at-point ()
-  "Fetch even more comments for the placeholder at point and open a new buffer for the tree."
-  (interactive)
-  (when (and (eq (dank-utils-get-prop (point) 'dank-comment-type) 'more)
-             (= (dank-utils-get-prop (point) 'dank-comment-count) 0))
-    (let* ((starting-comment-id (substring (dank-utils-get-prop (point) 'dank-comment-parent-id) 3))
+(defun dank-comments-continue-thread-at-point (point)
+  "Fetch even more comments for the placeholder at POINT and open a new buffer for the tree."
+  (interactive "d")
+  (when (and (eq (dank-utils-get-prop point 'dank-comment-type) 'more)
+             (= (dank-utils-get-prop point 'dank-comment-count) 0))
+    (let* ((starting-comment-id (substring (dank-utils-get-prop point 'dank-comment-parent-id) 3))
            (permalink (concat dank-comments-current-permalink starting-comment-id)))
       (dank-comments-init dank-comments-current-subreddit dank-comments-current-post-id
-                          permalink dank-comments-current-sorting starting-comment-id))))
+                          permalink (current-buffer)
+                          dank-comments-current-sorting starting-comment-id))))
+
+(defun dank-comments-open-more-comments-at-point (point)
+  "Open more comments at POINT.
+If it's a short tree, insert it at POINT.
+If it's a long tree, open a new buffer for it."
+  (interactive "d")
+  (when (eq (dank-utils-get-prop point 'dank-comment-type) 'more)
+    (if (> (dank-utils-get-prop point 'dank-comment-count) 0)
+        (dank-comments-insert-more-comments-at-point point)
+      (dank-comments-continue-thread-at-point point))))
 
 (dank-defrender dank-comments-render-current-post dank-comments-buffer (post &optional clear-buffer)
   "Render the post contents in the current buffer."
@@ -365,14 +376,14 @@ no next sibling, the next comment that has a lower depth."
     (dank-comments--navigate-beginning-of-comment)
     (dank-comments-highlight-under-point)))
 
-(defun dank-comments-collapse-comment-tree ()
-  "Collapse the comment tree at point."
-  (interactive)
+(defun dank-comments-collapse-comment-tree-at-point (point)
+  "Collapse the comment tree at POINT."
+  (interactive "d")
   ;; TODO: change the '-' to a '+'? or add ellipses at the end?
   ;; TODO: change style
-  (let* ((exts (dank-comments--find-comment-tree-extents (point) t))
-         (comment-id (dank-utils-get-prop (point) 'dank-comment-id))
-         (comment-type (dank-utils-get-prop (point) 'dank-comment-type))
+  (let* ((exts (dank-comments--find-comment-tree-extents point t))
+         (comment-id (dank-utils-get-prop point 'dank-comment-id))
+         (comment-type (dank-utils-get-prop point 'dank-comment-type))
          (start (car exts))
          (end (cadr exts))
          (existing-ovl (cdr (assoc comment-id dank-comments-tree-fold-overlays)))
@@ -386,14 +397,14 @@ no next sibling, the next comment that has a lower depth."
       (add-to-list 'dank-comments-tree-fold-overlays `(,comment-id . ,ovl))))
   (dank-comments-highlight-under-point))
 
-(defun dank-comments-expand-comment-tree ()
-  "Expand the collapsed comment tree at point."
-  (interactive)
+(defun dank-comments-expand-comment-tree-at-point (point)
+  "Expand the collapsed comment tree at POINT."
+  (interactive "d")
   ;; point might be at the end of the overlay with no text properties or overlay
   (move-beginning-of-line 1)
   (move-beginning-of-line 1)
-  (let* ((comment-id (dank-utils-get-prop (point) 'dank-comment-id))
-         (comment-type (dank-utils-get-prop (point) 'dank-comment-type))
+  (let* ((comment-id (dank-utils-get-prop point 'dank-comment-id))
+         (comment-type (dank-utils-get-prop point 'dank-comment-type))
          (ovl (cdr (assoc comment-id dank-comments-tree-fold-overlays))))
     (when (and comment-id ovl (eq comment-type 'comment))
       (overlay-put ovl 'after-string "")
@@ -402,14 +413,14 @@ no next sibling, the next comment that has a lower depth."
       (delete-overlay ovl))
     (dank-comments-highlight-under-point)))
 
-(defun dank-comments-toggle-comment-tree-fold ()
-  "Collapse or expand comment tree at point."
-  (interactive)
-  (let* ((comment-id (dank-utils-get-prop (point) 'dank-comment-id))
+(defun dank-comments-toggle-comment-tree-fold-at-point (point)
+  "Collapse or expand comment tree at POINT."
+  (interactive "d")
+  (let* ((comment-id (dank-utils-get-prop point 'dank-comment-id))
          (existing-ovl (cdr (assoc comment-id dank-comments-tree-fold-overlays))))
     (if (and existing-ovl (overlay-get existing-ovl 'invisible))
-        (dank-comments-expand-comment-tree)
-      (dank-comments-collapse-comment-tree))))
+        (dank-comments-expand-comment-tree-at-point)
+      (dank-comments-collapse-comment-tree-at-point))))
 
 (defun dank-comments--point-on-last-sibling (pos)
   "Return non-nil if the comment under POS is the last sibling of the comment tree."
