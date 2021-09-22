@@ -29,7 +29,7 @@
                                 (request--urlencode-alist params)))
       (dank-cache-key url))))
 
-(defun dank-backend-authenticated-request (&rest request-args)
+(defun dank-backend-request (&rest request-args)
   "Perform a synchronous `request' with REQUEST-ARGS and `dank-auth-token'.
 The first element in request-args (the _relative_ request url) will be prependend with `dank-backend-host'."
   (let ((key (dank-backend--cache-key request-args)))
@@ -38,9 +38,11 @@ The first element in request-args (the _relative_ request url) will be prependen
           (json-read-from-string (dank-cache-get key)))
       (let* ((full-url (concat dank-backend-host (car request-args)))
              (request-args (cons full-url (cdr request-args)))  ;; replace the relative url with the full-url
+             (token (dank-auth-token))
              (authorization (concat "Bearer " (dank-auth-token)))
-             (request-args (append request-args `(:headers (("Authorization" . ,authorization)
-                                                            ("User-Agent" . ,dank-auth-user-agent))
+             (headers `(("User-Agent" . ,dank-auth-user-agent)
+                        ("Authorization" . ,authorization)))
+             (request-args (append request-args `(:headers ,headers
                                                            :parser buffer-string
                                                            :sync t)))
              (resp (apply 'request request-args))
@@ -74,7 +76,7 @@ If both :after and :before are provided, :after takes precedence and :before is 
            (params (if limit (cons `(limit . ,limit) params) params))
            (params (if count (cons `(count . ,count) params) params))
            (params (if after (cons `(after . ,after) (assq-delete-all 'before params)) params))
-           (resp (dank-backend-authenticated-request url :type "GET" :params params)))
+           (resp (dank-backend-request url :type "GET" :params params)))
       (plist-get (plist-get resp :data) :children))))
 
 (defun dank-backend-my-subreddits-listing (&rest request-params)
@@ -86,7 +88,7 @@ REQUEST-PARAMS is a plist of request parameters that Reddit's 'listing' API take
     (let* ((params (if before (cons `(before . ,before) '() '())))
            (params (if limit (cons `(limit . ,limit) params) params))
            (params (if after (cons `(after . , after) (assq-delete-all 'before params)) params))
-           (resp (dank-backend-authenticated-request "/subreddits/mine/subscriber" :type "GET" :params params)))
+           (resp (dank-backend-request "/subreddits/mine/subscriber" :type "GET" :params params)))
       resp)))
 
 
@@ -107,7 +109,7 @@ Valid keywords are: :depth (integer), :limit (integer)."
            (params (if limit (cons `(limit . ,limit) params) params))
            (params (if comment (cons `(comment . ,comment) params) params))
            (params (cons `(sorting . ,(symbol-name sorting)) params))
-           (resp (dank-backend-authenticated-request url :type "GET" :params params))
+           (resp (dank-backend-request url :type "GET" :params params))
            (post (aref (plist-get (plist-get (aref resp 0) :data) :children) 0))
            (comments (plist-get (plist-get (aref resp 1) :data) :children)))
       `(,post . ,comments))))
@@ -129,7 +131,7 @@ REQUEST-PARAMS is plist of request parameters that Reddit's 'morechildren' API t
            (params (cons `(children . ,children-ids) params))
            (params (cons `(link_id . ,link-id) params))
            (params (cons `(limit_children . "False") params))
-           (resp (dank-backend-authenticated-request url :type "GET" :params params))
+           (resp (dank-backend-request url :type "GET" :params params))
            (things (plist-get (plist-get (plist-get resp :json) :data) :things)))
       things)))
 
