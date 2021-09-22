@@ -5,7 +5,6 @@
 (require 'dank-faces)
 (require 'dank-comment)
 (require 's)
-(require 'dash)
 
 (defcustom dank-comments-default-depth 10
   "Default depth of the comment tree to initially fetch.")

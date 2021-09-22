@@ -5,7 +5,6 @@
 (require 'dank-faces)
 (require 'dank-comments)
 (require 's)
-(require 'dash)
 (require 'browse-url)
 
 

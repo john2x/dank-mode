@@ -1,6 +1,5 @@
 (require 'dank-backend)
 (require 'dank-utils)
-(require 'dash)
 
 (cl-defstruct dank-comment
   name id body edited text age date author subreddit score
