@@ -135,4 +135,12 @@ REQUEST-PARAMS is plist of request parameters that Reddit's 'morechildren' API t
            (things (plist-get (plist-get (plist-get resp :json) :data) :things)))
       things)))
 
+(defun dank-backend-subreddits (&optional where &rest request-params)
+  "Get list of subreddits.
+Optional WHERE parameter is a symbol for the type of subscription (e.g. 'mine)."
+  (let* ((url (concat "/subreddits/mine/" (or (and where (symbol-name where)) "subscriber")))
+         (params `((limit . 100) (sr_detail . nil)))
+         (resp (dank-backend-request url :type "GET" :params params)))
+    (plist-get (plist-get resp :data) :children)))
+
 (provide 'dank-backend)

@@ -33,7 +33,8 @@ your credentials.
 - [X] Interact with 0 'load more' comments
   - open in new buffer
 - [X] When quitting a buffer, jump back to where we came from.
-- [ ] Anonymous browsing
+- [X] Anonymous browsing
+  - not possible
 - [ ] Command to load a user's subscriptions. This can be used for
   autocomplete when switching subreddits.
   - [ ] when unauthenticated, get list of subreddits from variable

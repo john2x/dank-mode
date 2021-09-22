@@ -7,6 +7,10 @@
   domain post_type nsfw spoiler link_flair author_flair
   gilded stickied locked)
 
+(cl-defstruct dank-subreddit
+  "Struct for a subreddit."
+  id title description url)
+
 ;; Rendering
 
 (defvar dank-post-template
@@ -75,5 +79,13 @@ Optional POST-INDEX is the position of the post in a list."
                     :stickied (not (eq (plist-get post :stickied) :json-false))
                     :locked (not (eq (plist-get post :locked) :json-false))
                     :permalink (plist-get post :permalink))))
+
+(defun dank-post-subreddit-parse (subreddit)
+  "Parse SUBREDDIT into a `dank-subreddit'."
+  (let ((subreddit (plist-get subreddit :data)))
+    (make-dank-subreddit :id (plist-get subreddit :name)
+                         :title (plist-get subreddit :title)
+                         :url (plist-get subreddit :url)
+                         :description (plist-get subreddit :description))))
 
 (provide 'dank-post)
