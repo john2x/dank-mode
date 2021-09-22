@@ -31,11 +31,9 @@
     (define-key map "P" 'dank-comments-navigate-to-parent)
     (define-key map (kbd "M-n") 'dank-comments-navigate-next-sibling)
     (define-key map (kbd "M-p") 'dank-comments-navigate-prev-sibling)
-    ;(define-key map (kbd "C-c C-v") 'dank-posts-fetch-next-page)
     (define-key map (kbd "C-x C-r") 'dank-comments-refresh)
-    ;(define-key map (kbd "C-c C-c") 'dank-posts-goto-post-comments-at-point)
-    ;(define-key map (kbd "C-c C-/") 'dank-posts-goto-subreddit-at-point)
-    (define-key map (kbd "TAB") 'dank-comments-toggle-comment-tree-fold)
+    (define-key map (kbd "C-x C-o") 'dank-comments-open-more-comments-at-point)
+    (define-key map (kbd "TAB") 'dank-comments-toggle-comment-tree-fold-at-point)
     (define-key map (kbd "C-x q") 'dank-comments-kill-current-buffer)
     map))
 
