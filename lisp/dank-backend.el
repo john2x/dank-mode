@@ -1,3 +1,17 @@
+;;; dank-backend.el --- Major mode for browsing Reddit
+
+;; Copyright (C) 2021 John Louis Del Rosario
+
+;; Author: John Louis Del Rosario <john2x@gmail.com>
+;; Version: 0.1.0
+;; Keywords: reddit, social
+
+;;; Commentary:
+
+;; This file defines functions for making requests to Reddit.
+
+;;; Code:
+
 (require 'request)
 (require 'json)
 (require 'dank-utils)
@@ -137,10 +151,13 @@ REQUEST-PARAMS is plist of request parameters that Reddit's 'morechildren' API t
 
 (defun dank-backend-subreddits (&optional where &rest request-params)
   "Get list of subreddits.
-Optional WHERE parameter is a symbol for the type of subscription (e.g. 'mine)."
+Optional WHERE parameter is a symbol for the type of subscription (e.g. 'mine).
+REQUEST-PARAMS is plist of request parameters that Reddit's 'subreddits' API takes."
   (let* ((url (concat "/subreddits/mine/" (or (and where (symbol-name where)) "subscriber")))
          (params `((limit . 100) (sr_detail . nil)))
          (resp (dank-backend-request url :type "GET" :params params)))
     (plist-get (plist-get resp :data) :children)))
 
 (provide 'dank-backend)
+
+;;; dank-backend.el ends here

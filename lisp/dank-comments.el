@@ -1,3 +1,20 @@
+;;; dank-comments.el --- Major mode for browsing Reddit
+
+;; Copyright (C) 2021 John Louis Del Rosario
+
+;; Author: John Louis Del Rosario <john2x@gmail.com>
+;; Version: 0.1.0
+;; Keywords: reddit, social
+
+;;; Commentary:
+
+;; This file defines the dank-comments major mode for reading Reddit
+;; comments.
+;; To start this mode, first start a dank-posts buffer via `M-x dank-posts`
+;; then open a post's comments via `M-x dank-posts-goto-post-comments-at-point`.
+
+;;; Code:
+
 (require 'dank-auth)
 (require 'dank-backend)
 (require 'dank-utils)
@@ -10,7 +27,8 @@
   "Default depth of the comment tree to initially fetch.")
 (defcustom dank-comments-body-fill-width 120
   "Fill width for rendering the comment body.")
-(defcustom dank-comments-highlight-under-point-enabled 't "")
+(defcustom dank-comments-highlight-under-point-enabled 't
+  "Highlight the comment under point.")
 
 (defvar-local dank-comments-buffer nil)
 (defvar-local dank-comments-current-permalink nil)
@@ -44,7 +62,10 @@
   (setq show-trailing-whitespace nil))
 
 (defun dank-comments-init (subreddit post-id permalink source-buffer &optional sorting starting-comment-id)
-  "Initialize dank-comments-buffer with POST-ID."
+  "Initialize a dank-comments buffer with SUBREDDIT, POST-ID, and PERMALINK.
+SOURCE-BUFFER is the dank-posts buffer we came from.
+Optional SORTING, when non-nil, will sort the comments by that order.
+Optional STARTING-COMMENT-ID will start the comment tree at the comment (instead of the full comment tree)."
   (let ((buf (concat "*dank-comments* " permalink)))
     (if (get-buffer buf)
         (progn
@@ -154,7 +175,8 @@ If it's a long tree, open a new buffer for it."
        (buffer-string)))))
 
 (defun dank-comments--insert-comments-in-current-buffer (comments post-author)
-  "Insert a COMMENT-TREE into the current buffer (preferably a temp buffer)."
+  "Insert a COMMENTS into the current buffer (preferably a temp buffer).
+POST-AUTHOR is used to determine the post author so a different face can be applied."
   (when comments
     (let* ((comment (car comments)))
       (dank-comments--insert-comment-in-current-buffer comment post-author)
@@ -163,7 +185,8 @@ If it's a long tree, open a new buffer for it."
       (dank-comments--insert-comments-in-current-buffer (cdr comments) post-author))))
 
 (defun dank-comments--insert-comment-in-current-buffer (comment post-author &optional point)
-  "Insert COMMENT into the current temporary buffer at optional POINT."
+  "Insert COMMENT into the current temporary buffer at optional POINT.
+POST-AUTHOR is used to determine the post author so a different face can be applied."
   (if (eq (type-of comment) 'dank-comment)
       (let* ((formatted-comment-metadata (concat (dank-comment-format-metadata comment post-author) "\n"))
              (formatted-comment-body (concat (dank-comment-format-body comment dank-comments-body-fill-width) "\n")))
@@ -265,7 +288,7 @@ If it's a long tree, open a new buffer for it."
 (defun dank-comments--find-comment-tree-extents (pos &optional start-at-end-of-first-header)
   "Return a list containing point for beginning and end of a comment tree at POS.
 When START-AT-END-OF-FIRST-HEADER is non-nil, exclude the body of the header of the
-top comment from the extent range."
+top comment from the extent range. This is useful for folding the comment body only."
   (interactive "d")
   (save-excursion
     (goto-char pos)
@@ -463,3 +486,4 @@ If EWW is non-nil, browse in eww instead of the browser."
     (browse-url (concat "https://old.reddit.com" dank-comments-current-permalink))))
 
 (provide 'dank-comments)
+;;; dank-comments.el ends here

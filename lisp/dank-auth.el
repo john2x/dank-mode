@@ -1,3 +1,17 @@
+;;; dank-auth.el --- Major mode for browsing Reddit
+
+;; Copyright (C) 2021 John Louis Del Rosario
+
+;; Author: John Louis Del Rosario <john2x@gmail.com>
+;; Version: 0.1.0
+;; Keywords: reddit, social
+
+;;; Commentary:
+
+;; This file defines functions for authenticating with Reddit.
+
+;;; Code:
+
 (require 'request)
 (require 'json)
 (require 'dank-utils)
@@ -99,3 +113,5 @@ to do an actual request to Reddit's API using the current access token."
        dank-auth--token-expiry-threshold-seconds)))
 
 (provide 'dank-auth)
+
+;;; dank-auth.el ends here

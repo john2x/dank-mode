@@ -1,3 +1,27 @@
+;;; dank-mode.el --- Major mode for browsing Reddit
+
+;; Copyright (C) 2021 John Louis Del Rosario
+
+;; Author: John Louis Del Rosario <john2x@gmail.com>
+;; Version: 0.1.0
+;; Keywords: reddit, social
+
+;;; Commentary:
+
+;; This file defines the entry point for dank-mode (dank-posts-mode
+;; and dank-comments-mode).
+;;
+;; Before you can start using dank-mode, you will need to configure
+;; your auth credentials. See dank-auth.el for details.
+;;
+;; To start a dank-mode session, use `M-x dank-mode`. This will start
+;; a dank-posts-mode buffer with the hot posts of your frontpage.
+;;
+;; To read a post's comments, use `M-x
+;; dank-posts-goto-post-comments-at-point`.
+
+;;; Code:
+
 (require 'dank-auth)
 (require 'dank-backend)
 (require 'dank-cache)

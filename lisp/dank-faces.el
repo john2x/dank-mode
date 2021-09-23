@@ -1,3 +1,17 @@
+;;; dank-faces.el --- Major mode for browsing Reddit
+
+;; Copyright (C) 2021 John Louis Del Rosario
+
+;; Author: John Louis Del Rosario <john2x@gmail.com>
+;; Version: 0.1.0
+;; Keywords: reddit, social
+
+;;; Commentary:
+
+;; This file defines faces for dank-mode.
+
+;;; Code:
+
 (defvar dank-faces-color-orangered "#FF4500")
 (defvar dank-faces-color-upvote "#FF8B60")
 (defvar dank-faces-color-downvote "#9494FF")
@@ -88,3 +102,5 @@
   :group 'dank-faces)
 
 (provide 'dank-faces)
+
+;;; dank-faces.el ends here

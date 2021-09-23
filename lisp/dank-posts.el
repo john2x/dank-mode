@@ -1,3 +1,19 @@
+;;; dank-posts.el --- Major mode for browsing Reddit
+
+;; Copyright (C) 2021 John Louis Del Rosario
+
+;; Author: John Louis Del Rosario <john2x@gmail.com>
+;; Version: 0.1.0
+;; Keywords: reddit, social
+
+;;; Commentary:
+
+;; This file defines the dank-posts major mode for browsing Reddit
+;; posts.
+;; To start this mode, start a dank-posts buffer via `M-x dank-posts`.
+
+;;; Code:
+
 (require 'dank-auth)
 (require 'dank-backend)
 (require 'dank-utils)
@@ -297,3 +313,5 @@ If EWW is non-nil, browse in eww instead of the browser."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (provide 'dank-posts)
+
+;;; dank-posts.el ends here

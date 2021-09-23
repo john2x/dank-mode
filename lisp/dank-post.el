@@ -1,3 +1,18 @@
+;;; dank-post.el --- Major mode for browsing Reddit
+
+;; Copyright (C) 2021 John Louis Del Rosario
+
+;; Author: John Louis Del Rosario <john2x@gmail.com>
+;; Version: 0.1.0
+;; Keywords: reddit, social
+
+;;; Commentary:
+
+;; This file defines structs and utility functions for the dank-posts
+;; major mode.
+
+;;; Code:
+
 (require 'dank-utils)
 (require 'dank-faces)
 
@@ -90,3 +105,5 @@ Optional POST-INDEX is the position of the post in a list."
                          :description (plist-get subreddit :description))))
 
 (provide 'dank-post)
+
+;;; dank-post.el ends here

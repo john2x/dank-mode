@@ -1,8 +1,25 @@
+;;; dank-cache.el --- Major mode for browsing Reddit
+
+;; Copyright (C) 2021 John Louis Del Rosario
+
+;; Author: John Louis Del Rosario <john2x@gmail.com>
+;; Version: 0.1.0
+;; Keywords: reddit, social
+
+;;; Commentary:
+
+;; This file defines functions for caching Reddit API responses.
+
+;;; Code:
+
 ;(defcustom dank-backend-cache-directory (expand-file-name "dank-mode" user-emacs-directory))
 
-(defcustom dank-cache-enabled t "")
-(defcustom dank-cache-directory "cache" "")
-(defcustom dank-cache-timeout 60 "")
+(defcustom dank-cache-enabled t
+  "Enable caching API responses.")
+(defcustom dank-cache-directory "cache"
+  "Name of the cache directory.")
+(defcustom dank-cache-timeout 60
+  "Maximum age of cached objects in seconds.")
 
 (defun dank-cache--create-cache-directory ()
   "Create the cache directory `dank-cache-directory'."
@@ -68,3 +85,5 @@ If DELETE is non-nil, delete the key if it is expired."
         t))))
 
 (provide 'dank-cache)
+
+;;; dank-cache.el ends here

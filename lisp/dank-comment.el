@@ -1,3 +1,18 @@
+;;; dank-comment.el --- Major mode for browsing Reddit
+
+;; Copyright (C) 2021 John Louis Del Rosario
+
+;; Author: John Louis Del Rosario <john2x@gmail.com>
+;; Version: 0.1.0
+;; Keywords: reddit, social
+
+;;; Commentary:
+
+;; This file defines structs and utility functions for the
+;; dank-comments major mode.
+
+;;; Code:
+
 (require 'dank-backend)
 (require 'dank-utils)
 
@@ -49,7 +64,8 @@
                                     (mapcar #'dank-comment-parse children))))))
 
 (defun dank-comment-format-post-content (post fill-column)
-  "Format POST content as string."
+  "Format POST content as string.
+FILL-COLUMN is used for filling the post content."
   (concat
    "\n"
    ;(propertize (concat (s-repeat fill-column " ") "\n") 'font-lock-face 'dank-faces-separator)
@@ -78,7 +94,8 @@ POST-AUTHOR is used to apply a different face to the comment author."
     (dank-comment--propertize-comment-with-metadata formatted-metadata comment)))
 
 (defun dank-comment-format-body (comment fill-column)
-  "Format COMMENT body."
+  "Format COMMENT body.
+FILL-COLUMN is used for filling the comment body."
   (let* ((body (dank-comment-body comment))
          (depth (dank-comment-depth comment))
          (filled-body (dank-utils-markdown-fill-paragraph-and-indent body depth fill-column)) ;; fill the body
@@ -117,3 +134,5 @@ POST-AUTHOR is used to apply a different face to the comment author."
   formatted-placeholder)
 
 (provide 'dank-comment)
+
+;;; dank-comment.el ends here
