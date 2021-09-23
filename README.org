@@ -42,9 +42,9 @@ your credentials.
   - [X] Open link
 - [X] review dependencies
   - [X] use different request library?
-- [ ] Open current post in Emacs
-  - [ ] Open link in eww
-  - [ ] Render image in Emacs
+- [X] Open current post in Emacs
+  - [X] Open link in eww
+  - [X] Render image in Emacs
 - [ ] Usage instructions
 - [ ] Change post sorting
 - [ ] Change comment sorting

@@ -11,8 +11,7 @@
 (defvar dank-posts-page-items-limit 25)
 (defvar dank-posts-subscribed-subreddits nil)
 
-(when (not dank-posts-subscribed-subreddits)
-  (setq dank-posts-subscribed-subreddits (dank-posts--get-subscribed-subreddits-names)))
+
 
 (defcustom dank-posts-known-subreddits dank-posts-subscribed-subreddits "")
 (defcustom dank-posts-default-subreddit nil "")
@@ -37,14 +36,17 @@
     (define-key map (kbd "C-x C-o") 'dank-posts-goto-post-comments-at-point)
     (define-key map (kbd "C-x C-/") 'dank-posts-goto-subreddit-at-point)
     (define-key map (kbd "C-x C-f") 'dank-posts-goto-subreddit)
-    (define-key map (kbd "C-x b") 'dank-posts-browse-post-link-at-point)
-    (define-key map (kbd "C-x o") 'dank-posts-browse-post-comments-at-point)
+    (define-key map (kbd "C-x l l") (lambda (point) (interactive "d") (dank-posts-browse-post-link-at-point point t)))
+    (define-key map (kbd "C-x l b") 'dank-posts-browse-post-link-at-point)
+    (define-key map (kbd "C-x l o") 'dank-posts-browse-post-comments-at-point)
     (define-key map (kbd "C-x q") 'kill-current-buffer)
     map))
 
 (define-derived-mode dank-posts-mode special-mode "dank-posts-mode"
   "Major mode for browsing reddit posts."
-  (setq show-trailing-whitespace nil))
+  (setq show-trailing-whitespace nil)
+  (when (not dank-posts-subscribed-subreddits)
+    (setq dank-posts-subscribed-subreddits (dank-posts--get-subscribed-subreddits-names))))
 
 (defun dank-posts-init (&optional subreddit)
   "Initialize dank-posts-mode buffer to SUBREDDIT.
@@ -274,14 +276,17 @@ POST-INDEX is the number (\"position\") of the post."
   "Get the authenticated user's list of subscribed subreddits."
   (sort (mapcar (lambda (s) (dank-subreddit-url s)) (mapcar #'dank-post-subreddit-parse (dank-backend-subreddits))) 'string<))
 
-(defun dank-posts-browse-post-link-at-point (point)
-  "Open the post link at POINT in a browser."
+(defun dank-posts-browse-post-link-at-point (point &optional eww)
+  "Open the post link at POINT in a browser.
+If EWW is non-nil, browse in eww instead of the browser."
   (interactive "d")
-  (let* ((post-link (dank-utils-get-prop point 'dank-post-link)))
+  (let* ((post-link (dank-utils-get-prop point 'dank-post-link))
+         (browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
     (browse-url post-link)))
 
-(defun dank-posts-browse-post-comments-at-point (point)
-  "Open the post comments at POINT in a browser."
+(defun dank-posts-browse-post-comments-at-point (point &optional eww)
+  "Open the post comments at POINT in a browser.
+If EWW is non-nil, browse in eww instead of the browser."
   (interactive "d")
   (let ((post-permalink (dank-utils-get-prop point 'dank-post-permalink)))
     (browse-url (concat "https://old.reddit.com" post-permalink))))
