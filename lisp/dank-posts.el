@@ -81,7 +81,9 @@ When nil, defaults to the frontpage."
   "Major mode for browsing reddit posts."
   (setq show-trailing-whitespace nil)
   (when (not dank-posts-subscribed-subreddits)
-    (setq dank-posts-subscribed-subreddits (dank-posts--get-subscribed-subreddits-names))))
+    (setq dank-posts-subscribed-subreddits (dank-posts--get-subscribed-subreddits-names)))
+  (when (not dank-posts-known-subreddits)
+    (setq dank-posts-known-subreddits dank-posts-subscribed-subreddits)))
 
 (defun dank-posts-init (&optional subreddit)
   "Initialize dank-posts-mode buffer to SUBREDDIT.
