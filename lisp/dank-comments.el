@@ -24,11 +24,19 @@
 (require 's)
 
 (defcustom dank-comments-default-depth 10
-  "Default depth of the comment tree to initially fetch.")
+  "Default depth of the comment tree to initially fetch."
+  :type 'integer
+  :group 'dank-mode)
+
 (defcustom dank-comments-body-fill-width 120
-  "Fill width for rendering the comment body.")
-(defcustom dank-comments-highlight-under-point-enabled 't
-  "Highlight the comment under point.")
+  "Fill width for rendering the comment body."
+  :type 'integer
+  :group 'dank-mode)
+
+(defcustom dank-comments-highlight-under-point-enabled t
+  "Highlight the comment under point."
+  :type 'boolean
+  :group 'dank-mode)
 
 (defvar-local dank-comments-buffer nil)
 (defvar-local dank-comments-current-permalink nil)

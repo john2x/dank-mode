@@ -15,11 +15,19 @@
 ;(defcustom dank-backend-cache-directory (expand-file-name "dank-mode" user-emacs-directory))
 
 (defcustom dank-cache-enabled t
-  "Enable caching API responses.")
-(defcustom dank-cache-directory "cache"
-  "Name of the cache directory.")
+  "Enable caching API responses."
+  :type 'boolean
+  :group 'dank-mode)
+
+(defcustom dank-cache-directory (expand-file-name "~/.emacs.d/dank-mode/cache")
+  "Path of the cache directory."
+  :type 'string
+  :group 'dank-mode)
+
 (defcustom dank-cache-timeout 60
-  "Maximum age of cached objects in seconds.")
+  "Maximum age of cached objects in seconds."
+  :type 'integer
+  :group 'dank-mode)
 
 (defun dank-cache--create-cache-directory ()
   "Create the cache directory `dank-cache-directory'."

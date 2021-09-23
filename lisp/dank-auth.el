@@ -17,33 +17,49 @@
 (require 'dank-utils)
 
 
-(defcustom dank-auth-file nil
+(defcustom dank-auth-file (expand-file-name "~/.emacs.d/dank-mode/auth.json")
   "Path to a JSON file containing your Reddit auth info.
-Refer to auth.example.json included in this package for example format.")
+Refer to auth.example.json included in this package for example format."
+  :type 'string
+  :group 'dank-mode)
+
 (defcustom dank-auth-username nil
-  "Your Reddit username.  This can be set via `dank-auth-file'.")
+  "Your Reddit username.  This _should_ be set via `dank-auth-file'."
+  :type 'string
+  :group 'dank-mode)
+
 (defcustom dank-auth-password nil
-  "Your Reddit password.  This can be set via `dank-auth-file'.")
+  "Your Reddit password.  This _should_ be set via `dank-auth-file'."
+  :type 'string
+  :group 'dank-mode)
+
 (defcustom dank-auth-oauth-client-id nil
-  "Your Reddit OAuth client id.  This can be set via `dank-auth-file'.
+  "Your Reddit OAuth client id.  This _should_ be set via `dank-auth-file'.
 For instructions on how to retrieve the client id, refer to this package's
-README file.")
+README file."
+  :type 'string
+  :group 'dank-mode)
+
 (defcustom dank-auth-oauth-client-secret nil
   "Your Reddit OAuth client secret.
-This can be set via `dank-auth-file'.
+This _should_ be set via `dank-auth-file'.
 For instructions on how to retrieve the client secret, refer to this package's
-README file.")
+README file."
+  :type 'string
+  :group 'dank-mode)
+
 (defcustom dank-auth-user-agent nil
   "User agent value to use when requesting the Reddit API.
 This can be set via `dank-auth-file'.  This variable is optional, and
 by default will be a concatenation of the string \"Emacs dank-mode/\" plus your
-username.")
+username."
+  :type 'string
+  :group 'dank-mode)
+
 (defvar dank-auth--token-expiry-threshold-seconds 300
   "The threshold in seconds to consider an access token as invalid.")
 
 (defvar dank-auth--token-storage nil)
-
-(setq dank-auth-file "auth.json")
 
 (define-error 'dank-auth-error "dank-auth error" 'error)
 (define-error 'dank-auth-token-refresh-error "Failed to refresh access token" 'dank-auth-error)

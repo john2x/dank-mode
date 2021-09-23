@@ -28,11 +28,28 @@
 (defvar dank-posts-subscribed-subreddits nil)
 
 
+(defcustom dank-posts-known-subreddits dank-posts-subscribed-subreddits
+  "List of known subreddits. Defaults to the authenticated user's subscribed subreddits.
+Set a custom value if you want a different list."
+  :type '(list string)
+  :group 'dank-mode)
 
-(defcustom dank-posts-known-subreddits dank-posts-subscribed-subreddits "")
-(defcustom dank-posts-default-subreddit nil "")
-(defcustom dank-posts-default-sorting 'hot "")
-(defcustom dank-posts-highlight-under-point-enabled 't "")
+(defcustom dank-posts-default-subreddit nil
+  "Default subreddit to load when first invoking `M-x dank-mode'.
+When nil, defaults to the frontpage."
+  :type 'string
+  :group 'dank-mode)
+
+(defcustom dank-posts-default-sorting 'hot
+  "Default sorting when loading posts."
+  :type 'symbol
+  :group 'dank-mode
+  :options '(hot new best))
+
+(defcustom dank-posts-highlight-under-point-enabled t
+  "Highlight post under point."
+  :type 'boolean
+  :group 'dank-mode)
 
 (defvar-local dank-posts-buffer nil)
 (defvar-local dank-posts-current-subreddit dank-posts-default-subreddit)
