@@ -1,0 +1,52 @@
+* TODO v0.1.0
+- [X] Figure out how to render post content properly. Probably best to
+  fill it like comments.
+- [X] Use fill width for separators so the background face fills up
+  the space.
+- [X] Start propertizing comment metadata and body
+- [X] Change how buffers are rendered. Use temp buffer and copy
+  content to the active buffer. Printing large comment trees does not
+  look good when writing to the active buffer directly.
+  - Can the message printing be stopped?
+- [X] Render 'load more' comments.
+  - [X] indent them properly
+- [X] Show header in comments buffer
+  - /r/subreddit - sorting
+- [X] Add back highlighting of post under point
+- [X] Add highlighting of comment under point
+- [X] Navigation methods for comment tree
+  - [X] Move between comments directly above/below
+  - [X] Jump to parent
+  - [X] Jump between siblings
+- [X] Start folding comment trees.
+- [X] Interact with 'load more' comments.
+  - insert in buffer
+- [X] Interact with 0 'load more' comments
+  - open in new buffer
+- [X] When quitting a buffer, jump back to where we came from.
+- [X] Anonymous browsing
+  - not possible
+- [X] Command to load a user's subscriptions. This can be used for
+  autocomplete when switching subreddits.
+- [X] Open current post in browser
+  - [X] Open comment thread
+  - [X] Open link
+- [X] review dependencies
+  - [X] use different request library?
+- [X] Open current post in Emacs
+  - [X] Open link in eww
+  - [X] Render image in Emacs
+- [X] Usage instructions
+- [ ] Change post sorting
+- [ ] Change comment sorting
+
+* Ideas
+
+- Use plstore.el for oauth tokens
+- Use web-server.el to do the oauth dance
+  http://eschulte.github.io/emacs-web-server
+
+* Known bugs
+*** dank-posts-mode
+- [ ] navigating to previous post when pointer is on an empty
+  line/last line skips the last post

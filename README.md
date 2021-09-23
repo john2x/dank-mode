@@ -7,6 +7,7 @@ Emacs major mode for browsing ~~dank memes~~ Reddit.
 - Load list of posts for your frontpage or a specific subreddit.
 - Read comments for a post.
 - Open posts and links in a browser or with EWW.
+- Customizable faces.
 
 ![dank-posts mode](screenshots/dank-posts.png)
 ![dank-comments mode](screenshots/dank-comments.png)
@@ -103,10 +104,15 @@ To fold/unfold a comment tree, press `TAB`.
 To quit the comment buffer and go back to the frontpage or subreddit
 buffer, press `C-x q`.
 
+### Other commands
+
+To view the full list of commands, refer to the mode help page `C-x h m`.
+
 # Roadmap
 
 - [ ] Better auth (e.g. don't require providing password in plaintext)
 - [ ] Multi-reddits
+- [ ] Upvote/downvote posts and comments
 - [ ] Reply in comments
 
 ## Out of scope:
