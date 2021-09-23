@@ -48,6 +48,7 @@ your credentials.
 - [ ] Usage instructions
 - [ ] Change post sorting
 - [ ] Change comment sorting
+
 ** Features
 
 *** Post listing
