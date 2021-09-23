@@ -85,6 +85,8 @@ C-/`.
 To load the next page, press `C-x C-v`. To refresh, press `C-x C-r`
 (this will reset the page count).
 
+To change the posts sorting, press `C-x C-s`.
+
 ### Comments
 
 To read the comments of the active post, press `C-x C-o`. This will

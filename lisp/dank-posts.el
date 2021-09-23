@@ -26,6 +26,7 @@
 
 (defvar dank-posts-page-items-limit 25)
 (defvar dank-posts-subscribed-subreddits nil)
+(defvar dank-posts-sorting-options '(hot best new rising controversial))
 
 
 (defcustom dank-posts-known-subreddits dank-posts-subscribed-subreddits
@@ -66,6 +67,7 @@ When nil, defaults to the frontpage."
     (define-key map "p" 'dank-posts-navigate-prev-post)
     (define-key map (kbd "C-x C-v") 'dank-posts-fetch-next-page)
     (define-key map (kbd "C-x C-r") 'dank-posts-refresh)
+    (define-key map (kbd "C-x C-s") 'dank-posts-change-sorting)
     (define-key map (kbd "C-x C-o") 'dank-posts-goto-post-comments-at-point)
     (define-key map (kbd "C-x C-/") 'dank-posts-goto-subreddit-at-point)
     (define-key map (kbd "C-x C-f") 'dank-posts-goto-subreddit)
@@ -273,29 +275,41 @@ POST-INDEX is the number (\"position\") of the post."
   (dank-posts-highlight-under-point))
 
 (defun dank-posts-refresh ()
+  "Refresh the current dank-posts buffer."
   (interactive)
   (dank-posts-reset-state dank-posts-current-subreddit dank-posts-current-sorting
                           dank-posts-page-items-limit)
   (dank-posts-render-current-page dank-posts-current-page-posts t)
   (dank-posts-highlight-under-point))
 
+(defun dank-posts-change-sorting (sorting)
+  "Refresh the current dank-posts buffer with a different SORTING."
+  (interactive (list (completing-read "Sorting: " dank-posts-sorting-options)))
+  (dank-posts-reset-state dank-posts-current-subreddit (intern sorting)
+                          dank-posts-page-items-limit)
+  (dank-posts-render-current-page dank-posts-current-page-posts t)
+  (dank-posts-highlight-under-point))
+
 (defun dank-posts-goto-subreddit-at-point (point)
-  "Navigate to a dank-posts-mode buffer for a post's subreddit under pointer."
+  "Navigate to a dank-posts-mode buffer for a post's subreddit under POINT."
   (interactive "d")
   (let* ((subreddit (dank-utils-get-prop point 'dank-post-subreddit)))
     (dank-posts-init subreddit)))
 
 (defun dank-posts-goto-subreddit (subreddit)
-  "Navigate to a dank-posts-mode for a specific subreddit."
+  "Navigate to a dank-posts-mode for a specific SUBREDDIT."
   (interactive (list (completing-read "Go to subreddit: " dank-posts-known-subreddits)))
   (if (string-equal (substring subreddit 0 3) "/r/")
       (dank-posts-init (substring subreddit 3 (- (string-width subreddit) 1)))
     (dank-posts-init subreddit)))
 
 (defun dank-posts-goto-post-comments (subreddit post-id permalink &optional sorting)
+  "Open a dank-comments buffer for SUBREDDIT, POST-ID, and PERMALINK.
+Optional SORTING is the sort order for the comments."
   (dank-comments-init subreddit post-id permalink (current-buffer) sorting))
 
 (defun dank-posts-goto-post-comments-at-point (point)
+  "Open a dank-comments buffer for the post at POINT."
   (interactive "d")
   (let* ((post-props (text-properties-at point))
          (post-id (plist-get post-props 'dank-post-id))
