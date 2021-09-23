@@ -37,8 +37,8 @@
   - [X] Open link in eww
   - [X] Render image in Emacs
 - [X] Usage instructions
-- [ ] Change post sorting
-- [ ] Change comment sorting
+- [X] Change post sorting
+- [X] Change comment sorting
 
 * Ideas
 
