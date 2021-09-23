@@ -50,7 +50,7 @@ same file.[1]
 See the sample file `example.auth.json` for an example of this
 `dank-auth-file` file.
 
-[1]: Ideally, you shouldn't have to provide your plaintext password to use this package. But to perform the complete OAuth2 dance with Reddit's servers, a client server will have to be running to receive the access tokens. This is planned for a future iteration.
+[1]: Ideally, you shouldn't have to provide your **plaintext password** to use this package. But to perform the complete OAuth2 dance with Reddit's servers, a client server will have to be running to receive the access tokens. This is planned for a future iteration.
 
 # Usage instructions
 
