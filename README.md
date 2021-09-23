@@ -8,6 +8,10 @@ Emacs major mode for browsing ~~dank memes~~ Reddit.
 - Read comments for a post.
 - Open posts and links in a browser or with EWW.
 
+![dank-posts mode](screenshots/dank-posts.png)
+![dank-comments mode](screenshots/dank-comments.png)
+![links](screenshots/link.png)
+
 # Install
 
 This isn't ready for MELPA yet. To insall, download this repository
