@@ -32,6 +32,9 @@
     (define-key map (kbd "M-p") 'dank-comments-navigate-prev-sibling)
     (define-key map (kbd "C-x C-r") 'dank-comments-refresh)
     (define-key map (kbd "C-x C-o") 'dank-comments-open-more-comments-at-point)
+    (define-key map (kbd "C-x l l") (lambda () (interactive) (dank-comments-browse-post-link t)))
+    (define-key map (kbd "C-x l o") 'dank-comments-browse-post-link)
+    (define-key map (kbd "C-x l o") 'dank-comments-browse-post-comments)
     (define-key map (kbd "TAB") 'dank-comments-toggle-comment-tree-fold-at-point)
     (define-key map (kbd "C-x q") 'dank-comments-kill-current-buffer)
     map))
@@ -429,6 +432,7 @@ no next sibling, the next comment that has a lower depth."
       (string-equal current-id (dank-utils-get-prop (point) 'dank-comment-id)))))
 
 (defun dank-comments-refresh ()
+  "Refresh the comments of the current buffer."
   (interactive)
   (dank-comments-reset-state)
   (dank-comments-render-current-post dank-comments-current-post t)
@@ -436,10 +440,26 @@ no next sibling, the next comment that has a lower depth."
   (goto-char 0))
 
 (defun dank-comments-kill-current-buffer ()
+  "Kill the current dank-comments buffer and switch back to the source buffer."
   (interactive)
   (let ((current-buffer (current-buffer)))
     (when dank-comments-current-source-buffer
       (switch-to-buffer dank-comments-current-source-buffer))
     (kill-buffer current-buffer)))
+
+(defun dank-comments-browse-post-link (&optional eww)
+  "Open the current post link in a browser.
+If EWW is non-nil, browse in eww instead of the browser."
+  (interactive)
+  (let* ((post-link (dank-post-link dank-comments-current-post))
+         (browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
+    (browse-url post-link)))
+
+(defun dank-comments-browse-post-comments (&optional eww)
+  "Open the current comments in a browser.
+If EWW is non-nil, browse in eww instead of the browser."
+  (interactive)
+  (let ((browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
+    (browse-url (concat "https://old.reddit.com" dank-comments-current-permalink))))
 
 (provide 'dank-comments)

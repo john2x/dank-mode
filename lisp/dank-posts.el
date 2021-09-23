@@ -288,7 +288,8 @@ If EWW is non-nil, browse in eww instead of the browser."
   "Open the post comments at POINT in a browser.
 If EWW is non-nil, browse in eww instead of the browser."
   (interactive "d")
-  (let ((post-permalink (dank-utils-get-prop point 'dank-post-permalink)))
+  (let ((post-permalink (dank-utils-get-prop point 'dank-post-permalink))
+        (browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
     (browse-url (concat "https://old.reddit.com" post-permalink))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
