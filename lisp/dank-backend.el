@@ -122,7 +122,7 @@ Valid keywords are: :depth (integer), :limit (integer)."
     (let* ((params (if depth (cons `(depth . ,depth) '()) '()))
            (params (if limit (cons `(limit . ,limit) params) params))
            (params (if comment (cons `(comment . ,comment) params) params))
-           (params (cons `(sorting . ,(symbol-name sorting)) params))
+           (params (cons `(sort . ,(symbol-name sorting)) params))
            (resp (dank-backend-request url :type "GET" :params params))
            (post (aref (plist-get (plist-get (aref resp 0) :data) :children) 0))
            (comments (plist-get (plist-get (aref resp 1) :data) :children)))

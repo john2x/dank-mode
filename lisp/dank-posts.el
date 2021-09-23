@@ -26,7 +26,7 @@
 
 (defvar dank-posts-page-items-limit 25)
 (defvar dank-posts-subscribed-subreddits nil)
-(defvar dank-posts-sorting-options '(hot best new rising controversial))
+(defvar dank-posts-sorting-options '(hot best new rising controversial top))
 
 
 (defcustom dank-posts-known-subreddits dank-posts-subscribed-subreddits

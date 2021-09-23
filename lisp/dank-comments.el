@@ -23,6 +23,8 @@
 (require 'dank-comment)
 (require 's)
 
+(defvar dank-comments-sorting-options '(top best new controversial old qa))
+
 (defcustom dank-comments-default-depth 10
   "Default depth of the comment tree to initially fetch."
   :type 'integer
@@ -42,7 +44,7 @@
 (defvar-local dank-comments-current-permalink nil)
 (defvar-local dank-comments-current-post-id nil)
 (defvar-local dank-comments-current-subreddit nil)
-(defvar-local dank-comments-current-sorting 'hot)
+(defvar-local dank-comments-current-sorting 'top)
 (defvar-local dank-comments-current-post nil)
 (defvar-local dank-comments-current-comments nil)
 (defvar-local dank-comments-current-source-buffer nil)
@@ -88,23 +90,24 @@ Optional STARTING-COMMENT-ID will start the comment tree at the comment (instead
               dank-comments-current-post-id post-id
               dank-comments-current-permalink permalink
               dank-comments-current-starting-comment-id starting-comment-id
-              dank-comments-current-sorting sorting
+              dank-comments-current-sorting (or sorting 'top)
               dank-comments-current-source-buffer source-buffer)
         (condition-case err
-            (dank-comments-reset-state)
+            (dank-comments-reset-state sorting)
           (dank-backend-error (progn (dank-comments-render-error err)
                                      (signal (car err) (cdr err)))))
         (dank-comments-render-current-post dank-comments-current-post t)
         (dank-comments-render-current-comments dank-comments-current-comments dank-comments-current-post)
         (goto-char 0)))))
 
-(defun dank-comments-reset-state ()
+(defun dank-comments-reset-state (sorting)
   "Reset state of the current dank-posts buffer."
   (mapcar (lambda (c)
             (delete-overlay (cdr c)))
           dank-comments-tree-fold-overlays)
   (setq dank-comments-current-comments nil
-        dank-comments-current-post nil)
+        dank-comments-current-post nil
+        dank-comments-current-sorting sorting)
   (dank-comments-set-current-post-and-comments dank-comments-current-subreddit
                                                dank-comments-current-post-id
                                                dank-comments-current-sorting
@@ -220,7 +223,7 @@ POST-AUTHOR is used to determine the post author so a different face can be appl
                                 dank-comments-header-line-format-template
                                 `(subreddit ,dank-comments-current-subreddit
                                             starting-comment-id ,(or dank-comments-current-starting-comment-id "")
-                                            sorting ,(symbol-name dank-posts-current-sorting)))))))
+                                            sorting ,(symbol-name dank-comments-current-sorting)))))))
 
 ;; this highlighting logic is copied from ledger-mode
 ;; an overlay needs to be set once in the buffer and moved around
@@ -465,7 +468,15 @@ no next sibling, the next comment that has a lower depth."
 (defun dank-comments-refresh ()
   "Refresh the comments of the current buffer."
   (interactive)
-  (dank-comments-reset-state)
+  (dank-comments-reset-state dank-comments-current-sorting)
+  (dank-comments-render-current-post dank-comments-current-post t)
+  (dank-comments-render-current-comments dank-comments-current-comments dank-comments-current-post)
+  (goto-char 0))
+
+(defun dank-comments-change-sorting (sorting)
+  "Refresh the comments of the current buffer with a different SORTING."
+  (interactive (list (completing-read "Sorting: " dank-comments-sorting-options)))
+  (dank-comments-reset-state (intern sorting))
   (dank-comments-render-current-post dank-comments-current-post t)
   (dank-comments-render-current-comments dank-comments-current-comments dank-comments-current-post)
   (goto-char 0))
