@@ -90,8 +90,8 @@ To read the comments of the active post, press `C-x C-o`. This will
 create a new buffer in `dank-comments` mode for the post's comments.
 Navigating between comments is done similarly with `n` and `p`.
 
-To jump to the between sibling comments, press `M-n` or `M-p`.  To
-jump to the parent comment, press `P` (`Shift-p`).
+To jump between sibling comments, press `M-n` or `M-p`.  To jump to
+the parent comment, press `P` (`Shift-p`).
 
 To load more comments, navigate to that "load more" comment and press
 `C-x C-o`. If it's a small enough comment tree the comments will be
@@ -103,4 +103,18 @@ To fold/unfold a comment tree, press `TAB`.
 To quit the comment buffer and go back to the frontpage or subreddit
 buffer, press `C-x q`.
 
-# Goals
+# Roadmap
+
+- [ ] Better auth (e.g. don't require providing password in plaintext)
+- [ ] Multi-reddits
+- [ ] Reply in comments
+
+## Out of scope:
+
+These are features I don't use and don't intend to implement anytime soon:
+
+- moderating
+- live threads
+- polling
+- submitting posts
+- private messages
