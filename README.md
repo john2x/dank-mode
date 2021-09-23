@@ -116,6 +116,12 @@ To view the full list of commands, refer to the mode help page `C-x h m`.
 - [ ] Multi-reddits
 - [ ] Upvote/downvote posts and comments
 - [ ] Reply in comments
+- [ ] Submitting posts
+
+## Maybe:
+
+- Saving posts and comments
+- Viewing the user's saved/upvoted/replied posts and comments
 
 ## Out of scope:
 
@@ -124,5 +130,4 @@ These are features I don't use and don't intend to implement anytime soon:
 - moderating
 - live threads
 - polling
-- submitting posts
 - private messages
