@@ -18,10 +18,15 @@
 
 (cl-defstruct dank-comment
   name id body edited text age date author subreddit score
-  author_flair gilded replies depth parent_id)
+  author_flair gilded replies depth parent_id post_author_p)
 
 (cl-defstruct dank-comment-more
   id parent_id count depth children_ids)
+
+(defcustom dank-comments-body-fill-width 120
+  "Fill width for rendering the comment body."
+  :type 'integer
+  :group 'dank-mode)
 
 (defvar dank-comment-metadata-template
   "- ${author} (${score} points | ${age})${edited} ")
@@ -35,8 +40,10 @@
 (defvar dank-comments-header-line-format-template
   "/r/${subreddit} - ${sorting} ${starting-comment-id}")
 
-(defun dank-comment-parse (comment)
-  "Parse COMMENT into a `dank-comment'."
+(defun dank-comment-parse (comment post-author)
+  "Parse COMMENT into a `dank-comment'.
+POST-AUTHOR is used to set a boolean field to differentiate the
+comment author as the post author."
   (let* ((kind (plist-get comment :kind))
          (comment (plist-get comment :data))
          (depth (plist-get comment :depth))
@@ -60,8 +67,9 @@
                          :author_flair (plist-get comment :author_flair_text)
                          :gilded (plist-get comment :gilded)
                          :parent_id (plist-get comment :parent_id)
+                         :post_author_p (string-equal (plist-get comment :author) post-author)
                          :replies (if (stringp replies) '()
-                                    (mapcar #'dank-comment-parse children))))))
+                                    (mapcar (lambda (c) (dank-comment-parse c post-author)) children))))))
 
 (defun dank-comment-format-post-content (post fill-column)
   "Format POST content as string.
@@ -75,13 +83,12 @@ FILL-COLUMN is used for filling the post content."
    "\n"
    (propertize (concat (s-repeat fill-column " ") "\n") 'font-lock-face 'dank-faces-separator)))
 
-(defun dank-comment-format-metadata (comment post-author)
+(defun dank-comment-format-metadata (comment)
   "Format COMMENT metadata.
 Also applies font-lock properties.
 The comment body will need to be formatted separately, since it's
-formatting/indentation will depend on its position.
-POST-AUTHOR is used to apply a different face to the comment author."
-  (let* ((author-face (if (string= (dank-comment-author comment) post-author) 'dank-faces-comment-author-op 'dank-faces-comment-author))
+formatting/indentation will depend on its position."
+  (let* ((author-face (if (dank-comment-post_author_p comment) 'dank-faces-comment-author-op 'dank-faces-comment-author))
          (author (concat "/u/" (dank-comment-author comment)))
          (score (number-to-string (dank-comment-score comment)))
          (age (dank-comment-age comment))

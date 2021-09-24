@@ -119,7 +119,8 @@ Optional STARTING-COMMENT-ID will start the comment tree at the comment (instead
                                                                 :depth dank-comments-default-depth
                                                                 :comment starting-comment-id))
          (post (dank-post-parse (car post-comments)))
-         (comments (mapcar #'dank-comment-parse (cdr post-comments))))
+         (post-author (dank-post-author post))
+         (comments (mapcar (lambda (c) (dank-comment-parse c post-author)) (cdr post-comments))))
     (setq dank-comments-current-post post
           dank-comments-current-comments comments)
     (dank-comments-set-header-line)))
@@ -130,10 +131,11 @@ Optional STARTING-COMMENT-ID will start the comment tree at the comment (instead
   (when (and (eq (dank-utils-get-prop point 'dank-comment-type) 'more)
              (> (dank-utils-get-prop point 'dank-comment-count) 0))
     (let* ((post-id (concat "t3_" dank-comments-current-post-id))
+           (post-author (dank-post-author dank-comments-current-post))
            (current-depth (dank-utils-get-prop point 'dank-comment-depth))
            (children-ids (string-join (dank-utils-get-prop point 'dank-comment-children-ids) ","))
            (comments-raw (dank-backend-more-children post-id children-ids dank-comments-current-sorting))
-           (comments (mapcar #'dank-comment-parse comments-raw)))
+           (comments (mapcar (lambda (c) (dank-comment-parse c post-author)) comments-raw)))
       (save-excursion
         (dank-comments-render-current-comments comments dank-comments-current-post nil point))
       (beginning-of-line-text)
@@ -182,24 +184,22 @@ If it's a long tree, open a new buffer for it."
       (goto-char (point-max)))
     (insert ;; insert comments into a temp buffer and insert that into the real buffer
      (with-temp-buffer
-       (dank-comments--insert-comments-in-current-buffer comments (dank-post-author post))
+       (dank-comments--insert-comments-in-current-buffer comments)
        (buffer-string)))))
 
-(defun dank-comments--insert-comments-in-current-buffer (comments post-author)
-  "Insert a COMMENTS into the current buffer (preferably a temp buffer).
-POST-AUTHOR is used to determine the post author so a different face can be applied."
+(defun dank-comments--insert-comments-in-current-buffer (comments)
+  "Insert a COMMENTS into the current buffer (preferably a temp buffer)."
   (when comments
     (let* ((comment (car comments)))
-      (dank-comments--insert-comment-in-current-buffer comment post-author)
+      (dank-comments--insert-comment-in-current-buffer comment)
       (when (eq (type-of comment) 'dank-comment)
-        (dank-comments--insert-comments-in-current-buffer (dank-comment-replies comment) post-author))
-      (dank-comments--insert-comments-in-current-buffer (cdr comments) post-author))))
+        (dank-comments--insert-comments-in-current-buffer (dank-comment-replies comment)))
+      (dank-comments--insert-comments-in-current-buffer (cdr comments)))))
 
-(defun dank-comments--insert-comment-in-current-buffer (comment post-author &optional point)
-  "Insert COMMENT into the current temporary buffer at optional POINT.
-POST-AUTHOR is used to determine the post author so a different face can be applied."
+(defun dank-comments--insert-comment-in-current-buffer (comment &optional point)
+  "Insert COMMENT into the current temporary buffer at optional POINT."
   (if (eq (type-of comment) 'dank-comment)
-      (let* ((formatted-comment-metadata (concat (dank-comment-format-metadata comment post-author) "\n"))
+      (let* ((formatted-comment-metadata (concat (dank-comment-format-metadata comment) "\n"))
              (formatted-comment-body (concat (dank-comment-format-body comment dank-comments-body-fill-width) "\n")))
         (goto-char (or point (point-max)))
         (insert formatted-comment-metadata)
