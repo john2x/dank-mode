@@ -5,7 +5,7 @@ Emacs major mode for browsing ~~dank memes~~ Reddit.
 # Features and screenshots
 
 - Load list of posts for your frontpage or a specific subreddit.
-- Read comments for a post.
+- Read comments for a post (nested and filled).
 - Open posts and links in a browser or with EWW.
 - Customizable faces.
 
@@ -117,6 +117,7 @@ To view the full list of commands, refer to the mode help page `C-x h m`.
 - [ ] Upvote/downvote posts and comments
 - [ ] Reply in comments
 - [ ] Submitting posts
+- [ ] Search
 
 ## Maybe:
 

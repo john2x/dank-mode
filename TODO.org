@@ -1,4 +1,4 @@
-* TODO v0.1.0
+* DONE v0.1.0
 - [X] Figure out how to render post content properly. Probably best to
   fill it like comments.
 - [X] Use fill width for separators so the background face fills up
