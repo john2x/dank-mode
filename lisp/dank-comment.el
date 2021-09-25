@@ -81,7 +81,7 @@ FILL-COLUMN is used for filling the post content."
        (dank-utils-markdown-fill-paragraph-and-indent (dank-post-text post) 0 fill-column "")
      (dank-post-link post)) ;; TODO: propertize link
    "\n"
-   (propertize (concat (s-repeat fill-column " ") "\n") 'font-lock-face 'dank-faces-separator)))
+   ))
 
 (defun dank-comment-format-metadata (comment)
   "Format COMMENT metadata.
@@ -100,12 +100,12 @@ formatting/indentation will depend on its position."
          (formatted-metadata (concat (s-repeat depth "  ") formatted-metadata)))
     (dank-comment--propertize-comment-with-metadata formatted-metadata comment)))
 
-(defun dank-comment-format-body (comment fill-column)
+(defun dank-comment-format-body (comment)
   "Format COMMENT body.
-FILL-COLUMN is used for filling the comment body."
+The body is filled up to `dank-comments-body-fill-width'."
   (let* ((body (dank-comment-body comment))
          (depth (dank-comment-depth comment))
-         (filled-body (dank-utils-markdown-fill-paragraph-and-indent body depth fill-column)) ;; fill the body
+         (filled-body (dank-utils-markdown-fill-paragraph-and-indent body depth dank-comments-body-fill-width)) ;; fill the body
          )
     (dank-comment--propertize-comment-with-metadata filled-body comment)))
 
@@ -139,6 +139,14 @@ FILL-COLUMN is used for filling the comment body."
                                                 dank-comment-depth ,(dank-comment-more-depth source-placeholder))
                        formatted-placeholder)
   formatted-placeholder)
+
+(defun dank-comment--ewoc-pp (comment)
+  "EWOC pretty-printer for COMMENT."
+  (if (dank-comment-p comment)
+      (insert (concat (dank-comment-format-metadata comment)
+                      "\n"
+                      (dank-comment-format-body comment)))
+    (insert (dank-comment-format-more comment))))
 
 (provide 'dank-comment)
 
