@@ -125,6 +125,24 @@ Optional STARTING-COMMENT-ID will start the comment tree at the comment (instead
           dank-comments-current-comments comments)
     (dank-comments-set-header-line)))
 
+(defun dank-comments--populate-comments-ewoc (ewoc comments &optional clear)
+  "Populate the EWOC with COMMENTS.
+If CLEAR is non-nil, empty its contents."
+  (if clear
+      (ewoc-filter ewoc (lambda (n) nil)))
+  (let* ((comment (car comments))
+         (comment-copy (copy-dank-comment comment))
+         (siblings (cdr comments))
+         (replies (dank-comment-replies comment)))
+    (setf (dank-comment-replies comment-copy) nil)
+    (ewoc-enter-last ewoc comment-copy)
+    (if replies
+        (dank-comments--populate-comments-ewoc ewoc replies))
+    (if siblings
+        (dank-comments--populate-comments-ewoc ewoc siblings))
+    ewoc))
+
+
 (defun dank-comments-insert-more-comments-at-point (point)
   "Fetch more comments for the placeholder at POINT and insert the contents in its place."
   (interactive "d")
