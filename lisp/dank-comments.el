@@ -129,7 +129,8 @@ Optional STARTING-COMMENT-ID will start the comment tree at the comment (instead
 (defun dank-comments--insert-comments-at-pos-ewoc (ewoc comments pos)
   "Insert COMMENTS into EWOC at POS.
 This deletes the ewoc node at POS before inserting COMMENTS."
-  (let* ((node (ewoc-locate ewoc pos))
+  (let* ((inhibit-read-only t)
+         (node (ewoc-locate ewoc pos))
          (delete-node node)
          (flattened-comments (flatten-tree comments)))
     (while (consp flattened-comments)
