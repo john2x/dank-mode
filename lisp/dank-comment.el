@@ -76,18 +76,6 @@ list of children, also parsed."
             parsed-comment
           `(,parsed-comment . (,(mapcar (lambda (c) (dank-comment-parse c post-author)) children))))))))
 
-(defun dank-comment-format-post-content (post fill-column)
-  "Format POST content as string.
-FILL-COLUMN is used for filling the post content."
-  (concat
-   "\n"
-   ;(propertize (concat (s-repeat fill-column " ") "\n") 'font-lock-face 'dank-faces-separator)
-   (if (string= (dank-post-post_type post) "self")
-       (dank-utils-markdown-fill-paragraph-and-indent (dank-post-text post) 0 fill-column "")
-     (dank-post-link post)) ;; TODO: propertize link
-   "\n"
-   ))
-
 (defun dank-comment-format-metadata (comment)
   "Format COMMENT metadata.
 Also applies font-lock properties.

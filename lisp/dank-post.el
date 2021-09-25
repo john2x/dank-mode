@@ -101,9 +101,18 @@ Also applies font-lock properties."
                          :url (plist-get subreddit :url)
                          :description (plist-get subreddit :description))))
 
+(defun dank-post-format-content (post)
+  "Format POST content as string."
+  (concat
+   (if (string= (dank-post-post_type post) "self")
+       (dank-utils-markdown-fill-paragraph-and-indent (dank-post-text post) 0 dank-comments-body-fill-width "")
+     (dank-post-link post))
+   "\n"
+   (propertize (s-repeat dank-comments-body-fill-width " ") 'font-lock-face 'dank-faces-separator)))
+
 (defun dank-post--ewoc-pp (post)
-  "EWOC pretty-printer for POST and POST-BODY."
-  (insert (concat (dank-post-format post))))
+  "EWOC pretty-printer for POST."
+  (insert (dank-post-format post)))
 
 (provide 'dank-post)
 
