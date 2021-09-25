@@ -104,7 +104,7 @@ If a buffer already exists, switch to that buffer."
             (dank-posts-reset-state subreddit dank-posts-default-sorting dank-posts-page-items-limit)
           (dank-backend-error (progn (dank-posts-render-error err)
                                      (signal (car err) (cdr err)))))
-        (dank-posts-render-current-page dank-posts-current-page-posts)
+        (dank-posts-render-current-page-ewoc dank-posts-current-page-posts)
         (dank-posts-highlight-under-point)))))
 
 
@@ -160,6 +160,23 @@ Clears `dank-posts-buffer' before rendering."
     (mapc (lambda (ord-post) (dank-posts-append-post-to-buffer dank-posts-buffer (car ord-post) (cadr ord-post)))
           ords-posts)))
 
+(defun dank-posts-render-current-page-ewoc (posts &optional refresh-ewoc)
+  "Set `dank-posts-current-ewoc' with POSTS and insert it into the current buffer.
+Uses `dank-post--ewoc-pp' as the ewoc pretty-printer.
+REFRESH-EWOC creates a new ewoc."
+  (when (and refresh-ewoc dank-posts-current-ewoc)
+    (ewoc-filter dank-posts-current-ewoc (lambda (n) nil)))
+  (let ((inhibit-read-only t))
+    (delete-blank-lines))
+  (when (or refresh-ewoc (not dank-posts-current-ewoc))
+    (setq dank-posts-current-ewoc (ewoc-create #'dank-post--ewoc-pp)))
+  (dank-posts--set-posts-ewoc dank-posts-current-ewoc posts)
+  (let ((inhibit-read-only t))
+    (delete-blank-lines)))
+
+(defun dank-posts--set-posts-ewoc (ewoc posts)
+  "Populate the EWOC with POSTS."
+  (mapc (lambda (p) (ewoc-enter-last ewoc p)) posts))
 
 (defun dank-posts-append-post-to-buffer (buf post-index post)
   "Append POST into BUF.
@@ -274,7 +291,7 @@ POST-INDEX is the number (\"position\") of the post."
                              dank-posts-current-after
                              nil)
   (goto-char (point-max))
-  (dank-posts-render-current-page dank-posts-current-page-posts)
+  (dank-posts-render-current-page-ewoc dank-posts-current-page-posts)
   (dank-posts-highlight-under-point))
 
 (defun dank-posts-refresh ()
@@ -282,7 +299,7 @@ POST-INDEX is the number (\"position\") of the post."
   (interactive)
   (dank-posts-reset-state dank-posts-current-subreddit dank-posts-current-sorting
                           dank-posts-page-items-limit)
-  (dank-posts-render-current-page dank-posts-current-page-posts t)
+  (dank-posts-render-current-page-ewoc dank-posts-current-page-posts t)
   (dank-posts-highlight-under-point))
 
 (defun dank-posts-change-sorting (sorting)
@@ -290,7 +307,7 @@ POST-INDEX is the number (\"position\") of the post."
   (interactive (list (completing-read "Sorting: " dank-posts-sorting-options)))
   (dank-posts-reset-state dank-posts-current-subreddit (intern sorting)
                           dank-posts-page-items-limit)
-  (dank-posts-render-current-page dank-posts-current-page-posts t)
+  (dank-posts-render-current-page-ewoc dank-posts-current-page-posts t)
   (dank-posts-highlight-under-point))
 
 (defun dank-posts-goto-subreddit-at-point (point)

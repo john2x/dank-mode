@@ -103,7 +103,7 @@ Also applies font-lock properties."
 
 (defun dank-post--ewoc-pp (post)
   "EWOC pretty-printer for POST and POST-BODY."
-  (insert (concat (dank-post-format post)) "\n"))
+  (insert (concat (dank-post-format post))))
 
 (provide 'dank-post)
 
