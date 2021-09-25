@@ -95,10 +95,7 @@ Optional STARTING-COMMENT-ID will start the comment tree at the comment (instead
                                      (signal (car err) (cdr err)))))
         (dank-comments-render-current-post dank-comments-current-post t)
         (end-of-buffer)
-        (dank-comments-render-current-comments-ewoc dank-comments-current-comments)
-        (let ((inhibit-read-only t))
-          (delete-blank-lines))
-        (goto-char 0)))))
+        (dank-comments-render-current-comments-ewoc dank-comments-current-comments)))))
 
 (defun dank-comments-reset-state (sorting)
   "Reset state of the current dank-posts buffer."
@@ -195,6 +192,10 @@ If it's a long tree, open a new buffer for it."
   "Set `dank-comments-current-comments-ewoc' with COMMENTS and insert it into the current buffer.
 Uses `dank-comment--ewoc-pp' as the ewoc pretty-printer.
 REFRESH-EWOC creates a new ewoc."
+  (when (and refresh-ewoc dank-comments-current-comments-ewoc)
+    (ewoc-filter dank-comments-current-comments-ewoc (lambda (n) nil)))
+  (let ((inhibit-read-only t))
+    (delete-blank-lines))
   (when (or refresh-ewoc (not dank-comments-current-comments-ewoc))
     (setq dank-comments-current-comments-ewoc
           (ewoc-create #'dank-comment--ewoc-pp
