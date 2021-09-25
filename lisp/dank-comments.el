@@ -231,46 +231,24 @@ REFRESH-EWOC creates a new ewoc."
 ;; navigation functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun dank-comments--navigate-beginning-of-comment ()
+(defun dank-comments--navigate-beginning-of-comment (pos)
   "Move point to the beginning of the current comment."
-  (interactive)
-  (beginning-of-line)
-  ;; TODO: maybe change this to look at text properties instead of regex
-  (if (looking-at " *[-+] \\(/u/\\|\\[[0-9]+ more\\|\\[Continue thread\\)")
-      ;; When point is behind the start of a comment, just move to the start
-      (beginning-of-line-text)
-    (let ((sreg "[-+] \\(/u/\\|\\[[0-9]+ more\\|\\[Continue thread\\)"))
-      (unless (looking-at sreg)
-        (re-search-backward sreg nil t))))
+  (interactive "d")
+  (let* ((ewoc-node (ewoc-locate dank-comments-current-ewoc pos)))
+    (ewoc-goto-node dank-comments-current-ewoc ewoc-node))
   (beginning-of-line-text)
-  (when (string-equal (char-to-string (char-after)) "/")
-    (backward-char 2))
   (point))
 
-(defun dank-comments--navigate-end-of-comment ()
+(defun dank-comments--navigate-end-of-comment (pos)
   "Move point to the end of the current comment."
-  (interactive)
-  (let ((comment-id (dank-utils-get-prop (point) 'dank-comment-id)))
-    (if (looking-at " *\\+ \\(\\[[0-9]+ more comments\\]\\|\\[Continue thread\\)")
+  (interactive "d")
+  (let* ((next-node (ewoc-goto-next dank-comments-current-ewoc 1)))
+    (if next-node
         (progn
-          (end-of-line)
-          (point))
-      (progn
-        ;; TODO: maybe change this to look at text properties instead of regex
-        (let ((sreg " *[-+] \\(/u/\\|\\[[0-9]+ more\\|\\[Continue thread\\)"))
-          ;; When point is already behind the start of a comment, move down first
-          (when (looking-at sreg)
-            (next-logical-line)))
-        (let ((sreg "[-+] \\(/u/\\|\\[[0-9]+ more\\|\\[Continue thread\\)"))
-          ;; Look for the start of the next comment then move up
-          (unless (looking-at sreg)
-            (re-search-forward sreg nil t)))
-        ;; if we did not find a next comment, we are at the end of the buffer
-        (if (string-equal comment-id (dank-utils-get-prop (point) 'dank-comment-id))
-            (end-of-buffer))
-        (previous-logical-line)
-        (end-of-line)
-        (point)))))
+          (previous-line)
+          (end-of-line))
+      (end-of-buffer)))
+  (point))
 
 (defun dank-comments--find-comment-extents (pos)
   "Return list containing point for beginning and end of comment containing POS."
@@ -278,8 +256,8 @@ REFRESH-EWOC creates a new ewoc."
   (interactive "d")
   (save-excursion
     (goto-char pos)
-    (list (dank-comments--navigate-beginning-of-comment)
-          (dank-comments--navigate-end-of-comment))))
+    (list (dank-comments--navigate-beginning-of-comment pos)
+          (dank-comments--navigate-end-of-comment pos))))
 
 (defun dank-comments--find-comment-tree-extents (pos &optional start-at-end-of-first-header)
   "Return a list containing point for beginning and end of a comment tree at POS.
