@@ -15,6 +15,7 @@
 
 (require 'dank-backend)
 (require 'dank-utils)
+(require 'dank-post)
 
 (cl-defstruct dank-comment
   name id body edited text age date author subreddit score
@@ -133,13 +134,16 @@ The body is filled up to `dank-comments-body-fill-width'."
                        formatted-placeholder)
   formatted-placeholder)
 
-(defun dank-comment--ewoc-pp (comment)
-  "EWOC pretty-printer for COMMENT."
-  (if (dank-comment-p comment)
-      (insert (concat (dank-comment-format-metadata comment)
-                      "\n"
-                      (dank-comment-format-body comment)))
-    (insert (dank-comment-format-more comment))))
+(defun dank-comment--ewoc-pp (post-or-comment)
+  "EWOC pretty-printer for POST-OR-COMMENT.
+Only one ewoc can be active in a buffer, so the comments EWOC
+needs to be able to handle different objects.
+Optional POST-PP must be the post pretty-printer function."
+  (cond ((dank-comment-p post-or-comment) (insert (concat (dank-comment-format-metadata post-or-comment) "\n"
+                                                          (dank-comment-format-body post-or-comment))))
+        ((dank-comment-more-p post-or-comment) (insert (dank-comment-format-more post-or-comment)))
+        ((dank-post-p post-or-comment) (insert (concat (dank-post-format post-or-comment) "\n"
+                                                       (dank-post-format-content post-or-comment))))))
 
 (provide 'dank-comment)
 

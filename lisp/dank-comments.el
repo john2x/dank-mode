@@ -46,7 +46,7 @@
 (defvar-local dank-comments-current-source-buffer nil)
 (defvar-local dank-comments-current-starting-comment-id nil)
 (defvar-local dank-comments-tree-fold-overlays '())
-(defvar-local dank-comments-current-comments-ewoc nil)
+(defvar-local dank-comments-current-ewoc nil)
 
 (defvar dank-comments-mode-map
   (let ((map (make-sparse-keymap)))
@@ -93,9 +93,7 @@ Optional STARTING-COMMENT-ID will start the comment tree at the comment (instead
             (dank-comments-reset-state sorting)
           (dank-backend-error (progn (dank-comments-render-error err)
                                      (signal (car err) (cdr err)))))
-        (dank-comments-render-current-post dank-comments-current-post t)
-        (end-of-buffer)
-        (dank-comments-render-current-comments-ewoc dank-comments-current-comments)))))
+        (dank-comments-render-current-post-and-comments-ewoc dank-comments-current-post dank-comments-current-comments)))))
 
 (defun dank-comments-reset-state (sorting)
   "Reset state of the current dank-posts buffer."
@@ -150,7 +148,7 @@ This deletes the ewoc node at POS before inserting COMMENTS."
            (comments-raw (dank-backend-more-children post-id children-ids dank-comments-current-sorting))
            (comments (mapcar (lambda (c) (dank-comment-parse c post-author)) comments-raw)))
       (save-excursion
-        (dank-comments--insert-comments-at-pos-ewoc dank-comments-current-comments-ewoc
+        (dank-comments--insert-comments-at-pos-ewoc dank-comments-current-ewoc
                                                     comments point))
       (beginning-of-line-text)
       (dank-comments-highlight-under-point))))
@@ -188,19 +186,23 @@ If it's a long tree, open a new buffer for it."
       (insert formatted-post)
       (insert formatted-content))))
 
-(defun dank-comments-render-current-comments-ewoc (comments &optional refresh-ewoc)
-  "Set `dank-comments-current-comments-ewoc' with COMMENTS and insert it into the current buffer.
+(defun dank-comments-render-current-post-and-comments-ewoc (post comments &optional refresh-ewoc)
+  "Set `dank-comments-current-ewoc' with POST and COMMENTS and insert it into the current buffer.
 Uses `dank-comment--ewoc-pp' as the ewoc pretty-printer.
 REFRESH-EWOC creates a new ewoc."
-  (when (and refresh-ewoc dank-comments-current-comments-ewoc)
-    (ewoc-filter dank-comments-current-comments-ewoc (lambda (n) nil)))
+
+  (when (and refresh-ewoc dank-comments-current-ewoc)
+    (ewoc-filter dank-comments-current-ewoc (lambda (n) nil)))
+
   (let ((inhibit-read-only t))
     (delete-blank-lines))
-  (when (or refresh-ewoc (not dank-comments-current-comments-ewoc))
-    (setq dank-comments-current-comments-ewoc
-          (ewoc-create #'dank-comment--ewoc-pp
-                       (propertize (concat (s-repeat dank-comments-body-fill-width " ") "\n") 'font-lock-face 'dank-faces-separator))))
-  (dank-comments--set-comments-ewoc dank-comments-current-comments-ewoc comments))
+
+  (when (or refresh-ewoc (not dank-comments-current-ewoc))
+    (setq dank-comments-current-ewoc
+          (ewoc-create #'dank-comment--ewoc-pp)))
+
+  (ewoc-enter-first dank-comments-current-ewoc post)
+  (dank-comments--set-comments-ewoc dank-comments-current-ewoc comments))
 
 (dank-defrender dank-comments-render-error dank-comments-buffer (err)
   "Render the ERR message in the current buffer and show recommended actions."
@@ -463,21 +465,13 @@ no next sibling, the next comment that has a lower depth."
   "Refresh the comments of the current buffer."
   (interactive)
   (dank-comments-reset-state dank-comments-current-sorting)
-  (dank-comments-render-current-post dank-comments-current-post t)
-  (end-of-buffer)
-  (dank-comments-render-current-comments-ewoc dank-comments-current-comments t)
-  (let ((inhibit-read-only t))
-    (delete-blank-lines)))
+  (dank-comments-render-current-post-and-comments-ewoc dank-comments-current-post dank-comments-current-comments t))
 
 (defun dank-comments-change-sorting (sorting)
   "Refresh the comments of the current buffer with a different SORTING."
   (interactive (list (completing-read "Sorting: " dank-comments-sorting-options)))
   (dank-comments-reset-state (intern sorting))
-  (dank-comments-render-current-post dank-comments-current-post t)
-  (end-of-buffer)
-  (dank-comments-render-current-comments-ewoc dank-comments-current-comments t)
-  (let ((inhibit-read-only t))
-    (delete-blank-lines)))
+  (dank-comments-render-current-post-and-comments-ewoc dank-comments-current-post dank-comments-current-comments t))
 
 (defun dank-comments-kill-current-buffer ()
   "Kill the current dank-comments buffer and switch back to the source buffer."
