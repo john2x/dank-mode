@@ -194,14 +194,13 @@ REFRESH-EWOC creates a new ewoc."
   (when (and refresh-ewoc dank-comments-current-ewoc)
     (ewoc-filter dank-comments-current-ewoc (lambda (n) nil)))
 
-  (let ((inhibit-read-only t))
-    (delete-blank-lines))
-
   (when (or refresh-ewoc (not dank-comments-current-ewoc))
     (setq dank-comments-current-ewoc
           (ewoc-create #'dank-comment--ewoc-pp)))
 
   (ewoc-enter-first dank-comments-current-ewoc post)
+  (let ((inhibit-read-only t))
+    (delete-blank-lines))
   (dank-comments--set-comments-ewoc dank-comments-current-ewoc comments))
 
 (dank-defrender dank-comments-render-error dank-comments-buffer (err)
