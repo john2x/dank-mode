@@ -204,40 +204,6 @@ REFRESH-EWOC refreshes the ewoc."
                        (propertize (concat (s-repeat dank-comments-body-fill-width " ") "\n") 'font-lock-face 'dank-faces-separator))))
   (dank-comments--set-comments-ewoc dank-comments-current-comments-ewoc comments))
 
-(dank-defrender dank-comments-render-current-comments dank-comments-buffer (comments post &optional clear-buffer insert-at-pos)
-  (let ((inhibit-read-only t))
-    (when clear-buffer
-      (erase-buffer))
-    (if insert-at-pos  ;; when inserting more children comments
-        (progn (goto-char insert-at-pos)
-               (kill-whole-line))
-      (goto-char (point-max)))
-    (insert ;; insert comments into a temp buffer and insert that into the real buffer
-     (with-temp-buffer
-       (dank-comments--insert-comments-in-current-buffer comments)
-       (buffer-string)))))
-
-(defun dank-comments--insert-comments-in-current-buffer (comments)
-  "Insert a COMMENTS into the current buffer (preferably a temp buffer)."
-  (when comments
-    (let* ((comment (car comments)))
-      (dank-comments--insert-comment-in-current-buffer comment)
-      (when (eq (type-of comment) 'dank-comment)
-        (dank-comments--insert-comments-in-current-buffer (dank-comment-replies comment)))
-      (dank-comments--insert-comments-in-current-buffer (cdr comments)))))
-
-(defun dank-comments--insert-comment-in-current-buffer (comment &optional point)
-  "Insert COMMENT into the current temporary buffer at optional POINT."
-  (if (eq (type-of comment) 'dank-comment)
-      (let* ((formatted-comment-metadata (concat (dank-comment-format-metadata comment) "\n"))
-             (formatted-comment-body (concat (dank-comment-format-body comment) "\n")))
-        (goto-char (or point (point-max)))
-        (insert formatted-comment-metadata)
-        (insert formatted-comment-body))
-    (let ((formatted-more (concat (dank-comment-format-more comment) "\n")))
-      (goto-char (or point (point-max)))
-      (insert formatted-more))))
-
 (dank-defrender dank-comments-render-error dank-comments-buffer (err)
   "Render the ERR message in the current buffer and show recommended actions."
   (let ((inhibit-read-only t))
