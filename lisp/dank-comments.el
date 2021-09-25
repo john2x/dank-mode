@@ -174,18 +174,6 @@ If it's a long tree, open a new buffer for it."
         (dank-comments-insert-more-comments-at-point point)
       (dank-comments-continue-thread-at-point point))))
 
-(dank-defrender dank-comments-render-current-post dank-comments-buffer (post &optional clear-buffer)
-  "Render the post contents in the current buffer."
-  (let* ((inhibit-read-only t)
-         (formatted-post (concat (dank-post-format dank-comments-current-post) "\n"))
-         (formatted-content (dank-comment-format-post-content dank-comments-current-post dank-comments-body-fill-width)))
-    (when clear-buffer
-      (erase-buffer))
-    (save-excursion
-      (goto-char (point-max))
-      (insert formatted-post)
-      (insert formatted-content))))
-
 (defun dank-comments-render-current-post-and-comments-ewoc (post comments &optional refresh-ewoc)
   "Set `dank-comments-current-ewoc' with POST and COMMENTS and insert it into the current buffer.
 Uses `dank-comment--ewoc-pp' as the ewoc pretty-printer.
@@ -203,12 +191,13 @@ REFRESH-EWOC creates a new ewoc."
     (delete-blank-lines))
   (dank-comments--set-comments-ewoc dank-comments-current-ewoc comments))
 
-(dank-defrender dank-comments-render-error dank-comments-buffer (err)
+(defun dank-comments-render-error (err)
   "Render the ERR message in the current buffer and show recommended actions."
   (let ((inhibit-read-only t))
     (erase-buffer)
+    (insert "Uh oh! Something went wrong.")
     (insert (format "%s\n" err))
-    (insert "TODO: show recommended actions (either [q]uit or retry)")))
+    (insert "Try killing this buffer with `C-x q` or `C-x k <buffer name> RET` and try again.")))
 
 (defun dank-comments-set-header-line ()
   "Set the header line of a dank-comments buffer."

@@ -177,12 +177,13 @@ POST-INDEX is the number (\"position\") of the post."
           (goto-char (point-max))
           (insert formatted-post))))))
 
-(dank-defrender dank-posts-render-error dank-posts-buffer (err)
-  "Render contents of ERR into `dank-posts-buffer'."
+(defun dank-posts-render-error (err)
+  "Render contents of ERR into the current buffer."
   (let ((inhibit-read-only t))
     (erase-buffer)
+    (insert "Uh oh! Something went wrong.")
     (insert (format "%s\n" err))
-    (insert "TODO: show recommended actions (either [q]uit or retry)")))
+    (insert "Try killing this buffer with `C-x q` or `C-x k <buffer name> RET` and try again.")))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; display stuff ;;
