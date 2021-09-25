@@ -60,6 +60,7 @@ When nil, defaults to the frontpage."
 (defvar-local dank-posts-current-after nil)
 (defvar-local dank-posts-current-before nil)
 (defvar-local dank-posts-current-page-posts nil)
+(defvar-local dank-posts-current-ewoc nil)
 
 (defvar dank-posts-mode-map
   (let ((map (make-sparse-keymap)))

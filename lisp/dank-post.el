@@ -31,10 +31,9 @@
 (defvar dank-post-template
   "${title}\n    | ${score} points | ${num_comments} comments | ${link_flair}${nsfw}${spoiler}${post_type}${domain}\n    | ${subreddit} submitted by ${author}${author_flair} ${age}")
 
-(defun dank-post-format (post &optional post-index)
+(defun dank-post-format (post)
   "Format POST as string using `dank-post-template'.
-Also applies font-lock properties.
-Optional POST-INDEX is the position of the post in a list."
+Also applies font-lock properties."
   (let* ((title (dank-post-title post))
          (age (dank-post-age post))
          (author (concat "/u/" (dank-post-author post)))
@@ -56,15 +55,13 @@ Optional POST-INDEX is the position of the post in a list."
                                  nsfw (,nsfw . dank-faces-nsfw) spoiler (,spoiler . dank-faces-nsfw) domain (,domain . dank-faces-site-domain) post_type (,post_type . dank-faces-post-type)
                                  link_flair (,link_flair . dank-faces-flair)))
          (formatted-post (dank-utils-format-plist dank-post-template format-context)))
-    (dank-post--propertize-metadata formatted-post post post-index)))
+    (dank-post--propertize-metadata formatted-post post)))
 
-(defun dank-post--propertize-metadata (formatted-post source-post &optional post-index)
-  "Assign FORMATTED-POST metadata properties from SOURCE-POST.
-Optional POST-INDEX is the position of the post in a list."
+(defun dank-post--propertize-metadata (formatted-post source-post)
+  "Assign FORMATTED-POST metadata properties from SOURCE-POST."
   (add-text-properties 0 (length formatted-post)
                        `(dank-post-id ,(dank-post-id source-post)
                                       dank-post-subreddit ,(dank-post-subreddit source-post)
-                                      dank-post-index ,post-index
                                       dank-post-permalink ,(dank-post-permalink source-post)
                                       dank-post-title ,(dank-post-title source-post)
                                       dank-post-link ,(dank-post-link source-post))
@@ -103,6 +100,10 @@ Optional POST-INDEX is the position of the post in a list."
                          :title (plist-get subreddit :title)
                          :url (plist-get subreddit :url)
                          :description (plist-get subreddit :description))))
+
+(defun dank-post--ewoc-pp (post)
+  "EWOC pretty-printer for POST and POST-BODY."
+  (insert (concat (dank-post-format post)) "\n"))
 
 (provide 'dank-post)
 

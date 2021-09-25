@@ -182,7 +182,7 @@ If it's a long tree, open a new buffer for it."
 (dank-defrender dank-comments-render-current-post dank-comments-buffer (post &optional clear-buffer)
   "Render the post contents in the current buffer."
   (let* ((inhibit-read-only t)
-         (formatted-post (concat (dank-post-format dank-comments-current-post 1) "\n"))
+         (formatted-post (concat (dank-post-format dank-comments-current-post) "\n"))
          (formatted-content (dank-comment-format-post-content dank-comments-current-post dank-comments-body-fill-width)))
     (when clear-buffer
       (erase-buffer))
