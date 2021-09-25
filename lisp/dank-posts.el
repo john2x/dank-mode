@@ -148,18 +148,6 @@ Store the results in `dank-posts-current-page-posts'."
     (dank-posts-set-header-line)))
 
 
-(dank-defrender dank-posts-render-current-page dank-posts-buffer (posts &optional clear-buffer)
-  "Render contents of POSTS into `dank-posts-buffer'.
-Clears `dank-posts-buffer' before rendering."
-  (when clear-buffer
-    (let ((inhibit-read-only t))
-      (erase-buffer)))
-  (let* ((ordinals (number-sequence dank-posts-current-start-count dank-posts-current-end-count))
-         ;; merge ordinals and posts lists into one list of pairs '(ord post)
-         (ords-posts (mapcar* #'list ordinals dank-posts-current-page-posts)))
-    (mapc (lambda (ord-post) (dank-posts-append-post-to-buffer dank-posts-buffer (car ord-post) (cadr ord-post)))
-          ords-posts)))
-
 (defun dank-posts-render-current-page-ewoc (posts &optional refresh-ewoc)
   "Set `dank-posts-current-ewoc' with POSTS and insert it into the current buffer.
 Uses `dank-post--ewoc-pp' as the ewoc pretty-printer.
@@ -283,6 +271,7 @@ POST-INDEX is the number (\"position\") of the post."
   (dank-posts-highlight-under-point))
 
 (defun dank-posts-fetch-next-page ()
+  "Fetch the next page."
   (interactive)
   (dank-posts-set-page-posts dank-posts-current-subreddit
                              dank-posts-current-sorting
