@@ -1,3 +1,21 @@
+* TODO v0.2.0
+** Features
+- [ ] search
+- [ ] upvote/downvote posts
+- [ ] upvote/downvote comments
+- [ ] reply comments
+** Enhancements
+- [ ] ewoc package
+- [ ] make markdown-mode optional
+- [ ] remove s.el usage
+- [ ] better authentication
+  - [ ] use auth package
+  - [ ] use web-server.el if it's installed
+- [ ] try url.el
+** Bug fixes
+- [ ] Switching subreddits in dank-comments mode is not available
+- [ ] Folding the last comment tree doesn't work
+
 * DONE v0.1.0
 - [X] Figure out how to render post content properly. Probably best to
   fill it like comments.
@@ -47,6 +65,7 @@
   http://eschulte.github.io/emacs-web-server
 
 * Known bugs
+*** dank-comments-mode
 *** dank-posts-mode
 - [ ] navigating to previous post when pointer is on an empty
   line/last line skips the last post
