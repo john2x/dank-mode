@@ -130,19 +130,19 @@ Optional STARTING-COMMENT-ID will start the comment tree at the comment (instead
 If CLEAR is non-nil, empty its contents."
   (if clear
       (ewoc-filter ewoc (lambda (n) nil)))
-  (let* ((comment (car comments))
-         (comment-copy (if (dank-comment-p comment) (copy-dank-comment comment) comment))
-         (siblings (cdr comments))
-         (replies (if (dank-comment-p comment) (dank-comment-replies comment) nil)))
-    (when (dank-comment-p comment-copy)
-      (setf (dank-comment-replies comment-copy) nil))  ;; don't need the replies in the ewoc node
-    (ewoc-enter-last ewoc comment-copy)
-    (if replies
-        (dank-comments--set-comments-ewoc ewoc replies))
-    (if siblings
-        (dank-comments--set-comments-ewoc ewoc siblings))
+  (let* ((flattened-comments (flatten-tree comments)))
+    (mapc (lambda (c) (ewoc-enter-last ewoc c)) flattened-comments)
     ewoc))
 
+(defun dank-comments--insert-comments-at-pos-ewoc (ewoc comments pos)
+  "Insert COMMENTS into EWOC at POS.
+This deletes the ewoc node at POS before inserting COMMENTS."
+  (let* ((node (ewoc-locate ewoc pos))
+         (delete-node node)
+         (flattened-comments (flatten-tree comments)))
+    (while (consp flattened-comments)
+      (setq node (ewoc-enter-after ewoc node (pop flattened-comments))))
+    (ewoc-delete ewoc delete-node)))
 
 (defun dank-comments-insert-more-comments-at-point (point)
   "Fetch more comments for the placeholder at POINT and insert the contents in its place."
@@ -156,7 +156,8 @@ If CLEAR is non-nil, empty its contents."
            (comments-raw (dank-backend-more-children post-id children-ids dank-comments-current-sorting))
            (comments (mapcar (lambda (c) (dank-comment-parse c post-author)) comments-raw)))
       (save-excursion
-        (dank-comments-render-current-comments comments dank-comments-current-post nil point))
+        (dank-comments--insert-comments-at-pos-ewoc dank-comments-current-comments-ewoc
+                                                    comments point))
       (beginning-of-line-text)
       (dank-comments-highlight-under-point))))
 
