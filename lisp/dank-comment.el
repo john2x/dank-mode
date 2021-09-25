@@ -43,7 +43,10 @@
 (defun dank-comment-parse (comment post-author)
   "Parse COMMENT into a `dank-comment'.
 POST-AUTHOR is used to set a boolean field to differentiate the
-comment author as the post author."
+comment author as the post author.
+
+If COMMENT has replies, return a cons cell where the cdr is the
+list of children, also parsed."
   (let* ((kind (plist-get comment :kind))
          (comment (plist-get comment :data))
          (depth (plist-get comment :depth))
@@ -55,21 +58,23 @@ comment author as the post author."
                                 :count (plist-get comment :count)
                                 :depth depth
                                 :children_ids (plist-get comment :children))
-      (make-dank-comment :id (plist-get comment :id)
-                         :name (plist-get comment :name)
-                         :depth depth
-                         :body (s-trim (or (plist-get comment :body) ""))
-                         :age (dank-utils-timestamp-ago (plist-get comment :created_utc))
-                         :date (plist-get comment :created_utc)
-                         :score (plist-get comment :score)
-                         :author (plist-get comment :author)
-                         :subreddit (plist-get comment :subreddit)
-                         :author_flair (plist-get comment :author_flair_text)
-                         :gilded (plist-get comment :gilded)
-                         :parent_id (plist-get comment :parent_id)
-                         :post_author_p (string-equal (plist-get comment :author) post-author)
-                         :replies (if (stringp replies) '()
-                                    (mapcar (lambda (c) (dank-comment-parse c post-author)) children))))))
+      (let ((parsed-comment (make-dank-comment
+                             :id (plist-get comment :id)
+                             :name (plist-get comment :name)
+                             :depth depth
+                             :body (s-trim (or (plist-get comment :body) ""))
+                             :age (dank-utils-timestamp-ago (plist-get comment :created_utc))
+                             :date (plist-get comment :created_utc)
+                             :score (plist-get comment :score)
+                             :author (plist-get comment :author)
+                             :subreddit (plist-get comment :subreddit)
+                             :author_flair (plist-get comment :author_flair_text)
+                             :gilded (plist-get comment :gilded)
+                             :parent_id (plist-get comment :parent_id)
+                             :post_author_p (string-equal (plist-get comment :author) post-author))))
+        (if (stringp replies)
+            parsed-comment
+          `(,parsed-comment . (,(mapcar (lambda (c) (dank-comment-parse c post-author)) children))))))))
 
 (defun dank-comment-format-post-content (post fill-column)
   "Format POST content as string.
