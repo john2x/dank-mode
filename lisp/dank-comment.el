@@ -139,11 +139,12 @@ The body is filled up to `dank-comments-body-fill-width'."
 Only one ewoc can be active in a buffer, so the comments EWOC
 needs to be able to handle different objects.
 Optional POST-PP must be the post pretty-printer function."
-  (cond ((dank-comment-p post-or-comment) (insert (concat (dank-comment-format-metadata post-or-comment) "\n"
-                                                          (dank-comment-format-body post-or-comment))))
-        ((dank-comment-more-p post-or-comment) (insert (dank-comment-format-more post-or-comment)))
-        ((dank-post-p post-or-comment) (insert (concat (dank-post-format post-or-comment) "\n"
-                                                       (dank-post-format-content post-or-comment))))))
+  (cl-typecase post-or-comment
+    (dank-comment-p (insert (concat (dank-comment-format-metadata post-or-comment) "\n"
+                                    (dank-comment-format-body post-or-comment))))
+    (dank-comment-more (insert (dank-comment-format-more post-or-comment)))
+    (dank-post (insert (concat (dank-post-format post-or-comment) "\n"
+                               (dank-post-format-content post-or-comment))))))
 
 (provide 'dank-comment)
 
