@@ -19,10 +19,8 @@
 
 (cl-defstruct dank-comment
   name id body edited text age date author subreddit score
-  author_flair gilded replies depth parent_id post_author_p)
-
-(cl-defstruct dank-comment-more
-  id parent_id count depth children_ids)
+  author_flair gilded replies depth parent_id post_author_p
+  type more_count children_ids)
 
 (defcustom dank-comments-body-fill-width 120
   "Fill width for rendering the comment body."
@@ -54,12 +52,14 @@ list of children, also parsed."
          (replies (plist-get comment :replies))
          (children (plist-get (plist-get replies :data) :children)))
     (if (string= kind "more")
-        (make-dank-comment-more :id (plist-get comment :id)
-                                :parent_id (plist-get comment :parent_id)
-                                :count (plist-get comment :count)
-                                :depth depth
-                                :children_ids (plist-get comment :children))
+        (make-dank-comment :id (plist-get comment :id)
+                           :type 'more
+                           :parent_id (plist-get comment :parent_id)
+                           :more_count (plist-get comment :count)
+                           :depth depth
+                           :children_ids (plist-get comment :children))
       (let ((parsed-comment (make-dank-comment
+                             :type 'comment
                              :id (plist-get comment :id)
                              :name (plist-get comment :name)
                              :depth depth
@@ -105,11 +105,11 @@ The body is filled up to `dank-comments-body-fill-width'."
 
 (defun dank-comment-format-more (more)
   "Format MORE."
-  (let* ((count (dank-comment-more-count more))
+  (let* ((count (dank-comment-more_count more))
          (format-context `(count ,(number-to-string count)))
          (template (if (> count 0) dank-comment-more-template dank-comment-continue-template))
          (formatted (dank-utils-format-plist template format-context 'dank-faces-comment-more))
-         (formatted (concat (s-repeat (dank-comment-more-depth more) "  ") formatted)))
+         (formatted (concat (s-repeat (dank-comment-depth more) "  ") formatted)))
     (dank-comment--propertize-more-with-metadata formatted more)))
 
 (defun dank-comment--propertize-comment-with-metadata (formatted-comment source-comment)
@@ -125,20 +125,14 @@ The body is filled up to `dank-comments-body-fill-width'."
 (defun dank-comment--propertize-more-with-metadata (formatted-placeholder source-placeholder)
   "Assign FORMATTED-PLACEHOLDER with metadata from SOURCE-PLACEHOLDER."
   (add-text-properties 0 (length formatted-placeholder)
-                       `(dank-comment-parent-id ,(dank-comment-more-parent_id source-placeholder)
+                       `(dank-comment-parent-id ,(dank-comment-parent_id source-placeholder)
                                                 dank-comment-type more
-                                                dank-comment-id ,(dank-comment-more-id source-placeholder)
-                                                dank-comment-children-ids ,(dank-comment-more-children_ids source-placeholder)
-                                                dank-comment-count ,(dank-comment-more-count source-placeholder)
-                                                dank-comment-depth ,(dank-comment-more-depth source-placeholder))
+                                                dank-comment-id ,(dank-comment-id source-placeholder)
+                                                dank-comment-children-ids ,(dank-comment-children_ids source-placeholder)
+                                                dank-comment-count ,(dank-comment-more_count source-placeholder)
+                                                dank-comment-depth ,(dank-comment-depth source-placeholder))
                        formatted-placeholder)
   formatted-placeholder)
-
-(defun dank-comment--parent-id (comment-or-more)
-  "Return the parent id of a COMMENT-OR-MORE."
-  (cl-typecase comment-or-more
-    (dank-comment (dank-comment-parent_id comment-or-more))
-    (dank-comment-more (dank-comment-more-parent_id comment-or-more))))
 
 (defun dank-comment--ewoc-pp (post-or-comment)
   "EWOC pretty-printer for POST-OR-COMMENT.
@@ -146,11 +140,22 @@ Only one ewoc can be active in a buffer, so the comments EWOC
 needs to be able to handle different objects.
 Optional POST-PP must be the post pretty-printer function."
   (cl-typecase post-or-comment
-    (dank-comment (insert (concat (dank-comment-format-metadata post-or-comment) "\n"
-                                    (dank-comment-format-body post-or-comment))))
-    (dank-comment-more (insert (dank-comment-format-more post-or-comment)))
+    (dank-comment (insert (if (eq (dank-comment-type post-or-comment) 'comment)
+                              (concat (dank-comment-format-metadata post-or-comment) "\n"
+                                      (dank-comment-format-body post-or-comment))
+                            (dank-comment-format-more post-or-comment))))
     (dank-post (insert (concat (dank-post-format post-or-comment) "\n"
                                (dank-post-format-content post-or-comment))))))
+
+(defun dank-comment--ewoc-parent-node (ewoc node)
+  "Return the parent node of NODE in EWOC."
+  (let* ((comment (ewoc-data node))
+         (parent-id (substring (dank-comment-parent-id comment) 3)))
+    (dank-utils-ewoc-next-match-node ewoc node
+      (lambda (d)
+        (when (dank-comment-p d)
+          (string-equal parent-id (dank-comment-id d))))
+      #'ewoc-prev)))
 
 (provide 'dank-comment)
 
