@@ -99,6 +99,12 @@ TODO: optimize this."
   "Get the value of a PROPERTY at POINT."
   (plist-get (text-properties-at point) property))
 
+(defun dank-utils-ewoc-data (ewoc pos)
+  "Get the data of the EWOC node at POS."
+  (let ((node (ewoc-locate ewoc pos)))
+    (when node
+      (ewoc-data node))))
+
 ;; These EWOC functions were copied from https://github.com/alphapapa/ement.el
 (cl-defun dank-utils-ewoc-next-match-node (ewoc node pred &optional (move-fn #'ewoc-next))
   "Return the next node in EWOC after NODE that PRED is true of.

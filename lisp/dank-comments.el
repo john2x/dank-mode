@@ -137,43 +137,44 @@ This deletes the ewoc node at POS before inserting COMMENTS."
       (setq node (ewoc-enter-after ewoc node (pop flattened-comments))))
     (ewoc-delete ewoc delete-node)))
 
-(defun dank-comments-insert-more-comments-at-point (point)
-  "Fetch more comments for the placeholder at POINT and insert the contents in its place."
+(defun dank-comments-insert-more-comments-at-point (pos)
+  "Fetch more comments for the placeholder at POS and insert the contents in its place."
   (interactive "d")
-  (when (and (eq (dank-utils-get-prop point 'dank-comment-type) 'more)
-             (> (dank-utils-get-prop point 'dank-comment-count) 0))
-    (let* ((post-id (concat "t3_" dank-comments-current-post-id))
+  (when (and (eq (dank-comment-type (dank-utils-ewoc-data dank-comments-current-ewoc pos)) 'more)
+             (> (dank-comment-more_count (dank-utils-ewoc-data dank-comments-current-ewoc pos)) 0))
+    (let* ((ewoc dank-comments-current-ewoc)
+           (post-id (concat "t3_" dank-comments-current-post-id))
            (post-author (dank-post-author dank-comments-current-post))
-           (current-depth (dank-utils-get-prop point 'dank-comment-depth))
-           (children-ids (string-join (dank-utils-get-prop point 'dank-comment-children-ids) ","))
+           (current-depth (dank-comment-depth (dank-utils-ewoc-data ewoc pos)))
+           (children-ids (string-join (dank-comment-children_ids (dank-utils-ewoc-data ewoc pos)) ","))
            (comments-raw (dank-backend-more-children post-id children-ids dank-comments-current-sorting))
            (comments (mapcar (lambda (c) (dank-comment-parse c post-author)) comments-raw)))
       (save-excursion
         (dank-comments--insert-comments-at-pos-ewoc dank-comments-current-ewoc
-                                                    comments point))
+                                                    comments pos))
       (beginning-of-line-text)
       (dank-comments-highlight-under-point))))
 
-(defun dank-comments-continue-thread-at-point (point)
-  "Fetch even more comments for the placeholder at POINT and open a new buffer for the tree."
+(defun dank-comments-continue-thread-at-point (pos)
+  "Fetch even more comments for the placeholder at POS and open a new buffer for the tree."
   (interactive "d")
-  (when (and (eq (dank-utils-get-prop point 'dank-comment-type) 'more)
-             (= (dank-utils-get-prop point 'dank-comment-count) 0))
-    (let* ((starting-comment-id (substring (dank-utils-get-prop point 'dank-comment-parent-id) 3))
+  (when (and (eq (dank-comment-type (dank-utils-ewoc-data dank-comments-current-ewoc pos)) 'more)
+             (= (dank-comment-more_count (dank-utils-ewoc-data dank-comments-current-ewoc pos)) 0))
+    (let* ((starting-comment-id (substring (dank-comment-parent_id (dank-utils-ewoc-data dank-comments-current-ewoc pos)) 3))
            (permalink (concat dank-comments-current-permalink starting-comment-id)))
       (dank-comments-init dank-comments-current-subreddit dank-comments-current-post-id
                           permalink (current-buffer)
                           dank-comments-current-sorting starting-comment-id))))
 
-(defun dank-comments-open-more-comments-at-point (point)
-  "Open more comments at POINT.
-If it's a short tree, insert it at POINT.
+(defun dank-comments-open-more-comments-at-point (pos)
+  "Open more comments at POS.
+If it's a short tree, insert it at POS.
 If it's a long tree, open a new buffer for it."
   (interactive "d")
-  (when (eq (dank-utils-get-prop point 'dank-comment-type) 'more)
-    (if (> (dank-utils-get-prop point 'dank-comment-count) 0)
-        (dank-comments-insert-more-comments-at-point point)
-      (dank-comments-continue-thread-at-point point))))
+  (when (eq (dank-comment-type (dank-utils-ewoc-data dank-comments-current-ewoc pos)) 'more)
+    (if (> (dank-comment-more_count (dank-utils-ewoc-data dank-comments-current-ewoc pos)) 0)
+        (dank-comments-insert-more-comments-at-point pos)
+      (dank-comments-continue-thread-at-point pos))))
 
 (defun dank-comments-render-current-post-and-comments-ewoc (post comments &optional refresh-ewoc)
   "Set `dank-comments-current-ewoc' with POST and COMMENTS and insert it into the current buffer.
@@ -358,14 +359,14 @@ If there is no next root, then navigate to the end of the comment."
       (dank-comments--navigate-end-of-comment pos)))
   (dank-comments-highlight-under-point))
 
-(defun dank-comments-collapse-comment-tree-at-point (point)
-  "Collapse the comment tree at POINT."
+(defun dank-comments-collapse-comment-tree-at-point (pos)
+  "Collapse the comment tree at POS."
   (interactive "d")
   ;; TODO: change the '-' to a '+'? or add ellipses at the end?
   ;; TODO: change style
-  (let* ((exts (dank-comments--find-comment-tree-extents point t))
-         (comment-id (dank-utils-get-prop point 'dank-comment-id))
-         (comment-type (dank-utils-get-prop point 'dank-comment-type))
+  (let* ((exts (dank-comments--find-comment-tree-extents pos t))
+         (comment-id (dank-comment-id (dank-utils-ewoc-data dank-comments-current-ewoc pos)))
+         (comment-type (dank-comment-type (dank-utils-ewoc-data dank-comments-current-ewoc pos)))
          (start (car exts))
          (end (cadr exts))
          (existing-ovl (cdr (assoc comment-id dank-comments-tree-fold-overlays)))
@@ -379,14 +380,14 @@ If there is no next root, then navigate to the end of the comment."
       (add-to-list 'dank-comments-tree-fold-overlays `(,comment-id . ,ovl))))
   (dank-comments-highlight-under-point))
 
-(defun dank-comments-expand-comment-tree-at-point (point)
-  "Expand the collapsed comment tree at POINT."
+(defun dank-comments-expand-comment-tree-at-point (pos)
+  "Expand the collapsed comment tree at POS."
   (interactive "d")
   ;; point might be at the end of the overlay with no text properties or overlay
   (move-beginning-of-line 1)
   (move-beginning-of-line 1)
-  (let* ((comment-id (dank-utils-get-prop point 'dank-comment-id))
-         (comment-type (dank-utils-get-prop point 'dank-comment-type))
+  (let* ((comment-id (dank-comment-id (dank-utils-ewoc-data dank-comments-current-ewoc pos)))
+         (comment-type (dank-comment-type (dank-utils-ewoc-data dank-comments-current-ewoc pos)))
          (ovl (cdr (assoc comment-id dank-comments-tree-fold-overlays))))
     (when (and comment-id ovl (eq comment-type 'comment))
       (overlay-put ovl 'after-string "")
@@ -395,14 +396,14 @@ If there is no next root, then navigate to the end of the comment."
       (delete-overlay ovl))
     (dank-comments-highlight-under-point)))
 
-(defun dank-comments-toggle-comment-tree-fold-at-point (point)
-  "Collapse or expand comment tree at POINT."
+(defun dank-comments-toggle-comment-tree-fold-at-point (pos)
+  "Collapse or expand comment tree at POS."
   (interactive "d")
-  (let* ((comment-id (dank-utils-get-prop point 'dank-comment-id))
+  (let* ((comment-id (dank-comment-id (dank-utils-ewoc-data dank-comments-current-ewoc pos)))
          (existing-ovl (cdr (assoc comment-id dank-comments-tree-fold-overlays))))
     (if (and existing-ovl (overlay-get existing-ovl 'invisible))
-        (dank-comments-expand-comment-tree-at-point point)
-      (dank-comments-collapse-comment-tree-at-point point))))
+        (dank-comments-expand-comment-tree-at-point pos)
+      (dank-comments-collapse-comment-tree-at-point pos))))
 
 (defun dank-comments-refresh ()
   "Refresh the comments of the current buffer."
