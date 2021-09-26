@@ -99,6 +99,16 @@ TODO: optimize this."
   "Get the value of a PROPERTY at POINT."
   (plist-get (text-properties-at point) property))
 
+;; These EWOC functions were copied from https://github.com/alphapapa/ement.el
+(cl-defun dank-utils-ewoc-next-match-node (ewoc node pred &optional (move-fn #'ewoc-next))
+  "Return the next node in EWOC after NODE that PRED is true of.
+PRED is called with node's data.  Moves to next node by MOVE-FN."
+  (declare (indent defun))
+  (cl-loop do (setf node (funcall move-fn ewoc node))
+           until (or (null node)
+                     (funcall pred (ewoc-data node)))
+           finally return node))
+
 (provide 'dank-utils)
 
 ;;; dank-utils.el ends here
