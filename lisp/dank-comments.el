@@ -277,22 +277,17 @@ top comment from the extent range. This is useful for folding the comment body o
                        (dank-comments-navigate-prev-comment))
                    (dank-comments--navigate-end-of-comment))))))
 
-(defun dank-comments-navigate-prev-comment ()
+(defun dank-comments-navigate-prev-comment (pos)
   "Move point to the beginning of the previous comment directly above."
-  (interactive)
-  (dank-comments--navigate-beginning-of-comment)
-  (previous-logical-line)
-  (dank-comments--navigate-beginning-of-comment)
+  (interactive "d")
+  (ewoc-goto-prev dank-comments-current-ewoc 1)
   (point)
   (dank-comments-highlight-under-point))
 
-(defun dank-comments-navigate-next-comment ()
+(defun dank-comments-navigate-next-comment (pos)
   "Move point to the beginning of the next comment directly below."
-  (interactive)
-  (dank-comments--navigate-end-of-comment)
-  (next-logical-line)
-  (beginning-of-line-text)
-  (dank-comments--navigate-beginning-of-comment)
+  (interactive "d")
+  (ewoc-goto-next dank-comments-current-ewoc 1)
   (point)
   (dank-comments-highlight-under-point))
 
