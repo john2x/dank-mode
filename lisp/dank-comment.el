@@ -134,13 +134,19 @@ The body is filled up to `dank-comments-body-fill-width'."
                        formatted-placeholder)
   formatted-placeholder)
 
+(defun dank-comment--parent-id (comment-or-more)
+  "Return the parent id of a COMMENT-OR-MORE."
+  (cl-typecase comment-or-more
+    (dank-comment (dank-comment-parent_id comment-or-more))
+    (dank-comment-more (dank-comment-more-parent_id comment-or-more))))
+
 (defun dank-comment--ewoc-pp (post-or-comment)
   "EWOC pretty-printer for POST-OR-COMMENT.
 Only one ewoc can be active in a buffer, so the comments EWOC
 needs to be able to handle different objects.
 Optional POST-PP must be the post pretty-printer function."
   (cl-typecase post-or-comment
-    (dank-comment-p (insert (concat (dank-comment-format-metadata post-or-comment) "\n"
+    (dank-comment (insert (concat (dank-comment-format-metadata post-or-comment) "\n"
                                     (dank-comment-format-body post-or-comment))))
     (dank-comment-more (insert (dank-comment-format-more post-or-comment)))
     (dank-post (insert (concat (dank-post-format post-or-comment) "\n"

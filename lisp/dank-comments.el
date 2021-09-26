@@ -291,16 +291,21 @@ top comment from the extent range. This is useful for folding the comment body o
   (point)
   (dank-comments-highlight-under-point))
 
-(defun dank-comments-navigate-to-parent ()
+(defun dank-comments-navigate-to-parent (pos)
   "Move point to the parent of the current comment."
-  (interactive)
-  (let* ((parent-id (dank-utils-get-prop (point) 'dank-comment-parent-id)))
-    (when (and parent-id (string-prefix-p "t1_" parent-id))
-      (previous-logical-line)
-      (while (not (string-equal (substring parent-id 3) (dank-utils-get-prop (point) 'dank-comment-id)))
-        (previous-logical-line))
-      (dank-comments--navigate-beginning-of-comment)
-      (dank-comments-highlight-under-point))))
+  (interactive "d")
+  (let* ((node (ewoc-locate dank-comments-current-ewoc pos))
+         (comment (ewoc-data node))
+         (parent-id (substring (dank-comment--parent-id comment) 3)))
+    (ewoc-goto-node
+     dank-comments-current-ewoc
+     (dank-utils-ewoc-next-match-node dank-comments-current-ewoc node
+       (lambda (d)
+         (when (dank-comment-p d)
+           (string-equal parent-id (dank-comment-id d))))
+       #'ewoc-prev)))
+  (beginning-of-line-text)
+  (dank-comments-highlight-under-point))
 
 (defun dank-comments-navigate-next-sibling ()
   "Move point to the beginning of the next sibling comment."
