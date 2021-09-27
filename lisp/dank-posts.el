@@ -222,26 +222,23 @@ POST-INDEX is the number (\"position\") of the post."
 ;; navigation functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun dank-posts--navigate-beginning-of-post ()
+(defun dank-posts--navigate-beginning-of-post (pos)
   "Move point to the beginning of the current post."
-  (interactive)
-  (beginning-of-line)
-  (let ((sreg "^[^ ]"))
-    (unless (looking-at sreg)
-      (re-search-backward sreg nil t)
-      (beginning-of-line)))
+  (interactive "d")
+  (let* ((node (ewoc-locate dank-posts-current-ewoc pos)))
+    (ewoc-goto-node dank-posts-current-ewoc node))
+  (beginning-of-line-text)
   (point))
 
-(defun dank-posts--navigate-end-of-post ()
+(defun dank-posts--navigate-end-of-post (pos)
   "Move point to the end of the current post."
-  (interactive)
-  ;; Go to beginning of post and go down 2 lines :-P
-  (dank-posts--navigate-beginning-of-post)
-  (end-of-line)  ;; need to go to end-of-line first to workaround linewraps
-  (next-line)
-  (end-of-line)
-  (next-line)
-  (end-of-line)
+  (interactive "d")
+  (let* ((next-node (ewoc-goto-next dank-posts-current-ewoc 1)))
+    (if next-node
+        (progn
+          (previous-line)
+          (end-of-line))
+      (end-of-buffer)))
   (point))
 
 (defun dank-posts--find-post-extents (pos)
@@ -249,26 +246,20 @@ POST-INDEX is the number (\"position\") of the post."
   (interactive "d")
   (save-excursion
     (goto-char pos)
-    (list (dank-posts--navigate-beginning-of-post)
-          (dank-posts--navigate-end-of-post))))
+    (list (dank-posts--navigate-beginning-of-post pos)
+          (dank-posts--navigate-end-of-post pos))))
 
 
-(defun dank-posts-navigate-prev-post ()
+(defun dank-posts-navigate-prev-post (pos)
   "Move point to the beginning of previous post."
-  (interactive)
-  (dank-posts--navigate-beginning-of-post)
-  (previous-line)
-  (dank-posts--navigate-beginning-of-post)
-  (point)
+  (interactive "d")
+  (ewoc-goto-prev dank-posts-current-ewoc 1)
   (dank-posts-highlight-under-point))
 
-(defun dank-posts-navigate-next-post ()
+(defun dank-posts-navigate-next-post (pos)
   "Move point to the beginning of next post."
-  (interactive)
-  (dank-posts--navigate-end-of-post)
-  (next-line)
-  (beginning-of-line)
-  (point)
+  (interactive "d")
+  (ewoc-goto-next dank-posts-current-ewoc 1)
   (dank-posts-highlight-under-point))
 
 (defun dank-posts-fetch-next-page ()
