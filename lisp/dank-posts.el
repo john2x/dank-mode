@@ -291,10 +291,10 @@ POST-INDEX is the number (\"position\") of the post."
   (dank-posts-render-current-page-ewoc dank-posts-current-page-posts t)
   (dank-posts-highlight-under-point))
 
-(defun dank-posts-goto-subreddit-at-point (point)
+(defun dank-posts-goto-subreddit-at-point (pos)
   "Navigate to a dank-posts-mode buffer for a post's subreddit under POINT."
   (interactive "d")
-  (let* ((subreddit (dank-utils-get-prop point 'dank-post-subreddit)))
+  (let* ((subreddit (dank-post-subreddit (dank-utils-ewoc-data dank-posts-current-ewoc pos))))
     (dank-posts-init subreddit)))
 
 (defun dank-posts-goto-subreddit (subreddit)
@@ -309,14 +309,14 @@ POST-INDEX is the number (\"position\") of the post."
 Optional SORTING is the sort order for the comments."
   (dank-comments-init subreddit post-id permalink (current-buffer) sorting))
 
-(defun dank-posts-goto-post-comments-at-point (point)
-  "Open a dank-comments buffer for the post at POINT."
+(defun dank-posts-goto-post-comments-at-point (pos)
+  "Open a dank-comments buffer for the post at POS."
   (interactive "d")
-  (let* ((post-props (text-properties-at point))
-         (post-id (plist-get post-props 'dank-post-id))
-         (subreddit (plist-get post-props 'dank-post-subreddit))
-         (permalink (plist-get post-props 'dank-post-permalink))
-         (title (plist-get post-props 'dank-post-title)))
+  (let* ((post (dank-utils-ewoc-data dank-posts-current-ewoc pos))
+         (post-id (dank-post-id post))
+         (subreddit (dank-post-subreddit post))
+         (permalink (dank-post-permalink post))
+         (title (dank-post-title post)))
     (dank-posts-goto-post-comments subreddit post-id permalink
                                    dank-posts-current-sorting)))
 
@@ -324,19 +324,19 @@ Optional SORTING is the sort order for the comments."
   "Get the authenticated user's list of subscribed subreddits."
   (sort (mapcar (lambda (s) (dank-subreddit-url s)) (mapcar #'dank-post-subreddit-parse (dank-backend-subreddits))) 'string<))
 
-(defun dank-posts-browse-post-link-at-point (point &optional eww)
-  "Open the post link at POINT in a browser.
+(defun dank-posts-browse-post-link-at-point (pos &optional eww)
+  "Open the post link at POS in a browser.
 If EWW is non-nil, browse in eww instead of the browser."
   (interactive "d")
-  (let* ((post-link (dank-utils-get-prop point 'dank-post-link))
+  (let* ((post-link (dank-post-link (dank-utils-ewoc-data dank-posts-current-ewoc pos)))
          (browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
     (browse-url post-link)))
 
-(defun dank-posts-browse-post-comments-at-point (point &optional eww)
-  "Open the post comments at POINT in a browser.
+(defun dank-posts-browse-post-comments-at-point (pos &optional eww)
+  "Open the post comments at POS in a browser.
 If EWW is non-nil, browse in eww instead of the browser."
   (interactive "d")
-  (let ((post-permalink (dank-utils-get-prop point 'dank-post-permalink))
+  (let ((post-permalink (dank-post-permalink (dank-utils-ewoc-data dank-posts-current-ewoc point)))
         (browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
     (browse-url (concat "https://old.reddit.com" post-permalink))))
 
