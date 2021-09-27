@@ -128,7 +128,7 @@ Optional POST-PP must be the post pretty-printer function."
 (defun dank-comment--ewoc-parent-node (ewoc node)
   "Return the parent node of NODE in EWOC."
   (let* ((comment (ewoc-data node))
-         (parent-id (substring (dank-comment-parent-id comment) 3)))
+         (parent-id (substring (dank-comment-parent_id comment) 3)))
     (dank-utils-ewoc-next-match-node ewoc node
       (lambda (d)
         (when (dank-comment-p d)

@@ -299,7 +299,7 @@ top comment from the extent range. This is useful for folding the comment body o
   (interactive "d")
   (let* ((node (ewoc-locate dank-comments-current-ewoc pos))
          (comment (ewoc-data node))
-         (parent-id (substring (dank-comment-parent-id comment) 3))
+         (parent-id (substring (dank-comment-parent_id comment) 3))
          (parent-node (dank-comment--ewoc-parent-node dank-comments-current-ewoc node)))
     (ewoc-goto-node dank-comments-current-ewoc (or parent-node node)))
   (beginning-of-line-text)
@@ -311,12 +311,12 @@ top comment from the extent range. This is useful for folding the comment body o
   (let* ((node (ewoc-locate dank-comments-current-ewoc pos))
          (comment (ewoc-data node))
          (comment-id (dank-comment-id comment))
-         (parent-id (dank-comment-parent-id comment)))
+         (parent-id (dank-comment-parent_id comment)))
     (ewoc-goto-node
      dank-comments-current-ewoc
      (or (dank-utils-ewoc-next-match-node dank-comments-current-ewoc node
            (lambda (d)
-             (string-equal parent-id (dank-comment-parent-id d))))
+             (string-equal parent-id (dank-comment-parent_id d))))
          node)))
   (dank-comments-highlight-under-point))
 
@@ -326,12 +326,12 @@ top comment from the extent range. This is useful for folding the comment body o
   (let* ((node (ewoc-locate dank-comments-current-ewoc pos))
          (comment (ewoc-data node))
          (comment-id (dank-comment-id comment))
-         (parent-id (dank-comment-parent-id comment)))
+         (parent-id (dank-comment-parent_id comment)))
     (ewoc-goto-node
      dank-comments-current-ewoc
      (or (dank-utils-ewoc-next-match-node dank-comments-current-ewoc node
            (lambda (d)
-             (string-equal parent-id (dank-comment-parent-id d)))
+             (string-equal parent-id (dank-comment-parent_id d)))
            #'ewoc-prev)
          node)))
   (dank-comments-highlight-under-point))
