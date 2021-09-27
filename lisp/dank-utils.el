@@ -56,16 +56,6 @@ applying background faces."
           ((< diff-secs 946080000) (format "%s months ago" (/ diff-secs 2592000)))
           (t (format "%s years ago" (/ diff-secs 946080000))))))
 
-(defmacro dank-defrender (name buf arg-list &optional doc &rest body)
-  "Define a render function named NAME that expects the buffer variable BUF to be non-nil and active."
-  (declare (indent defun)
-           (doc-string 4))
-  `(defun ,name ,arg-list ,doc
-          (if (buffer-live-p ,buf)
-              (with-current-buffer ,buf
-                ,@body)
-            (message "Render failed"))))
-
 (defun dank-utils-markdown-fill-paragraph-and-indent (body depth fill-column &optional indent-guide)
   "Use `markdown-fill-paragraph' on Markdown BODY up to FILL-COLUMN width.  Indent BODY by DEPTH at the same time."
   (let ((fill-column (- fill-column (* 2 depth))) ;; subtract twice of depth from fill-column because the indent will take up part of the fill width
@@ -105,9 +95,21 @@ TODO: optimize this."
     (overlay-put ovl 'priority '(nil . 99))
     ovl))
 
-(defun dank-utils-get-prop (point property)
-  "Get the value of a PROPERTY at POINT."
-  (plist-get (text-properties-at point) property))
+(defun dank-utils-ewoc-data (ewoc pos)
+  "Get the data of the EWOC node at POS."
+  (let ((node (ewoc-locate ewoc pos)))
+    (when node
+      (ewoc-data node))))
+
+;; These EWOC functions were copied from https://github.com/alphapapa/ement.el
+(cl-defun dank-utils-ewoc-next-match-node (ewoc node pred &optional (move-fn #'ewoc-next))
+  "Return the next node in EWOC after NODE that PRED is true of.
+PRED is called with node's data.  Moves to next node by MOVE-FN."
+  (declare (indent defun))
+  (cl-loop do (setf node (funcall move-fn ewoc node))
+           until (or (null node)
+                     (funcall pred (ewoc-data node)))
+           finally return node))
 
 (provide 'dank-utils)
 

@@ -60,6 +60,7 @@ When nil, defaults to the frontpage."
 (defvar-local dank-posts-current-after nil)
 (defvar-local dank-posts-current-before nil)
 (defvar-local dank-posts-current-page-posts nil)
+(defvar-local dank-posts-current-ewoc nil)
 
 (defvar dank-posts-mode-map
   (let ((map (make-sparse-keymap)))
@@ -103,7 +104,7 @@ If a buffer already exists, switch to that buffer."
             (dank-posts-reset-state subreddit dank-posts-default-sorting dank-posts-page-items-limit)
           (dank-backend-error (progn (dank-posts-render-error err)
                                      (signal (car err) (cdr err)))))
-        (dank-posts-render-current-page dank-posts-current-page-posts)
+        (dank-posts-render-current-page-ewoc dank-posts-current-page-posts)
         (dank-posts-highlight-under-point)))))
 
 
@@ -147,18 +148,23 @@ Store the results in `dank-posts-current-page-posts'."
     (dank-posts-set-header-line)))
 
 
-(dank-defrender dank-posts-render-current-page dank-posts-buffer (posts &optional clear-buffer)
-  "Render contents of POSTS into `dank-posts-buffer'.
-Clears `dank-posts-buffer' before rendering."
-  (when clear-buffer
-    (let ((inhibit-read-only t))
-      (erase-buffer)))
-  (let* ((ordinals (number-sequence dank-posts-current-start-count dank-posts-current-end-count))
-         ;; merge ordinals and posts lists into one list of pairs '(ord post)
-         (ords-posts (mapcar* #'list ordinals dank-posts-current-page-posts)))
-    (mapc (lambda (ord-post) (dank-posts-append-post-to-buffer dank-posts-buffer (car ord-post) (cadr ord-post)))
-          ords-posts)))
+(defun dank-posts-render-current-page-ewoc (posts &optional refresh-ewoc)
+  "Set `dank-posts-current-ewoc' with POSTS and insert it into the current buffer.
+Uses `dank-post--ewoc-pp' as the ewoc pretty-printer.
+REFRESH-EWOC creates a new ewoc."
+  (when (and refresh-ewoc dank-posts-current-ewoc)
+    (ewoc-filter dank-posts-current-ewoc (lambda (n) nil)))
+  (let ((inhibit-read-only t))
+    (delete-blank-lines))
+  (when (or refresh-ewoc (not dank-posts-current-ewoc))
+    (setq dank-posts-current-ewoc (ewoc-create #'dank-post--ewoc-pp)))
+  (dank-posts--set-posts-ewoc dank-posts-current-ewoc posts)
+  (let ((inhibit-read-only t))
+    (delete-blank-lines)))
 
+(defun dank-posts--set-posts-ewoc (ewoc posts)
+  "Populate the EWOC with POSTS."
+  (mapc (lambda (p) (ewoc-enter-last ewoc p)) posts))
 
 (defun dank-posts-append-post-to-buffer (buf post-index post)
   "Append POST into BUF.
@@ -171,12 +177,13 @@ POST-INDEX is the number (\"position\") of the post."
           (goto-char (point-max))
           (insert formatted-post))))))
 
-(dank-defrender dank-posts-render-error dank-posts-buffer (err)
-  "Render contents of ERR into `dank-posts-buffer'."
+(defun dank-posts-render-error (err)
+  "Render contents of ERR into the current buffer."
   (let ((inhibit-read-only t))
     (erase-buffer)
+    (insert "Uh oh! Something went wrong.")
     (insert (format "%s\n" err))
-    (insert "TODO: show recommended actions (either [q]uit or retry)")))
+    (insert "Try killing this buffer with `C-x q` or `C-x k <buffer name> RET` and try again.")))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; display stuff ;;
@@ -215,26 +222,23 @@ POST-INDEX is the number (\"position\") of the post."
 ;; navigation functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun dank-posts--navigate-beginning-of-post ()
+(defun dank-posts--navigate-beginning-of-post (pos)
   "Move point to the beginning of the current post."
-  (interactive)
-  (beginning-of-line)
-  (let ((sreg "^[^ ]"))
-    (unless (looking-at sreg)
-      (re-search-backward sreg nil t)
-      (beginning-of-line)))
+  (interactive "d")
+  (let* ((node (ewoc-locate dank-posts-current-ewoc pos)))
+    (ewoc-goto-node dank-posts-current-ewoc node))
+  (beginning-of-line-text)
   (point))
 
-(defun dank-posts--navigate-end-of-post ()
+(defun dank-posts--navigate-end-of-post (pos)
   "Move point to the end of the current post."
-  (interactive)
-  ;; Go to beginning of post and go down 2 lines :-P
-  (dank-posts--navigate-beginning-of-post)
-  (end-of-line)  ;; need to go to end-of-line first to workaround linewraps
-  (next-line)
-  (end-of-line)
-  (next-line)
-  (end-of-line)
+  (interactive "d")
+  (let* ((next-node (ewoc-goto-next dank-posts-current-ewoc 1)))
+    (if next-node
+        (progn
+          (previous-line)
+          (end-of-line))
+      (end-of-buffer)))
   (point))
 
 (defun dank-posts--find-post-extents (pos)
@@ -242,29 +246,24 @@ POST-INDEX is the number (\"position\") of the post."
   (interactive "d")
   (save-excursion
     (goto-char pos)
-    (list (dank-posts--navigate-beginning-of-post)
-          (dank-posts--navigate-end-of-post))))
+    (list (dank-posts--navigate-beginning-of-post pos)
+          (dank-posts--navigate-end-of-post pos))))
 
 
-(defun dank-posts-navigate-prev-post ()
+(defun dank-posts-navigate-prev-post (pos)
   "Move point to the beginning of previous post."
-  (interactive)
-  (dank-posts--navigate-beginning-of-post)
-  (previous-line)
-  (dank-posts--navigate-beginning-of-post)
-  (point)
+  (interactive "d")
+  (ewoc-goto-prev dank-posts-current-ewoc 1)
   (dank-posts-highlight-under-point))
 
-(defun dank-posts-navigate-next-post ()
+(defun dank-posts-navigate-next-post (pos)
   "Move point to the beginning of next post."
-  (interactive)
-  (dank-posts--navigate-end-of-post)
-  (next-line)
-  (beginning-of-line)
-  (point)
+  (interactive "d")
+  (ewoc-goto-next dank-posts-current-ewoc 1)
   (dank-posts-highlight-under-point))
 
 (defun dank-posts-fetch-next-page ()
+  "Fetch the next page."
   (interactive)
   (dank-posts-set-page-posts dank-posts-current-subreddit
                              dank-posts-current-sorting
@@ -273,7 +272,7 @@ POST-INDEX is the number (\"position\") of the post."
                              dank-posts-current-after
                              nil)
   (goto-char (point-max))
-  (dank-posts-render-current-page dank-posts-current-page-posts)
+  (dank-posts-render-current-page-ewoc dank-posts-current-page-posts)
   (dank-posts-highlight-under-point))
 
 (defun dank-posts-refresh ()
@@ -281,7 +280,7 @@ POST-INDEX is the number (\"position\") of the post."
   (interactive)
   (dank-posts-reset-state dank-posts-current-subreddit dank-posts-current-sorting
                           dank-posts-page-items-limit)
-  (dank-posts-render-current-page dank-posts-current-page-posts t)
+  (dank-posts-render-current-page-ewoc dank-posts-current-page-posts t)
   (dank-posts-highlight-under-point))
 
 (defun dank-posts-change-sorting (sorting)
@@ -289,13 +288,13 @@ POST-INDEX is the number (\"position\") of the post."
   (interactive (list (completing-read "Sorting: " dank-posts-sorting-options)))
   (dank-posts-reset-state dank-posts-current-subreddit (intern sorting)
                           dank-posts-page-items-limit)
-  (dank-posts-render-current-page dank-posts-current-page-posts t)
+  (dank-posts-render-current-page-ewoc dank-posts-current-page-posts t)
   (dank-posts-highlight-under-point))
 
-(defun dank-posts-goto-subreddit-at-point (point)
+(defun dank-posts-goto-subreddit-at-point (pos)
   "Navigate to a dank-posts-mode buffer for a post's subreddit under POINT."
   (interactive "d")
-  (let* ((subreddit (dank-utils-get-prop point 'dank-post-subreddit)))
+  (let* ((subreddit (dank-post-subreddit (dank-utils-ewoc-data dank-posts-current-ewoc pos))))
     (dank-posts-init subreddit)))
 
 (defun dank-posts-goto-subreddit (subreddit)
@@ -310,14 +309,14 @@ POST-INDEX is the number (\"position\") of the post."
 Optional SORTING is the sort order for the comments."
   (dank-comments-init subreddit post-id permalink (current-buffer) sorting))
 
-(defun dank-posts-goto-post-comments-at-point (point)
-  "Open a dank-comments buffer for the post at POINT."
+(defun dank-posts-goto-post-comments-at-point (pos)
+  "Open a dank-comments buffer for the post at POS."
   (interactive "d")
-  (let* ((post-props (text-properties-at point))
-         (post-id (plist-get post-props 'dank-post-id))
-         (subreddit (plist-get post-props 'dank-post-subreddit))
-         (permalink (plist-get post-props 'dank-post-permalink))
-         (title (plist-get post-props 'dank-post-title)))
+  (let* ((post (dank-utils-ewoc-data dank-posts-current-ewoc pos))
+         (post-id (dank-post-id post))
+         (subreddit (dank-post-subreddit post))
+         (permalink (dank-post-permalink post))
+         (title (dank-post-title post)))
     (dank-posts-goto-post-comments subreddit post-id permalink
                                    dank-posts-current-sorting)))
 
@@ -325,19 +324,19 @@ Optional SORTING is the sort order for the comments."
   "Get the authenticated user's list of subscribed subreddits."
   (sort (mapcar (lambda (s) (dank-subreddit-url s)) (mapcar #'dank-post-subreddit-parse (dank-backend-subreddits))) 'string<))
 
-(defun dank-posts-browse-post-link-at-point (point &optional eww)
-  "Open the post link at POINT in a browser.
+(defun dank-posts-browse-post-link-at-point (pos &optional eww)
+  "Open the post link at POS in a browser.
 If EWW is non-nil, browse in eww instead of the browser."
   (interactive "d")
-  (let* ((post-link (dank-utils-get-prop point 'dank-post-link))
+  (let* ((post-link (dank-post-link (dank-utils-ewoc-data dank-posts-current-ewoc pos)))
          (browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
     (browse-url post-link)))
 
-(defun dank-posts-browse-post-comments-at-point (point &optional eww)
-  "Open the post comments at POINT in a browser.
+(defun dank-posts-browse-post-comments-at-point (pos &optional eww)
+  "Open the post comments at POS in a browser.
 If EWW is non-nil, browse in eww instead of the browser."
   (interactive "d")
-  (let ((post-permalink (dank-utils-get-prop point 'dank-post-permalink))
+  (let ((post-permalink (dank-post-permalink (dank-utils-ewoc-data dank-posts-current-ewoc point)))
         (browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
     (browse-url (concat "https://old.reddit.com" post-permalink))))
 
