@@ -1,11 +1,10 @@
-* TODO v0.2.0
+* TODO
 ** Features
 - [ ] search
 - [ ] upvote/downvote posts
 - [ ] upvote/downvote comments
 - [ ] reply comments
 ** Enhancements
-- [ ] ewoc package
 - [ ] make markdown-mode optional
 - [ ] remove s.el usage
 - [ ] better authentication
@@ -14,7 +13,14 @@
 - [ ] try url.el
 ** Bug fixes
 - [ ] Switching subreddits in dank-comments mode is not available
-- [ ] Folding the last comment tree doesn't work
+
+* DONE v0.1.1
+** Enhancements
+- [X] ewoc package
+  - [X] change rendering to use ewoc
+  - [X] change navigation to use ewoc
+** Bug fixes
+- [X] Folding the last comment tree doesn't work
 
 * DONE v0.1.0
 - [X] Figure out how to render post content properly. Probably best to
