@@ -55,18 +55,7 @@ Also applies font-lock properties."
                                  nsfw (,nsfw . dank-faces-nsfw) spoiler (,spoiler . dank-faces-nsfw) domain (,domain . dank-faces-site-domain) post_type (,post_type . dank-faces-post-type)
                                  link_flair (,link_flair . dank-faces-flair)))
          (formatted-post (dank-utils-format-plist dank-post-template format-context)))
-    (dank-post--propertize-metadata formatted-post post)))
-
-(defun dank-post--propertize-metadata (formatted-post source-post)
-  "Assign FORMATTED-POST metadata properties from SOURCE-POST."
-  (add-text-properties 0 (length formatted-post)
-                       `(dank-post-id ,(dank-post-id source-post)
-                                      dank-post-subreddit ,(dank-post-subreddit source-post)
-                                      dank-post-permalink ,(dank-post-permalink source-post)
-                                      dank-post-title ,(dank-post-title source-post)
-                                      dank-post-link ,(dank-post-link source-post))
-                       formatted-post)
-  formatted-post)
+    formatted-post))
 
 (defun dank-post-parse (post)
   "Parse POST into a `dank-post'."

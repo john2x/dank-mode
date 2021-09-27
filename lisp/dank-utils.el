@@ -95,10 +95,6 @@ TODO: optimize this."
     (overlay-put ovl 'priority '(nil . 99))
     ovl))
 
-(defun dank-utils-get-prop (point property)
-  "Get the value of a PROPERTY at POINT."
-  (plist-get (text-properties-at point) property))
-
 (defun dank-utils-ewoc-data (ewoc pos)
   "Get the data of the EWOC node at POS."
   (let ((node (ewoc-locate ewoc pos)))

@@ -92,7 +92,7 @@ formatting/indentation will depend on its position."
          (format-context `(author (,author . ,author-face) age ,age score ,score edited ,edited gilded ,gilded depth ,depth))
          (formatted-metadata (dank-utils-format-plist dank-comment-metadata-template format-context 'dank-faces-comment-metadata))
          (formatted-metadata (concat (s-repeat depth "  ") formatted-metadata)))
-    (dank-comment--propertize-comment-with-metadata formatted-metadata comment)))
+    formatted-metadata))
 
 (defun dank-comment-format-body (comment)
   "Format COMMENT body.
@@ -101,7 +101,7 @@ The body is filled up to `dank-comments-body-fill-width'."
          (depth (dank-comment-depth comment))
          (filled-body (dank-utils-markdown-fill-paragraph-and-indent body depth dank-comments-body-fill-width)) ;; fill the body
          )
-    (dank-comment--propertize-comment-with-metadata filled-body comment)))
+    filled-body))
 
 (defun dank-comment-format-more (more)
   "Format MORE."
@@ -110,29 +110,7 @@ The body is filled up to `dank-comments-body-fill-width'."
          (template (if (> count 0) dank-comment-more-template dank-comment-continue-template))
          (formatted (dank-utils-format-plist template format-context 'dank-faces-comment-more))
          (formatted (concat (s-repeat (dank-comment-depth more) "  ") formatted)))
-    (dank-comment--propertize-more-with-metadata formatted more)))
-
-(defun dank-comment--propertize-comment-with-metadata (formatted-comment source-comment)
-  "Assign FORMATTED-COMMENT with metadata from SOURCE-COMMENT."
-  (add-text-properties 0 (length formatted-comment)
-                       `(dank-comment-id ,(dank-comment-id source-comment)
-                                         dank-comment-type comment
-                                         dank-comment-parent-id ,(dank-comment-parent_id source-comment)
-                                         dank-comment-depth ,(dank-comment-depth source-comment))
-                       formatted-comment)
-  formatted-comment)
-
-(defun dank-comment--propertize-more-with-metadata (formatted-placeholder source-placeholder)
-  "Assign FORMATTED-PLACEHOLDER with metadata from SOURCE-PLACEHOLDER."
-  (add-text-properties 0 (length formatted-placeholder)
-                       `(dank-comment-parent-id ,(dank-comment-parent_id source-placeholder)
-                                                dank-comment-type more
-                                                dank-comment-id ,(dank-comment-id source-placeholder)
-                                                dank-comment-children-ids ,(dank-comment-children_ids source-placeholder)
-                                                dank-comment-count ,(dank-comment-more_count source-placeholder)
-                                                dank-comment-depth ,(dank-comment-depth source-placeholder))
-                       formatted-placeholder)
-  formatted-placeholder)
+    formatted))
 
 (defun dank-comment--ewoc-pp (post-or-comment)
   "EWOC pretty-printer for POST-OR-COMMENT.
