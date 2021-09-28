@@ -20,7 +20,6 @@
 (require 'dank-post)
 (require 'dank-faces)
 (require 'dank-comments)
-(require 's)
 (require 'browse-url)
 
 

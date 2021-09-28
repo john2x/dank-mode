@@ -12,7 +12,6 @@
 
 ;;; Code:
 
-(require 's)
 (require 'xml)
 (require 'markdown-mode)
 
@@ -31,15 +30,16 @@ apply that face to the template before formatting (and during, if
 that value has no specific face provided).  Optional AFTER-FACE
 will be applied after the template is rendered. Useful for
 applying background faces."
-  (let ((formatted (s-format (if  before-face
-                                 (propertize template 'font-lock-face before-face)
-                               template)
-                             (lambda (var &optional extra)
-                               (let ((value (plist-get extra (intern var))))
-                                 (if (eq (type-of value) 'cons)
-                                     (propertize (car value) 'font-lock-face (cdr value))
-                                   (if before-face (propertize value 'font-lock-face before-face) value))))
-                             plist)))
+  (let ((formatted (dank-utils-s-format
+                    (if  before-face
+                        (propertize template 'font-lock-face before-face)
+                      template)
+                    (lambda (var &optional extra)
+                      (let ((value (plist-get extra (intern var))))
+                        (if (eq (type-of value) 'cons)
+                            (propertize (car value) 'font-lock-face (cdr value))
+                          (if before-face (propertize value 'font-lock-face before-face) value))))
+                    plist)))
     (if after-face
         (propertize formatted 'font-lock-face after-face)
       formatted)))
@@ -110,6 +110,61 @@ PRED is called with node's data.  Moves to next node by MOVE-FN."
            until (or (null node)
                      (funcall pred (ewoc-data node)))
            finally return node))
+
+;; This formatting function was copied from https://github.com/magnars/s.el
+;; Errors for s-format
+(progn
+  (put 'dank-utils-s-format-resolve
+       'error-conditions
+       '(error dank-utils-s-format dank-utils-s-format-resolve))
+  (put 'dank-utils-s-format-resolve
+       'error-message
+       "Cannot resolve a template to values"))
+
+(defun dank-utils-s-format (template replacer &optional extra)
+  "Format TEMPLATE with the function REPLACER.
+REPLACER takes an argument of the format variable and optionally
+an extra argument which is the EXTRA value from the call to
+`dank-utils-s-format'.
+Several standard `dank-utils-s-format' helper functions are recognized and
+adapted for this:
+    (dank-utils-s-format \"${name}\" 'gethash hash-table)
+    (dank-utils-s-format \"${name}\" 'aget alist)
+    (dank-utils-s-format \"$0\" 'elt sequence)
+The REPLACER function may be used to do any other kind of
+transformation."
+  (let ((saved-match-data (match-data)))
+    (unwind-protect
+        (replace-regexp-in-string
+         "\\$\\({\\([^}]+\\)}\\|[0-9]+\\)"
+         (lambda (md)
+           (let ((var
+                  (let ((m (match-string 2 md)))
+                    (if m m
+                      (string-to-number (match-string 1 md)))))
+                 (replacer-match-data (match-data)))
+             (unwind-protect
+                 (let ((v
+                        (cond
+                         ((eq replacer 'gethash)
+                          (funcall replacer var extra))
+                         ((eq replacer 'aget)
+                          (cdr (assoc-string var extra)))
+                         ((eq replacer 'elt)
+                          (funcall replacer extra var))
+                         ((eq replacer 'oref)
+                          (funcall #'slot-value extra (intern var)))
+                         (t
+                          (set-match-data saved-match-data)
+                          (if extra
+                              (funcall replacer var extra)
+                            (funcall replacer var))))))
+                   (if v (format "%s" v) (signal 'dank-utils-s-format-resolve md)))
+               (set-match-data replacer-match-data))))
+         template
+         ;; Need literal to make sure it works
+         t t)
+      (set-match-data saved-match-data))))
 
 (provide 'dank-utils)
 
