@@ -13,7 +13,20 @@
 ;;; Code:
 
 (require 'xml)
-(require 'markdown-mode)
+
+(defcustom dank-utils-fill-paragraph-function 'fill-paragraph
+  "Function to use to fill content paragraphs."
+  :type 'function
+  :group 'dank-mode)
+
+(defcustom dank-utils-fill-forward-paragraph-function 'fill-forward-paragraph
+  "Function to use to fill forward content paragraphs."
+  :type 'function
+  :group 'dank-mode)
+
+(when (require 'markdown-mode nil 'noerror)
+  (setq dank-utils-fill-paragraph-function 'markdown-fill-paragraph)
+  (setq dank-utils-fill-forward-paragraph-function 'markdown-fill-forward-paragraph))
 
 (defun dank-warning (type &rest message-fmt)
   "Convenience method to print warning messages of TYPE for dank-reddit and return nil.
@@ -57,7 +70,7 @@ applying background faces."
           (t (format "%s years ago" (/ diff-secs 946080000))))))
 
 (defun dank-utils-markdown-fill-paragraph-and-indent (body depth fill-column &optional indent-guide)
-  "Use `markdown-fill-paragraph' on Markdown BODY up to FILL-COLUMN width.  Indent BODY by DEPTH at the same time."
+  "Use `dank-utils-fill-paragraph-function' on Markdown BODY up to FILL-COLUMN width.  Indent BODY by DEPTH at the same time."
   (let ((fill-column (- fill-column (* 2 depth))) ;; subtract twice of depth from fill-column because the indent will take up part of the fill width
         (fill-prefix (concat (make-string (* 2 depth) ?\s) "| ")))
     (with-temp-buffer
@@ -67,8 +80,8 @@ applying background faces."
       (beginning-of-buffer)
       (while (not (eobp))
         ;; this is probably not ideal with large comment trees
-        (markdown-fill-paragraph)
-        (markdown-fill-forward-paragraph 1))
+        (funcall dank-utils-fill-paragraph-function)
+        (funcall dank-utils-fill-forward-paragraph-function 1))
       (when (> depth 0)
         (beginning-of-buffer)
         (while (not (eobp))
