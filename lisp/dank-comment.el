@@ -91,7 +91,7 @@ formatting/indentation will depend on its position."
          (depth (dank-comment-depth comment))
          (format-context `(author (,author . ,author-face) age ,age score ,score edited ,edited gilded ,gilded depth ,depth))
          (formatted-metadata (dank-utils-format-plist dank-comment-metadata-template format-context 'dank-faces-comment-metadata))
-         (formatted-metadata (concat (s-repeat depth "  ") formatted-metadata)))
+         (formatted-metadata (concat (make-string (* 2 depth) ?\s) formatted-metadata)))
     formatted-metadata))
 
 (defun dank-comment-format-body (comment)
@@ -109,7 +109,7 @@ The body is filled up to `dank-comments-body-fill-width'."
          (format-context `(count ,(number-to-string count)))
          (template (if (> count 0) dank-comment-more-template dank-comment-continue-template))
          (formatted (dank-utils-format-plist template format-context 'dank-faces-comment-more))
-         (formatted (concat (s-repeat (dank-comment-depth more) "  ") formatted)))
+         (formatted (concat (make-string (* 2 (dank-comment-depth more)) ?\s) formatted)))
     formatted))
 
 (defun dank-comment--ewoc-pp (post-or-comment)

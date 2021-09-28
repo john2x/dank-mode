@@ -97,7 +97,7 @@ Also applies font-lock properties."
        (dank-utils-markdown-fill-paragraph-and-indent (dank-post-text post) 0 dank-comments-body-fill-width "")
      (dank-post-link post))
    "\n"
-   (propertize (s-repeat dank-comments-body-fill-width " ") 'font-lock-face 'dank-faces-separator)))
+   (propertize (make-string dank-comments-body-fill-width ?\s) 'font-lock-face 'dank-faces-separator)))
 
 (defun dank-post--ewoc-pp (post)
   "EWOC pretty-printer for POST."
