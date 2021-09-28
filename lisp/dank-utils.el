@@ -12,9 +12,21 @@
 
 ;;; Code:
 
-(require 's)
 (require 'xml)
-(require 'markdown-mode)
+
+(defcustom dank-utils-fill-paragraph-function 'fill-paragraph
+  "Function to use to fill content paragraphs."
+  :type 'function
+  :group 'dank-mode)
+
+(defcustom dank-utils-fill-forward-paragraph-function 'fill-forward-paragraph
+  "Function to use to fill forward content paragraphs."
+  :type 'function
+  :group 'dank-mode)
+
+(when (require 'markdown-mode nil 'noerror)
+  (setq dank-utils-fill-paragraph-function 'markdown-fill-paragraph)
+  (setq dank-utils-fill-forward-paragraph-function 'markdown-fill-forward-paragraph))
 
 (defun dank-warning (type &rest message-fmt)
   "Convenience method to print warning messages of TYPE for dank-reddit and return nil.
@@ -31,15 +43,16 @@ apply that face to the template before formatting (and during, if
 that value has no specific face provided).  Optional AFTER-FACE
 will be applied after the template is rendered. Useful for
 applying background faces."
-  (let ((formatted (s-format (if  before-face
-                                 (propertize template 'font-lock-face before-face)
-                               template)
-                             (lambda (var &optional extra)
-                               (let ((value (plist-get extra (intern var))))
-                                 (if (eq (type-of value) 'cons)
-                                     (propertize (car value) 'font-lock-face (cdr value))
-                                   (if before-face (propertize value 'font-lock-face before-face) value))))
-                             plist)))
+  (let ((formatted (dank-utils-s-format
+                    (if  before-face
+                        (propertize template 'font-lock-face before-face)
+                      template)
+                    (lambda (var &optional extra)
+                      (let ((value (plist-get extra (intern var))))
+                        (if (eq (type-of value) 'cons)
+                            (propertize (car value) 'font-lock-face (cdr value))
+                          (if before-face (propertize value 'font-lock-face before-face) value))))
+                    plist)))
     (if after-face
         (propertize formatted 'font-lock-face after-face)
       formatted)))
@@ -57,9 +70,9 @@ applying background faces."
           (t (format "%s years ago" (/ diff-secs 946080000))))))
 
 (defun dank-utils-markdown-fill-paragraph-and-indent (body depth fill-column &optional indent-guide)
-  "Use `markdown-fill-paragraph' on Markdown BODY up to FILL-COLUMN width.  Indent BODY by DEPTH at the same time."
+  "Use `dank-utils-fill-paragraph-function' on Markdown BODY up to FILL-COLUMN width.  Indent BODY by DEPTH at the same time."
   (let ((fill-column (- fill-column (* 2 depth))) ;; subtract twice of depth from fill-column because the indent will take up part of the fill width
-        (fill-prefix (concat (s-repeat depth "  ") "| ")))
+        (fill-prefix (concat (make-string (* 2 depth) ?\s) "| ")))
     (with-temp-buffer
       (insert body)
       (beginning-of-buffer)
@@ -67,8 +80,8 @@ applying background faces."
       (beginning-of-buffer)
       (while (not (eobp))
         ;; this is probably not ideal with large comment trees
-        (markdown-fill-paragraph)
-        (markdown-fill-forward-paragraph 1))
+        (funcall dank-utils-fill-paragraph-function)
+        (funcall dank-utils-fill-forward-paragraph-function 1))
       (when (> depth 0)
         (beginning-of-buffer)
         (while (not (eobp))
@@ -110,6 +123,61 @@ PRED is called with node's data.  Moves to next node by MOVE-FN."
            until (or (null node)
                      (funcall pred (ewoc-data node)))
            finally return node))
+
+;; This formatting function was copied from https://github.com/magnars/s.el
+;; Errors for s-format
+(progn
+  (put 'dank-utils-s-format-resolve
+       'error-conditions
+       '(error dank-utils-s-format dank-utils-s-format-resolve))
+  (put 'dank-utils-s-format-resolve
+       'error-message
+       "Cannot resolve a template to values"))
+
+(defun dank-utils-s-format (template replacer &optional extra)
+  "Format TEMPLATE with the function REPLACER.
+REPLACER takes an argument of the format variable and optionally
+an extra argument which is the EXTRA value from the call to
+`dank-utils-s-format'.
+Several standard `dank-utils-s-format' helper functions are recognized and
+adapted for this:
+    (dank-utils-s-format \"${name}\" 'gethash hash-table)
+    (dank-utils-s-format \"${name}\" 'aget alist)
+    (dank-utils-s-format \"$0\" 'elt sequence)
+The REPLACER function may be used to do any other kind of
+transformation."
+  (let ((saved-match-data (match-data)))
+    (unwind-protect
+        (replace-regexp-in-string
+         "\\$\\({\\([^}]+\\)}\\|[0-9]+\\)"
+         (lambda (md)
+           (let ((var
+                  (let ((m (match-string 2 md)))
+                    (if m m
+                      (string-to-number (match-string 1 md)))))
+                 (replacer-match-data (match-data)))
+             (unwind-protect
+                 (let ((v
+                        (cond
+                         ((eq replacer 'gethash)
+                          (funcall replacer var extra))
+                         ((eq replacer 'aget)
+                          (cdr (assoc-string var extra)))
+                         ((eq replacer 'elt)
+                          (funcall replacer extra var))
+                         ((eq replacer 'oref)
+                          (funcall #'slot-value extra (intern var)))
+                         (t
+                          (set-match-data saved-match-data)
+                          (if extra
+                              (funcall replacer var extra)
+                            (funcall replacer var))))))
+                   (if v (format "%s" v) (signal 'dank-utils-s-format-resolve md)))
+               (set-match-data replacer-match-data))))
+         template
+         ;; Need literal to make sure it works
+         t t)
+      (set-match-data saved-match-data))))
 
 (provide 'dank-utils)
 

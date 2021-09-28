@@ -22,7 +22,6 @@
 (require 'dank-faces)
 (require 'dank-comment)
 (require 'ewoc)
-(require 's)
 
 (defvar dank-comments-sorting-options '(top best new controversial old qa))
 

@@ -62,7 +62,7 @@ Also applies font-lock properties."
   (let* ((post (plist-get post :data)))
     (make-dank-post :id (plist-get post :id)
                     :name (plist-get post :name)
-                    :title (dank-utils-escape-html (s-trim (plist-get post :title)))
+                    :title (dank-utils-escape-html (string-trim (plist-get post :title)))
                     :link (plist-get post :url)
                     :text (plist-get post :selftext)
                     :age (dank-utils-timestamp-ago (plist-get post :created_utc))
@@ -97,7 +97,7 @@ Also applies font-lock properties."
        (dank-utils-markdown-fill-paragraph-and-indent (dank-post-text post) 0 dank-comments-body-fill-width "")
      (dank-post-link post))
    "\n"
-   (propertize (s-repeat dank-comments-body-fill-width " ") 'font-lock-face 'dank-faces-separator)))
+   (propertize (make-string dank-comments-body-fill-width ?\s) 'font-lock-face 'dank-faces-separator)))
 
 (defun dank-post--ewoc-pp (post)
   "EWOC pretty-printer for POST."

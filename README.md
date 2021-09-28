@@ -18,22 +18,20 @@ Emacs major mode for browsing ~~dank memes~~ Reddit.
 This isn't ready for MELPA yet. To insall, download this repository
 and put the files of `lisp/` in your load path.
 
+## Minimum Emacs version
+
+This package requires at least Emacs version 27.1.
+
 ## 3rd-party packages
 
 This package requires the following packages:
 
-- `s.el`
-  - https://github.com/magnars/s.el (available on MELPA)
-  - Parsing and formatting Reddit content means a lot of string
-    operations and transformations. `s.el` provides some convenient
-    methods for this.
 - `request.el`
   - https://github.com/tkf/emacs-request (avaialble on MELPA)
   - Used for communicating with the Reddit API.
-- `markdown-mode`
-  - https://jblevins.org/projects/markdown-mode/ (available on MELPA)
-  - Reddit content is mostly Markdown. It makes sense to use the
-    Markdown package to help with formatting.
+
+If `markdown-mode` is available, it will be used to do paragraph
+filling.
 
 # Authentication
 
