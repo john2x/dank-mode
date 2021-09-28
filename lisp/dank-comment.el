@@ -63,7 +63,7 @@ list of children, also parsed."
                              :id (plist-get comment :id)
                              :name (plist-get comment :name)
                              :depth depth
-                             :body (s-trim (or (plist-get comment :body) ""))
+                             :body (string-trim (or (plist-get comment :body) ""))
                              :age (dank-utils-timestamp-ago (plist-get comment :created_utc))
                              :date (plist-get comment :created_utc)
                              :score (plist-get comment :score)

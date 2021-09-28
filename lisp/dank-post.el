@@ -62,7 +62,7 @@ Also applies font-lock properties."
   (let* ((post (plist-get post :data)))
     (make-dank-post :id (plist-get post :id)
                     :name (plist-get post :name)
-                    :title (dank-utils-escape-html (s-trim (plist-get post :title)))
+                    :title (dank-utils-escape-html (string-trim (plist-get post :title)))
                     :link (plist-get post :url)
                     :text (plist-get post :selftext)
                     :age (dank-utils-timestamp-ago (plist-get post :created_utc))
