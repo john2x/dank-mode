@@ -46,4 +46,5 @@ HEADER should be a lower-case string."
         (insert-file-contents filename)
         (buffer-string)))))
 
+(provide 'dank-url)
 ;;; dank-url.el ends here
