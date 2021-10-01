@@ -12,7 +12,7 @@
 
 ;;; Code:
 
-(require 'request)
+(require 'dank-url)
 (require 'json)
 (require 'dank-utils)
 
@@ -93,21 +93,31 @@ When FORCE-REFRESH is non-nil, then force the refresh."
   (when (and (dank-auth-configured-p) (or force-refresh (not (dank-auth--token-valid-p))))
     (let* ((authorization (base64-encode-string (concat dank-auth-oauth-client-id ":"
                                                         dank-auth-oauth-client-secret)))
-           (resp (request
-                  "https://www.reddit.com/api/v1/access_token"
-                  :type "POST"
-                  :data `(("grant_type" . "password")
-                          ("username" . ,dank-auth-username)
-                          ("password" . ,dank-auth-password))
-                  :headers `(("Authorization" . ,(concat "Basic " authorization))
-                             ("User-Agent" . ,dank-auth-user-agent))
-                  :parser (lambda () (let ((json-object-type 'plist)) (json-read)))
-                  :sync t))
-           (resp-data (request-response-data resp)))
-      (if (request-response-error-thrown resp)
-          (signal 'dank-auth-token-refresh-error `(,resp-data))
-        (let ((expiry (+ (float-time) (plist-get resp-data :expires_in))))
-          (setq dank-auth--token-storage (plist-put resp-data :expiry expiry)))))))
+           (full-url "https://www.reddit.com/api/v1/access_token")
+           (url-user-agent dank-auth-user-agent)
+           (url-request-method "POST")
+           (url-request-extra-headers `(("Authorization" . ,(concat "Basic " authorization))
+                                        ("Content-Type" . "application/x-www-form-urlencoded")))
+           (url-request-data (dank-url-encode-alist `(("grant_type" . "password")
+                                                      ("username" . ,dank-auth-username)
+                                                      ("password" . ,dank-auth-password))))
+           (response-buf (url-retrieve-synchronously full-url)))
+      ;; cleanup
+      (setq url-request-method nil
+            url-request-extra-headers nil
+            url-request-data nil)
+      (with-current-buffer response-buf
+        (let* ((response-status-code (dank-url-response-status-code))
+               (response-content-type (dank-url-response-header "content-type"))
+               (response-content (dank-url-response-uncompress))
+               (response-json (if (string-match-p "^application/json" response-content-type)
+                                  (json-parse-string response-content :object-type 'plist :null-object nil))))
+          (if (and (= response-status-code 200) (plist-get response-json :expires_in))
+              (let ((expiry (+ (float-time) (plist-get response-json :expires_in))))
+                (setq dank-auth--token-storage (plist-put response-json :expiry expiry))
+                response-json)
+            (signal 'dank-auth-token-refresh-error
+                    `(,full-url ,url-request-method ,response-status-code ,response-content))))))))
 
 (defun dank-auth-token ()
   "Return the access token stored in dank-auth--token-storage.
