@@ -35,8 +35,7 @@
       (dank-backend--find-property (cdr request-args) property))))
 
 (defun dank-backend-request (method path &optional url-params)
-  "Perform a synchronous `request' with REQUEST-ARGS and `dank-auth-token'.
-The first element in request-args (the _relative_ request url) will be prependend with `dank-backend-host'."
+  "Perform a synchronous Reddit request with METHOD PATH and URL-PARAMS."
   (let* ((json-object-type 'plist)
          (encoded-url-params (dank-url-encode-alist url-params))
          (full-url (concat dank-backend-host path))
@@ -44,8 +43,7 @@ The first element in request-args (the _relative_ request url) will be prependen
       (let* ((token (dank-auth-token))
              (authorization (concat "Bearer " token))
              (url-user-agent dank-auth-user-agent)
-             (url-request-extra-headers `(("Authorization" . ,authorization)
-                                          ("Accept-Encoding" . "identity")))
+             (url-request-extra-headers `(("Authorization" . ,authorization)))
              (response-buf (url-retrieve-synchronously full-url t t 60)))
         (with-current-buffer response-buf
           (if (= (dank-url-response-status-code) 200)
