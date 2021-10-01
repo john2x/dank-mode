@@ -44,19 +44,13 @@
                                 (request--urlencode-alist params)))
       (dank-cache-key url))))
 
-(defun dank-backend-request (method url &optional url-params request-body)
+(defun dank-backend-request (method path &optional url-params)
   "Perform a synchronous `request' with REQUEST-ARGS and `dank-auth-token'.
 The first element in request-args (the _relative_ request url) will be prependend with `dank-backend-host'."
   (let* ((json-object-type 'plist)
-         (url-automatic-caching t)
          (encoded-url-params (dank-url-encode-alist url-params))
-         (full-url (concat dank-backend-host url))
-         (full-url (if encoded-url-params (concat full-url "?" encoded-url-params) full-url))
-         (cached-response (when (url-is-cached full-url) (url-fetch-from-cache full-url))))
-    (if cached-response
-        (with-current-buffer cached-response
-          (if (= (dank-url-response-status-code) 200)
-              (json-parse-string (dank-url-response-uncompress) :object-type 'plist :null-object nil)))
+         (full-url (concat dank-backend-host path))
+         (full-url (if encoded-url-params (concat full-url "?" encoded-url-params) full-url)))
       (let* ((token (dank-auth-token))
              (authorization (concat "Bearer " token))
              (url-user-agent dank-auth-user-agent)
@@ -65,7 +59,11 @@ The first element in request-args (the _relative_ request url) will be prependen
              (response-buf (url-retrieve-synchronously full-url t t 60)))
         (with-current-buffer response-buf
           (if (= (dank-url-response-status-code) 200)
-              (json-parse-string (dank-url-response-uncompress) :object-type 'plist :null-object nil)))))))
+              (progn
+                (json-parse-string (dank-url-response-uncompress) :object-type 'plist :null-object nil))
+            (progn
+              (signal 'dank-backend-request-error
+                      `(,url-params ,full-url ,(dank-url-response-uncompress)))))))))
 
 
 (defun dank-backend-post-listing (subreddit sorting &rest request-params)
