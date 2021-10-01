@@ -15,7 +15,6 @@
 (require 'url)
 (require 'json)
 (require 'dank-utils)
-(require 'dank-cache)
 (require 'dank-auth)
 (require 'dank-url)
 
@@ -34,15 +33,6 @@
     (if (eq (car request-args) property)
         (car (cdr request-args))
       (dank-backend--find-property (cdr request-args) property))))
-
-(defun dank-backend--cache-key (request-args)
-  "Return a cache key from REQUEST-ARGS."
-  (let ((url (car request-args))
-        (params (dank-backend--find-property request-args :params)))
-    (if params
-        (dank-cache-key (concat url (if (string-match-p "\\?" url) "&" "?")
-                                (request--urlencode-alist params)))
-      (dank-cache-key url))))
 
 (defun dank-backend-request (method path &optional url-params)
   "Perform a synchronous `request' with REQUEST-ARGS and `dank-auth-token'.
@@ -64,7 +54,6 @@ The first element in request-args (the _relative_ request url) will be prependen
             (progn
               (signal 'dank-backend-request-error
                       `(,url-params ,full-url ,(dank-url-response-uncompress)))))))))
-
 
 (defun dank-backend-post-listing (subreddit sorting &rest request-params)
   "Fetch authenticated user's SUBREDDIT posts sorted by SORTING.
