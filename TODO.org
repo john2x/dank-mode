@@ -3,9 +3,9 @@
 - [ ] better authentication
   - [ ] use auth package
   - [ ] use web-server.el if it's installed
-* TODO v0.1.3
+* DONE v0.1.3
 ** Enhancements
-- [ ] try url.el
+- [X] try url.el
 * DONE v0.1.2
 ** Enhancements
 - [X] make markdown-mode optional

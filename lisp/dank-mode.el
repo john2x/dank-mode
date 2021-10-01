@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 John Louis Del Rosario
 
 ;; Author: John Louis Del Rosario <john2x@gmail.com>
-;; Version: 0.1.0
+;; Version: 0.1.3
 ;; Keywords: reddit, social
 
 ;;; Commentary:
@@ -24,7 +24,6 @@
 
 (require 'dank-auth)
 (require 'dank-backend)
-(require 'dank-cache)
 (require 'dank-posts)
 
 (defvar dank-mode-initialized nil)
@@ -46,14 +45,8 @@
 
 (defun dank-mode-init ()
   "Initialize dank-mode cache and auth."
-  (dank-mode--init-cache)
   (dank-mode--init-auth)
   (setq dank-mode-initialized t))
-
-(defun dank-mode--init-cache ()
-  "Initialize dank-mode's cache (i.e. clear it)."
-  (message "Clearing dank-cache...")
-  (dank-cache-delete-all))
 
 (defun dank-mode--init-auth ()
   "Initialize dank-mode auth."

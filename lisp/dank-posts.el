@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 John Louis Del Rosario
 
 ;; Author: John Louis Del Rosario <john2x@gmail.com>
-;; Version: 0.1.0
+;; Version: 0.1.3
 ;; Keywords: reddit, social
 
 ;;; Commentary:

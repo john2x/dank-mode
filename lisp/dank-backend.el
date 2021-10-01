@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 John Louis Del Rosario
 
 ;; Author: John Louis Del Rosario <john2x@gmail.com>
-;; Version: 0.1.0
+;; Version: 0.1.3
 ;; Keywords: reddit, social
 
 ;;; Commentary:
@@ -12,11 +12,11 @@
 
 ;;; Code:
 
-(require 'request)
+(require 'url)
 (require 'json)
 (require 'dank-utils)
-(require 'dank-cache)
 (require 'dank-auth)
+(require 'dank-url)
 
 (defconst dank-backend-host "https://oauth.reddit.com")
 
@@ -34,41 +34,24 @@
         (car (cdr request-args))
       (dank-backend--find-property (cdr request-args) property))))
 
-(defun dank-backend--cache-key (request-args)
-  "Return a cache key from REQUEST-ARGS."
-  (let ((url (car request-args))
-        (params (dank-backend--find-property request-args :params)))
-    (if params
-        (dank-cache-key (concat url (if (string-match-p "\\?" url) "&" "?")
-                                (request--urlencode-alist params)))
-      (dank-cache-key url))))
-
-(defun dank-backend-request (&rest request-args)
-  "Perform a synchronous `request' with REQUEST-ARGS and `dank-auth-token'.
-The first element in request-args (the _relative_ request url) will be prependend with `dank-backend-host'."
-  (let ((key (dank-backend--cache-key request-args)))
-    (if (dank-cache-key-exists key)
-        (let ((json-object-type 'plist))
-          (json-read-from-string (dank-cache-get key)))
-      (let* ((full-url (concat dank-backend-host (car request-args)))
-             (request-args (cons full-url (cdr request-args)))  ;; replace the relative url with the full-url
-             (token (dank-auth-token))
-             (authorization (concat "Bearer " (dank-auth-token)))
-             (headers `(("User-Agent" . ,dank-auth-user-agent)
-                        ("Authorization" . ,authorization)))
-             (request-args (append request-args `(:headers ,headers
-                                                           :parser buffer-string
-                                                           :sync t)))
-             (resp (apply 'request request-args))
-             (resp-data (request-response-data resp))
-             (resp-error (request-response-error-thrown resp)))
-        (if resp-error
-            (signal 'dank-backend-request-error
-                    `(,(plist-get (cdr request-args) :type) ,full-url ,resp-data))
-          (let ((json-object-type 'plist))
-            (dank-cache-set key resp-data)
-            (json-read-from-string resp-data)))))))
-
+(defun dank-backend-request (method path &optional url-params)
+  "Perform a synchronous Reddit request with METHOD PATH and URL-PARAMS."
+  (let* ((json-object-type 'plist)
+         (encoded-url-params (dank-url-encode-alist url-params))
+         (full-url (concat dank-backend-host path))
+         (full-url (if encoded-url-params (concat full-url "?" encoded-url-params) full-url)))
+      (let* ((token (dank-auth-token))
+             (authorization (concat "Bearer " token))
+             (url-user-agent dank-auth-user-agent)
+             (url-request-extra-headers `(("Authorization" . ,authorization)))
+             (response-buf (url-retrieve-synchronously full-url t t 60)))
+        (with-current-buffer response-buf
+          (if (= (dank-url-response-status-code) 200)
+              (progn
+                (json-parse-string (dank-url-response-uncompress) :object-type 'plist :null-object nil))
+            (progn
+              (signal 'dank-backend-request-error
+                      `(,url-params ,full-url ,(dank-url-response-uncompress)))))))))
 
 (defun dank-backend-post-listing (subreddit sorting &rest request-params)
   "Fetch authenticated user's SUBREDDIT posts sorted by SORTING.
@@ -90,7 +73,8 @@ If both :after and :before are provided, :after takes precedence and :before is 
            (params (if limit (cons `(limit . ,limit) params) params))
            (params (if count (cons `(count . ,count) params) params))
            (params (if after (cons `(after . ,after) (assq-delete-all 'before params)) params))
-           (resp (dank-backend-request url :type "GET" :params params)))
+           (resp (dank-backend-request "GET" url params)))
+      (message "%s" (plist-get resp :data))
       (plist-get (plist-get resp :data) :children))))
 
 (defun dank-backend-my-subreddits-listing (&rest request-params)
@@ -102,7 +86,7 @@ REQUEST-PARAMS is a plist of request parameters that Reddit's 'listing' API take
     (let* ((params (if before (cons `(before . ,before) '() '())))
            (params (if limit (cons `(limit . ,limit) params) params))
            (params (if after (cons `(after . , after) (assq-delete-all 'before params)) params))
-           (resp (dank-backend-request "/subreddits/mine/subscriber" :type "GET" :params params)))
+           (resp (dank-backend-request "GET" "/subreddits/mine/subscriber" params)))
       resp)))
 
 
@@ -123,7 +107,7 @@ Valid keywords are: :depth (integer), :limit (integer)."
            (params (if limit (cons `(limit . ,limit) params) params))
            (params (if comment (cons `(comment . ,comment) params) params))
            (params (cons `(sort . ,(symbol-name sorting)) params))
-           (resp (dank-backend-request url :type "GET" :params params))
+           (resp (dank-backend-request "GET" url params))
            (post (aref (plist-get (plist-get (aref resp 0) :data) :children) 0))
            (comments (plist-get (plist-get (aref resp 1) :data) :children)))
       `(,post . ,comments))))
@@ -145,7 +129,7 @@ REQUEST-PARAMS is plist of request parameters that Reddit's 'morechildren' API t
            (params (cons `(children . ,children-ids) params))
            (params (cons `(link_id . ,link-id) params))
            (params (cons `(limit_children . "False") params))
-           (resp (dank-backend-request url :type "GET" :params params))
+           (resp (dank-backend-request "GET" url params))
            (things (plist-get (plist-get (plist-get resp :json) :data) :things)))
       things)))
 
@@ -155,7 +139,7 @@ Optional WHERE parameter is a symbol for the type of subscription (e.g. 'mine).
 REQUEST-PARAMS is plist of request parameters that Reddit's 'subreddits' API takes."
   (let* ((url (concat "/subreddits/mine/" (or (and where (symbol-name where)) "subscriber")))
          (params `((limit . 100) (sr_detail . nil)))
-         (resp (dank-backend-request url :type "GET" :params params)))
+         (resp (dank-backend-request "GET" url params)))
     (plist-get (plist-get resp :data) :children)))
 
 (provide 'dank-backend)
