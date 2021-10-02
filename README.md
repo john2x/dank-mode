@@ -121,7 +121,7 @@ To view the full list of commands, refer to the mode help page `C-x h m`.
 - [ ] Submitting posts
 - [ ] Search
 
-See `TODO.org` for more details.
+See `TODO.org` and `CHANGELOG.org` for more details.
 
 ## Maybe:
 
