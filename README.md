@@ -36,30 +36,38 @@ All requests to the Reddit API must be authenticated.
 To authenticate, you will need to generate your own Reddit API client
 id and secret.
 
-This can be done via https://www.reddit.com/prefs/apps
+This can be done via https://www.reddit.com/prefs/apps.  When creating
+the application, choose the **script** option, as it will only be used
+by you. Feel free to leave the other fields as empty. The client id
+will be written right under the application name. The client secret
+will be labeled as **secret**.
 
-Once you have your Reddit API client id and secret, save them in the
-`dank-auth-file` file (defaults to `~/.emacs.d/dank-mode/auth.json`).
+Once you have your Reddit API client id and secret, you can start
+`dank-mode` with `M-x dank-mode`. You will be prompted to enter the
+client id and secret, and your Reddit username and password.
 
-You will also need to provide your Reddit username and password in the
-same file.[1]
+You will also be prompted for the option to encrypt the client secret
+and password when it is cached on disk (defaults to
+`~/.emacs.d/dank-mode/auth.plstore`). The benefits of this is limited,
+as the secret and password will be cached in memory so any Emacs library
+can read them, but at least other programs can't read them from disk.
 
-See the sample file `auth.example.json` for an example of this
-`dank-auth-file` file.
-
-[1]: Ideally, you shouldn't have to provide your **plaintext password** to use this package. But to perform the complete OAuth2 dance with Reddit's servers, a client server will have to be running to receive the access tokens. This is planned for a future iteration.
+(Note about the old `auth.json` file: if you already have the
+`auth.json` file from older versions of this package, it will
+automatically be upgraded to the new `auth.plstore` file. It will
+remain unencrypted. If you wish to encrypt it, delete the
+`auth.plstore` file and restart `dank-mode` to get the prompts.)
 
 # Usage instructions
-
-Please make sure your `dank-auth-file` is available. See
-**Authentication** section above.
 
 ## Quick tutorial
 
 ### Frontpage and subreddits
 
-Open your frontpage with `M-x dank-mode`. This will create a new
-buffer with the frontpage posts sorted by `hot` (the default).
+Open your frontpage with `M-x dank-mode`. If this is your first time
+running `dank-mode`, you will be prompted for your credentials (see
+**Authentication** above). You will then be taken to a new buffer with
+the frontpage posts sorted by `hot` (the default).
 
 This buffer will have the `dank-posts-mode` major mode enabled.
 The "active" post under `point` will be highlighted.
@@ -113,7 +121,7 @@ To view the full list of commands, refer to the mode help page `C-x h m`.
 - [ ] Submitting posts
 - [ ] Search
 
-See `TODO.org` for more details.
+See `TODO.org` and `CHANGELOG.org` for more details.
 
 ## Maybe:
 

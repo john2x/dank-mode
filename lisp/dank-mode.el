@@ -32,8 +32,7 @@
 (defun dank-mode ()
   "Entrypoint function for dank-mode.  Initialize a dank-posts-mode buffer for the reddit frontpage."
   (interactive)
-  (unless dank-mode-initialized
-    (dank-mode-init))
+  (dank-mode-init)
   (dank-posts-init nil))
 
 (defun dank-mode-reset ()
@@ -45,14 +44,10 @@
 
 (defun dank-mode-init ()
   "Initialize dank-mode cache and auth."
-  (dank-mode--init-auth)
-  (setq dank-mode-initialized t))
-
-(defun dank-mode--init-auth ()
-  "Initialize dank-mode auth."
-  (message "Initialize dank-auth...")
-  (when dank-auth-file
-    (unless (dank-auth-configured-p)
-      (dank-auth-load-auth-vars-from-file dank-auth-file))))
+  (unless dank-mode-initialized
+    (dank-auth-read-from-disk)
+    (unless dank-auth--credentials
+      (dank-auth-prompt))
+    (setq dank-mode-initialized t)))
 
 (provide 'dank-mode)
