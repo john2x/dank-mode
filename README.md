@@ -15,8 +15,15 @@ Emacs major mode for browsing ~~dank memes~~ Reddit.
 
 # Install
 
-This isn't ready for MELPA yet. To insall, download this repository
-and put the files of `lisp/` in your load path.
+## MELPA
+
+Coming soon.
+
+## Manual installation
+
+Download a release from https://github.com/john2x/dank-mode/releases
+or clone this repo and copy the contents of the `lisp/` folder in your
+Emacs load path.
 
 ## Minimum Emacs version
 
@@ -24,7 +31,10 @@ This package requires at least Emacs version 27.1.
 
 ## 3rd-party packages
 
-This package doesn't require any 3rd party packages.
+This package requires the following packages (available on GNU ELPA):
+
+- oauth2
+- web-server
 
 If `markdown-mode` is available, it will be used to do paragraph
 filling.
@@ -33,30 +43,24 @@ filling.
 
 All requests to the Reddit API must be authenticated.
 
-To authenticate, you will need to generate your own Reddit API client
-id and secret.
+When you start `dank-mode` for the first time, you will be
+redirected to the Reddit OAuth authorization page in your browser.
 
-This can be done via https://www.reddit.com/prefs/apps.  When creating
-the application, choose the **script** option, as it will only be used
-by you. Feel free to leave the other fields as empty. The client id
-will be written right under the application name. The client secret
-will be labeled as **secret**.
+When you grant the permissions, you will be redirected to page served
+on localhost. This server will parse the token in the page and store
+it with `plstore`. At this point you will be prompted to enter a
+passphrase to encrypt the token on disk.
 
-Once you have your Reddit API client id and secret, you can start
-`dank-mode` with `M-x dank-mode`. You will be prompted to enter the
-client id and secret, and your Reddit username and password.
+You will occasionally be asked to re-enter the passphrase when the
+token is refreshed (every 1 hour) or when you restart `dank-mode`.
+Depending on your OS, you will have the option to cache this
+passphrase so you don't have to type it in all the time.
 
-You will also be prompted for the option to encrypt the client secret
-and password when it is cached on disk (defaults to
-`~/.emacs.d/dank-mode/auth.plstore`). The benefits of this is limited,
-as the secret and password will be cached in memory so any Emacs library
-can read them, but at least other programs can't read them from disk.
-
-(Note about the old `auth.json` file: if you already have the
-`auth.json` file from older versions of this package, it will
-automatically be upgraded to the new `auth.plstore` file. It will
-remain unencrypted. If you wish to encrypt it, delete the
-`auth.plstore` file and restart `dank-mode` to get the prompts.)
+**Note about previous authentication method:** if you previously
+authenticated with your own Reddit client id and username/password
+(e.g. version 0.1.5 and below), you will need to re-authenticate.
+This can be done by restarting `dank-mode` or with `M-x
+dank-oauth-start`.
 
 # Usage instructions
 
@@ -65,7 +69,7 @@ remain unencrypted. If you wish to encrypt it, delete the
 ### Frontpage and subreddits
 
 Open your frontpage with `M-x dank-mode`. If this is your first time
-running `dank-mode`, you will be prompted for your credentials (see
+running `dank-mode`, you will be prompted to grant permissions (see
 **Authentication** above). You will then be taken to a new buffer with
 the frontpage posts sorted by `hot` (the default).
 
