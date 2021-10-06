@@ -22,7 +22,7 @@
 
 ;;; Code:
 
-(require 'dank-auth)
+(require 'dank-oauth)
 (require 'dank-backend)
 (require 'dank-posts)
 
@@ -45,9 +45,9 @@
 (defun dank-mode-init ()
   "Initialize dank-mode cache and auth."
   (unless dank-mode-initialized
-    (dank-auth-read-from-disk)
-    (unless dank-auth--credentials
-      (dank-auth-prompt))
+    (dank-oauth-read-from-disk)
+    (unless dank-oauth--token-data
+      (dank-oauth-start))
     (setq dank-mode-initialized t)))
 
 (provide 'dank-mode)

@@ -15,9 +15,10 @@
 (require 'url)
 (require 'json)
 (require 'dank-utils)
-(require 'dank-auth)
+(require 'dank-oauth)
 (require 'dank-url)
 
+(defconst dank-backend-user-agent "Emacs dank-mode")
 (defconst dank-backend-host "https://oauth.reddit.com")
 
 (defvar-local dank-backend-buffer-history nil)
@@ -41,9 +42,9 @@ JSON-DATA will be sent as the request body."
          (encoded-url-params (dank-url-encode-alist url-params))
          (full-url (concat dank-backend-host path))
          (full-url (if encoded-url-params (concat full-url "?" encoded-url-params) full-url))
-         (token (dank-auth-token))
+         (token (dank-oauth-token))
          (authorization (concat "Bearer " token))
-         (url-user-agent dank-auth-user-agent)
+         (url-user-agent dank-backend-user-agent)
          (url-request-data (when json-data (json-encode-plist json-data)))
          (url-request-method method)
          (url-request-extra-headers `(("Authorization" . ,authorization)))
