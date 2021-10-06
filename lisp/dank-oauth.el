@@ -77,7 +77,7 @@
         dank-oauth--auth-token nil)
 
   ;; start the redirect server
-  (dank-oauth-stop-redirect-server)
+  (dank-oauth-stop-redirect-servers)
   (dank-oauth-start-redirect-server)
 
   ;; start the oauth2 dance
@@ -101,7 +101,8 @@ Instead, the code will be set by the redirect server."
                       "&duration=permanent"
                       (if scope (concat "&scope=" (url-hexify-string scope)) "")
                       (if state (concat "&state=" (url-hexify-string state)) "")))
-  (dank-oauth-wait-for-auth-token))
+  (dank-oauth-wait-for-auth-token)
+  (dank-oauth-stop-redirect-servers))
 
 (defun dank-oauth-make-access-request (url data)
   "Like `oauth2-make-access-request' but provides Authorization header."
@@ -125,7 +126,7 @@ Once it's set, stop the `dank-oauth-redirect-server'."
                   (cl-return))
                 (message "Waiting for auth token to be set... Press C-g to stop waiting.")
                 (sleep-for 1))
-           finally (dank-oauth-stop-redirect-server))
+           finally (dank-oauth-stop-redirect-servers))
   dank-oauth--auth-token)
 
 (defun dank-oauth-read-from-disk ()
@@ -193,11 +194,13 @@ file and see if it is more than 3300 or DURATION seconds old."
                         (process-send-string process "Failed to receive valid authorization token. Please try again."))))))))
            dank-oauth-redirect-port))))
 
-(defun dank-oauth-stop-redirect-server ()
-  "Stop the redirect web server."
-  (message "Stopping dank-mode oauth redirect server...")
-  (when dank-oauth-redirect-server
-    (ws-stop dank-oauth-redirect-server))
+(defun dank-oauth-stop-redirect-servers ()
+  "Stop all redirect web servers."
+  (mapc (lambda (s)
+          (when (= (port s) dank-oauth-redirect-port)
+            (message "Stopping dank-mode oauth redirect server...")
+            (ws-stop s)))
+        ws-servers)
   (setq dank-oauth-redirect-server nil))
 
 (provide 'dank-oauth)
