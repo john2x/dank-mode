@@ -59,7 +59,7 @@ JSON-DATA will be sent as the request body."
              (response-content (dank-url-response-uncompress))
              (response-json (if (string-match-p "^application/json" response-content-type)
                                 (json-parse-string response-content :object-type 'plist :null-object nil))))
-        (if (= response-status-code 200)
+        (if (and response-status-code (= response-status-code 200))
             (or response-json response-content)
           (signal 'dank-backend-request-error
                   `(,full-url ,method ,response-status-code ,response-content)))))))
