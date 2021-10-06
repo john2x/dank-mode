@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 John Louis Del Rosario
 
 ;; Author: John Louis Del Rosario <john2x@gmail.com>
-;; Version: 0.1.5
+;; Version: 0.2.0
 ;; Keywords: reddit, social
 
 ;;; Commentary:
@@ -17,6 +17,13 @@
 (require 'dank-url)
 (require 'dank-utils)
 
+(defcustom dank-auth-method 'default
+  "The auth method to use. The default will use OAuth access
+  tokens using the client id created for this package. custom
+  will let you use your own client id but requires more setup."
+  :type 'symbol
+  :group 'dank-mode
+  :options '(default custom))
 
 (defcustom dank-auth-file (expand-file-name "~/.emacs.d/dank-mode/auth.json")
   "Path to a JSON file containing your Reddit auth info. DEPRECATED.
