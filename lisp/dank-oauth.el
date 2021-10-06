@@ -84,13 +84,13 @@
   ;; and wait for the redirect server to receive the token
   (let ((oauth2-token-file dank-oauth-token-file))
     ;; temporarily override these functions with our own
-    (cl-letf (((symbol-function 'oauth2-make-access-request) 'dank-oauth-make-access-request)
-              ((symbol-function 'oauth2-request-authorization) 'dank-oauth-request-authorization))
+    (cl-letf (((symbol-function 'oauth2-make-access-request) 'dank-oauth--make-access-request)
+              ((symbol-function 'oauth2-request-authorization) 'dank-oauth--request-authorization))
       (oauth2-auth-and-store dank-oauth-auth-url dank-oauth-token-url
                              dank-oauth-scope dank-oauth-client-id nil
                              dank-oauth-redirect-url dank-oauth--state-nonce))))
 
-(defun dank-oauth-request-authorization (auth-url client-id &optional scope state redirect-uri)
+(defun dank-oauth--request-authorization (auth-url client-id &optional scope state redirect-uri)
   "Like `oauth2-request-authorization' but doesn't prompt for the code.
 Instead, the code will be set by the redirect server."
   (browse-url (concat auth-url
@@ -104,7 +104,7 @@ Instead, the code will be set by the redirect server."
   (dank-oauth-wait-for-auth-token)
   (dank-oauth-stop-redirect-servers))
 
-(defun dank-oauth-make-access-request (url data)
+(defun dank-oauth--make-access-request (url data)
   "Like `oauth2-make-access-request' but provides Authorization header."
   (let ((url-request-method "POST")
         (url-request-data data)
@@ -169,7 +169,7 @@ file and see if it is more than 3300 or DURATION seconds old."
     (message "Refreshing oauth token...")
     (let ((oauth2-token-file dank-oauth-token-file))
       ;; temporarily override these functions with our own
-      (cl-letf (((symbol-function 'oauth2-make-access-request) 'dank-oauth-make-access-request))
+      (cl-letf (((symbol-function 'oauth2-make-access-request) 'dank-oauth--make-access-request))
         (setq dank-oauth--token-data (oauth2-refresh-access dank-oauth--token-data))))))
 
 (defun dank-oauth-start-redirect-server ()
