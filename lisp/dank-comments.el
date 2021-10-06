@@ -196,7 +196,7 @@ REFRESH-EWOC creates a new ewoc."
   "Render the ERR message in the current buffer and show recommended actions."
   (let ((inhibit-read-only t))
     (erase-buffer)
-    (insert "Uh oh! Something went wrong.")
+    (insert "Uh oh! Something went wrong.\n")
     (insert (format "%s\n" err))
     (insert "Try killing this buffer with `C-x q` or `C-x k <buffer name> RET` and try again.")))
 

@@ -26,6 +26,7 @@
 
 (defun dank-url-response-status-code ()
   "Parse the first header line such as \"HTTP/1.1 200 OK\" and return the status code."
+  (goto-char (point-min))
   (when (re-search-forward "\\=[ \t\n]*HTTP/\\([0-9\\.]+\\) +\\([0-9]+\\)" nil t)
     (string-to-number (match-string 2))))
 
