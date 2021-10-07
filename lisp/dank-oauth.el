@@ -102,7 +102,8 @@ Instead, the code will be set by the redirect server."
                       (if scope (concat "&scope=" (url-hexify-string scope)) "")
                       (if state (concat "&state=" (url-hexify-string state)) "")))
   (dank-oauth-wait-for-auth-token)
-  (dank-oauth-stop-redirect-servers))
+  (dank-oauth-stop-redirect-servers)
+  dank-oauth--auth-token)
 
 (defun dank-oauth--make-access-request (url data)
   "Like `oauth2-make-access-request' but provides Authorization header."
@@ -136,6 +137,7 @@ Once it's set, stop the `dank-oauth-redirect-server'."
            (id (oauth2-compute-id dank-oauth-auth-url dank-oauth-token-url dank-oauth-scope))
            (token (cdr (plstore-get store id))))
       (when token
+        (message "Reading %s" dank-oauth-token-file)
         (setq dank-oauth--token-data
               (make-oauth2-token :plstore store
                                  :plstore-id id
