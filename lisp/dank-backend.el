@@ -38,8 +38,7 @@
 (defun dank-backend-request (method path &optional url-params json-data)
   "Perform a synchronous Reddit request with METHOD PATH and URL-PARAMS.
 JSON-DATA will be sent as the request body."
-  (let* ((json-object-type 'plist)
-         (encoded-url-params (dank-url-encode-alist url-params))
+  (let* ((encoded-url-params (dank-url-encode-alist url-params))
          (full-url (concat dank-backend-host path))
          (full-url (if encoded-url-params (concat full-url "?" encoded-url-params) full-url))
          (token (dank-oauth-token))
