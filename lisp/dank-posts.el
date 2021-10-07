@@ -14,7 +14,6 @@
 
 ;;; Code:
 
-(require 'dank-auth)
 (require 'dank-backend)
 (require 'dank-utils)
 (require 'dank-post)
