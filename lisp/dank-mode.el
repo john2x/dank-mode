@@ -11,11 +11,10 @@
 ;; This file defines the entry point for dank-mode (dank-posts-mode
 ;; and dank-comments-mode).
 ;;
-;; Before you can start using dank-mode, you will need to configure
-;; your auth credentials. See dank-auth.el for details.
-;;
-;; To start a dank-mode session, use `M-x dank-mode`. This will start
-;; a dank-posts-mode buffer with the hot posts of your frontpage.
+;; To start a dank-mode session, use `M-x dank-mode`. If this is the
+;; first time dank-mode is run, you will be redirected to Reddit's
+;; OAuth page for authorization. Once that's done, a dank-posts-mode
+;; buffer with the hot posts of your frontpage will be opened.
 ;;
 ;; To read a post's comments, use `M-x
 ;; dank-posts-goto-post-comments-at-point`.
