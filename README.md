@@ -33,11 +33,9 @@ This package requires at least Emacs version 27.1.
 
 This package requires the following packages (available on GNU ELPA):
 
-- oauth2
-- web-server
-
-If `markdown-mode` is available, it will be used to do paragraph
-filling.
+- oauth2 (available on GNU ELPA)
+- web-server (available on GNU ELPA)
+- markdown-mode (available on non-GNU ELPA)
 
 # Authentication
 
@@ -53,14 +51,38 @@ passphrase to encrypt the token on disk.
 
 You will occasionally be asked to re-enter the passphrase when the
 token is refreshed (every 1 hour) or when you restart `dank-mode`.
-Depending on your OS, you will have the option to cache this
-passphrase so you don't have to type it in all the time.
+(If you don't want to be prompted for a passphrase every time the
+token needs to be refreshed, this can be disabled by setting
+`dank-oauth-encrypt-plstore` to `nil`)
 
 **Note about previous authentication method:** if you previously
 authenticated with your own Reddit client id and username/password
 (e.g. version 0.1.5 and below), you will need to re-authenticate.
 This can be done by restarting `dank-mode` or with `M-x
 dank-oauth-start`.
+
+## Storing your access/refresh tokens unecrypted
+
+The `oauth2` package uses `plstore` to store the OAuth tokens on disk.
+By default, it treats the access and refresh tokens as secrets
+(appropriately so). This causes `plstore-put` to prompt for a
+passphrase when writing them to disk.
+
+This could get annoying when you have to provide a passphrase every
+time the access token needs a refresh (every hour or so).
+
+As a workaround, you can set `dank-oauth-encrypt-plstore` to override
+this behavior at your risk.
+
+## Using your own Reddit API keys
+
+By default, dank-mode will use a Reddit OAuth "installed" app created
+by me. If you don't want to authorize this app, you can create your
+own "installed" app via https://old.reddit.com/prefs/apps. Just make
+sure to use `http://localhost:36227/dank-mode/oauth/redirect` as the
+redirect url.
+
+Replace `dank-oauth-client-id` with your installed app client id.
 
 # Usage instructions
 
