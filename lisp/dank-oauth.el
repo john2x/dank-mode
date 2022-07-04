@@ -17,9 +17,13 @@
 (require 'cl-lib)
 (require 'oauth2)
 (require 'web-server)
+(require 'plstore)
 
 (defcustom dank-oauth-client-id "Q83RuROYKjRiQnYqsI1jVg"
-  "The Reddit installed app client id. Not a secret."
+  "The Reddit installed app client id. Not a secret.
+You can change this to your own Reddit client id by going to
+https://old.reddit.com/prefs/apps and creating an 'installed
+app'."
   :type 'string
   :group 'dank-mode)
 
@@ -41,6 +45,15 @@
 (defcustom dank-oauth-wait-for-token-timeout 30
   "Number of seconds to wait for the access token to be set at the end of the OAuth2 dance."
   :type 'number
+  :group 'dank-mode)
+
+(defcustom dank-oauth-encrypt-plstore nil
+  "Encrypt the plstore file for the OAuth refresh token with a password.
+
+Although it is recommended to keep this enabled, it is annoying
+to have to retype the password every time the access token needs
+to be refreshed."
+  :type 'boolean
   :group 'dank-mode)
 
 (defvar dank-oauth--token-data nil)
@@ -84,11 +97,25 @@
   ;; and wait for the redirect server to receive the token
   (let ((oauth2-token-file dank-oauth-token-file))
     ;; temporarily override these functions with our own
-    (cl-letf (((symbol-function 'oauth2-make-access-request) 'dank-oauth--make-access-request)
-              ((symbol-function 'oauth2-request-authorization) 'dank-oauth--request-authorization))
-      (oauth2-auth-and-store dank-oauth-auth-url dank-oauth-token-url
-                             dank-oauth-scope dank-oauth-client-id nil
-                             dank-oauth-redirect-url dank-oauth--state-nonce))))
+    (unwind-protect
+        (progn
+          ;; temporarily advice plstore-put so it understands dank-oauth-encrypt-plstore
+          (advice-add 'plstore-put :filter-args #'dank-oauth--plstore-put-advice)
+          ;; temporarily override these functions with our own
+          (cl-letf (((symbol-function 'oauth2-make-access-request) 'dank-oauth--make-access-request)
+                    ((symbol-function 'oauth2-request-authorization) 'dank-oauth--request-authorization))
+            (oauth2-auth-and-store dank-oauth-auth-url dank-oauth-token-url
+                                   dank-oauth-scope dank-oauth-client-id nil
+                                   dank-oauth-redirect-url dank-oauth--state-nonce)))
+      (advice-remove 'plstore-put #'dank-oauth--plstore-put-advice))))
+
+
+(defun dank-oauth--plstore-put-advice (args)
+  "Filter the arguments used for plstore-put. Combine KEYS and
+SECRET-KEYS if `dank-oauth-encrypt-plstore' is nil."
+  (if dank-oauth-encrypt-plstore
+      args
+    (list (car args) (cadr args) (append (caddr args) (cadddr args)) nil)))
 
 (defun dank-oauth--request-authorization (auth-url client-id &optional scope state redirect-uri)
   "Like `oauth2-request-authorization' but doesn't prompt for the code.
@@ -170,9 +197,14 @@ file and see if it is more than 3300 or DURATION seconds old."
   (when (or force-refresh (dank-oauth-token-needs-refresh-p))
     (message "Refreshing oauth token...")
     (let ((oauth2-token-file dank-oauth-token-file))
-      ;; temporarily override these functions with our own
-      (cl-letf (((symbol-function 'oauth2-make-access-request) 'dank-oauth--make-access-request))
-        (setq dank-oauth--token-data (oauth2-refresh-access dank-oauth--token-data))))))
+      (unwind-protect
+          (progn
+            ;; temporarily advice plstore-put so it understands dank-oauth-encrypt-plstore
+            (advice-add 'plstore-put :filter-args #'dank-oauth--plstore-put-advice)
+            ;; temporarily override these functions with our own
+            (cl-letf (((symbol-function 'oauth2-make-access-request) 'dank-oauth--make-access-request))
+              (setq dank-oauth--token-data (oauth2-refresh-access dank-oauth--token-data))))
+        (advice-remove 'plstore-put #'dank-oauth--plstore-put-advice)))))
 
 (defun dank-oauth-start-redirect-server ()
   "Start the web server to receive the OAuth2 redirect request."
@@ -190,7 +222,7 @@ file and see if it is more than 3300 or DURATION seconds old."
                     (if (and auth-token state (string-equal (cdr state) dank-oauth--state-nonce))
                         (progn
                           (setq dank-oauth--auth-token (cdr auth-token))
-                          (process-send-string process (format "Received authorization token %s. You can now close this window and go back to Emacs." (cdr auth-token))))
+                          (process-send-string process "Received authorization token. You can now close this window and go back to Emacs."))
                       (progn
                         (setq dank-oauth--auth-token nil)
                         (process-send-string process "Failed to receive valid authorization token. Please try again."))))))))
