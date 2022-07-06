@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 John Louis Del Rosario
 
 ;; Author: John Louis Del Rosario <john2x@gmail.com>
-;; Version: 0.1.5
+;; Version: 0.2.0
 ;; Keywords: reddit, social
 
 ;;; Commentary:
@@ -15,9 +15,10 @@
 (require 'url)
 (require 'json)
 (require 'dank-utils)
-(require 'dank-auth)
+(require 'dank-oauth)
 (require 'dank-url)
 
+(defconst dank-backend-user-agent "Emacs dank-mode")
 (defconst dank-backend-host "https://oauth.reddit.com")
 
 (defvar-local dank-backend-buffer-history nil)
@@ -37,13 +38,12 @@
 (defun dank-backend-request (method path &optional url-params json-data)
   "Perform a synchronous Reddit request with METHOD PATH and URL-PARAMS.
 JSON-DATA will be sent as the request body."
-  (let* ((json-object-type 'plist)
-         (encoded-url-params (dank-url-encode-alist url-params))
+  (let* ((encoded-url-params (dank-url-encode-alist url-params))
          (full-url (concat dank-backend-host path))
          (full-url (if encoded-url-params (concat full-url "?" encoded-url-params) full-url))
-         (token (dank-auth-token))
+         (token (dank-oauth-token))
          (authorization (concat "Bearer " token))
-         (url-user-agent dank-auth-user-agent)
+         (url-user-agent dank-backend-user-agent)
          (url-request-data (when json-data (json-encode-plist json-data)))
          (url-request-method method)
          (url-request-extra-headers `(("Authorization" . ,authorization)))
@@ -58,7 +58,7 @@ JSON-DATA will be sent as the request body."
              (response-content (dank-url-response-uncompress))
              (response-json (if (string-match-p "^application/json" response-content-type)
                                 (json-parse-string response-content :object-type 'plist :null-object nil))))
-        (if (= response-status-code 200)
+        (if (and response-status-code (= response-status-code 200))
             (or response-json response-content)
           (signal 'dank-backend-request-error
                   `(,full-url ,method ,response-status-code ,response-content)))))))

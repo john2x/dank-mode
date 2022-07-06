@@ -3,7 +3,7 @@
 ;; Copyright (C) 2021 John Louis Del Rosario
 
 ;; Author: John Louis Del Rosario <john2x@gmail.com>
-;; Version: 0.1.5
+;; Version: 0.2.0
 ;; Keywords: reddit, social
 
 ;;; Commentary:
@@ -14,7 +14,6 @@
 
 ;;; Code:
 
-(require 'dank-auth)
 (require 'dank-backend)
 (require 'dank-utils)
 (require 'dank-post)
@@ -180,7 +179,7 @@ POST-INDEX is the number (\"position\") of the post."
   "Render contents of ERR into the current buffer."
   (let ((inhibit-read-only t))
     (erase-buffer)
-    (insert "Uh oh! Something went wrong.")
+    (insert "Uh oh! Something went wrong.\n")
     (insert (format "%s\n" err))
     (insert "Try killing this buffer with `C-x q` or `C-x k <buffer name> RET` and try again.")))
 
