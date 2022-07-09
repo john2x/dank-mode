@@ -64,7 +64,7 @@ to be refreshed."
 (defvar dank-oauth-redirect-server nil)
 (defvar dank-oauth-auth-url "https://www.reddit.com/api/v1/authorize")
 (defvar dank-oauth-token-url "https://www.reddit.com/api/v1/access_token")
-(defvar dank-oauth-scope "identity history mysubreddits read wikiread")
+(defvar dank-oauth-scope "identity history mysubreddits read wikiread vote edit save submit subscribe report")
 (defvar dank-oauth-redirect-url (concat "http://localhost:" (number-to-string dank-oauth-redirect-port) dank-oauth-redirect-path))
 
 (defun dank-oauth--random-string (n)
