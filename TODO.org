@@ -6,7 +6,7 @@
 - [ ] reply comments
 ** Enhancements
 ** Bug fixes
-- [ ] Switching subreddits in dank-comments mode is not available
+- [ ] Switching subreddits in dank-mode-comments mode is not available
 
 * Ideas
 
@@ -15,7 +15,7 @@
   http://eschulte.github.io/emacs-web-server
 
 * Known bugs
-*** dank-comments-mode
-*** dank-posts-mode
+*** dank-mode-comments-mode
+*** dank-mode-posts-mode
 - [ ] navigating to previous post when pointer is on an empty
   line/last line skips the last post

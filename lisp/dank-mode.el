@@ -9,31 +9,31 @@
 
 ;;; Commentary:
 
-;; This file defines the entry point for dank-mode (dank-posts-mode
-;; and dank-comments-mode).
+;; This file defines the entry point for dank-mode (dank-mode-posts-mode
+;; and dank-mode-comments-mode).
 ;;
 ;; To start a dank-mode session, use `M-x dank-mode`. If this is the
 ;; first time dank-mode is run, you will be redirected to Reddit's
-;; OAuth page for authorization. Once that's done, a dank-posts-mode
+;; OAuth page for authorization. Once that's done, a dank-mode-posts-mode
 ;; buffer with the hot posts of your frontpage will be opened.
 ;;
 ;; To read a post's comments, use `M-x
-;; dank-posts-goto-post-comments-at-point`.
+;; dank-mode-posts-goto-post-comments-at-point`.
 
 ;;; Code:
 
-(require 'dank-oauth)
-(require 'dank-backend)
-(require 'dank-posts)
+(require 'dank-mode-oauth)
+(require 'dank-mode-backend)
+(require 'dank-mode-posts)
 
 (defvar dank-mode-initialized nil)
 
 ;;;###autoload
 (defun dank-mode ()
-  "Entrypoint function for dank-mode.  Initialize a dank-posts-mode buffer for the reddit frontpage."
+  "Entrypoint function for dank-mode.  Initialize a dank-mode-posts-mode buffer for the reddit frontpage."
   (interactive)
   (dank-mode-init)
-  (dank-posts-init nil))
+  (dank-mode-posts-init nil))
 
 (defun dank-mode-reset ()
   "Reset dank-mode.  Kill all buffers, clear the cache, and re-initialize auth."
@@ -45,9 +45,9 @@
 (defun dank-mode-init ()
   "Initialize dank-mode cache and auth."
   (unless dank-mode-initialized
-    (dank-oauth-read-from-disk)
-    (unless dank-oauth--token-data
-      (dank-oauth-start))
+    (dank-mode-oauth-read-from-disk)
+    (unless dank-mode-oauth--token-data
+      (dank-mode-oauth-start))
     (setq dank-mode-initialized t)))
 
 (provide 'dank-mode)

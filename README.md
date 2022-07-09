@@ -9,8 +9,8 @@ Emacs major mode for browsing ~~dank memes~~ Reddit.
 - Open posts and links in a browser or with EWW.
 - Customizable faces.
 
-![dank-posts mode](screenshots/dank-posts.png)
-![dank-comments mode](screenshots/dank-comments.png)
+![dank-mode-posts mode](screenshots/dank-mode-posts.png)
+![dank-mode-comments mode](screenshots/dank-mode-comments.png)
 ![links](screenshots/link.png)
 
 # Install
@@ -53,13 +53,13 @@ You will occasionally be asked to re-enter the passphrase when the
 token is refreshed (every 1 hour) or when you restart `dank-mode`.
 (If you don't want to be prompted for a passphrase every time the
 token needs to be refreshed, this can be disabled by setting
-`dank-oauth-encrypt-plstore` to `nil`)
+`dank-mode-oauth-encrypt-plstore` to `nil`)
 
 **Note about previous authentication method:** if you previously
 authenticated with your own Reddit client id and username/password
 (e.g. version 0.1.5 and below), you will need to re-authenticate.
 This can be done by restarting `dank-mode` or with `M-x
-dank-oauth-start`.
+dank-mode-oauth-start`.
 
 ## Storing your access/refresh tokens unecrypted
 
@@ -71,7 +71,7 @@ passphrase when writing them to disk.
 This could get annoying when you have to provide a passphrase every
 time the access token needs a refresh (every hour or so).
 
-As a workaround, you can set `dank-oauth-encrypt-plstore` to override
+As a workaround, you can set `dank-mode-oauth-encrypt-plstore` to override
 this behavior at your risk.
 
 ## Using your own Reddit API keys
@@ -82,7 +82,7 @@ own "installed" app via https://old.reddit.com/prefs/apps. Just make
 sure to use `http://localhost:36227/dank-mode/oauth/redirect` as the
 redirect url.
 
-Replace `dank-oauth-client-id` with your installed app client id.
+Replace `dank-mode-oauth-client-id` with your installed app client id.
 
 # Usage instructions
 
@@ -95,7 +95,7 @@ running `dank-mode`, you will be prompted to grant permissions (see
 **Authentication** above). You will then be taken to a new buffer with
 the frontpage posts sorted by `hot` (the default).
 
-This buffer will have the `dank-posts-mode` major mode enabled.
+This buffer will have the `dank-mode-posts-mode` major mode enabled.
 The "active" post under `point` will be highlighted.
 Navigate between posts with `n` (down) and `p` (up).
 
@@ -118,7 +118,7 @@ To change the posts sorting, press `C-x C-s`.
 ### Comments
 
 To read the comments of the active post, press `C-x C-o`. This will
-create a new buffer in `dank-comments` mode for the post's comments.
+create a new buffer in `dank-mode-comments` mode for the post's comments.
 Navigating between comments is done similarly with `n` and `p`.
 
 To jump between sibling comments, press `M-n` or `M-p`.  To jump to
