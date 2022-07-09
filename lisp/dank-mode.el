@@ -5,6 +5,7 @@
 ;; Author: John Louis Del Rosario <john2x@gmail.com>
 ;; Version: 0.2.0
 ;; Keywords: reddit, social
+;; Package-Requires: ((emacs "27.1") (oauth2 "0.16") (web-server "0.1.2") (markdown-mode "2.6-dev"))
 
 ;;; Commentary:
 
