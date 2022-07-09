@@ -19,6 +19,23 @@ Emacs major mode for browsing ~~dank memes~~ Reddit.
 
 Coming soon.
 
+## straight.el
+
+You can also install the package with straight.el, just watch out for
+[the issue with conflicting repository
+names](https://github.com/radian-software/straight.el/issues/500).
+
+Example with straight.el & use-package:
+
+```elisp
+(use-package web-server
+  :defer t
+  :straight (web-server :host github :repo "eschulte/emacs-web-server" :local-repo "web-server"))
+
+(use-package dank-mode
+  :straight (:local-repo "~/Code/system-crafting/dank-mode" :files ("lisp/*.el")))
+```
+
 ## Manual installation
 
 Download a release from https://github.com/john2x/dank-mode/releases
@@ -54,6 +71,11 @@ token is refreshed (every 1 hour) or when you restart `dank-mode`.
 (If you don't want to be prompted for a passphrase every time the
 token needs to be refreshed, this can be disabled by setting
 `dank-mode-oauth-encrypt-plstore` to `nil`)
+
+Also watch out if you're using [EXWM](https://github.com/ch11ng/exwm),
+because the OAuth execution won't let you press "Accept" in the
+browser. You'd have to run `dank-mode` in a nested Emacs session for
+the first time.
 
 **Note about previous authentication method:** if you previously
 authenticated with your own Reddit client id and username/password
