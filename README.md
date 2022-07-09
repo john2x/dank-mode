@@ -33,7 +33,7 @@ Example with straight.el & use-package:
   :straight (web-server :host github :repo "eschulte/emacs-web-server" :local-repo "web-server"))
 
 (use-package dank-mode
-  :straight (:local-repo "~/Code/system-crafting/dank-mode" :files ("lisp/*.el")))
+  :straight (:host github :repo "john2x/dank-mode" :files ("lisp/*.el")))
 ```
 
 ## Manual installation
