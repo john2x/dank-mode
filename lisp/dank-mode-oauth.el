@@ -65,6 +65,7 @@ to be refreshed."
 (defvar dank-mode-oauth-auth-url "https://www.reddit.com/api/v1/authorize")
 (defvar dank-mode-oauth-token-url "https://www.reddit.com/api/v1/access_token")
 (defvar dank-mode-oauth-scope "identity history mysubreddits read wikiread")
+(defvar dank-mode-oauth-scope "identity history mysubreddits read wikiread vote edit save submit subscribe report")
 (defvar dank-mode-oauth-redirect-url (concat "http://localhost:" (number-to-string dank-mode-oauth-redirect-port) dank-mode-oauth-redirect-path))
 
 (defun dank-mode-oauth--random-string (n)
