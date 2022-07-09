@@ -1,4 +1,4 @@
-;;; dank-mode-comments.el --- Major mode for browsing Reddit
+;;; dank-mode-comments.el --- Major mode for browsing Reddit -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2021 John Louis Del Rosario
 
@@ -426,7 +426,7 @@ If there is no next root, then navigate to the end of the comment."
 (defun dank-mode-comments-browse-post-link (&optional eww)
   "Open the current post link in a browser.
 If EWW is non-nil, browse in eww instead of the browser."
-  (interactive)
+  (interactive "P")
   (let* ((post-link (dank-mode-post-link dank-mode-comments-current-post))
          (browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
     (browse-url post-link)))
@@ -434,9 +434,9 @@ If EWW is non-nil, browse in eww instead of the browser."
 (defun dank-mode-comments-browse-post-comments (&optional eww)
   "Open the current comments in a browser.
 If EWW is non-nil, browse in eww instead of the browser."
-  (interactive)
+  (interactive "P")
   (let ((browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
-    (browse-url (concat "https://old.reddit.com" dank-mode-comments-current-permalink))))
+    (browse-url (concat (dank-mode-utils-reddit-url) dank-mode-comments-current-permalink))))
 
 (provide 'dank-mode-comments)
 ;;; dank-mode-comments.el ends here

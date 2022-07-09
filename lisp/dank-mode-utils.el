@@ -1,4 +1,4 @@
-;;; dank-mode-utils.el --- Major mode for browsing Reddit
+;;; dank-mode-utils.el --- Major mode for browsing Reddit -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2021 John Louis Del Rosario
 
@@ -22,6 +22,11 @@
 (defcustom dank-mode-utils-fill-forward-paragraph-function 'fill-forward-paragraph
   "Function to use to fill forward content paragraphs."
   :type 'function
+  :group 'dank-mode)
+
+(defcustom dank-mode-prefer-new-reddit nil
+  "Prefer new Reddit over old Reddit."
+  :type 'boolean
   :group 'dank-mode)
 
 (when (require 'markdown-mode nil 'noerror)
@@ -178,6 +183,12 @@ transformation."
          ;; Need literal to make sure it works
          t t)
       (set-match-data saved-match-data))))
+
+(defun dank-mode-utils-reddit-url ()
+  "Return the preferred Reddit URL"
+  (if dank-mode-prefer-new-reddit
+      "https://www.reddit.com"
+    "https://old.reddit.com"))
 
 (provide 'dank-mode-utils)
 

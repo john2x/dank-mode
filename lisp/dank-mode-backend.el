@@ -1,4 +1,4 @@
-;;; dank-mode-backend.el --- Major mode for browsing Reddit
+;;; dank-mode-backend.el --- Major mode for browsing Reddit -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2021 John Louis Del Rosario
 

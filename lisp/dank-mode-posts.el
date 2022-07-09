@@ -1,4 +1,4 @@
-;;; dank-mode-posts.el --- Major mode for browsing Reddit
+;;; dank-mode-posts.el --- Major mode for browsing Reddit -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2021 John Louis Del Rosario
 
@@ -325,7 +325,7 @@ Optional SORTING is the sort order for the comments."
 (defun dank-mode-posts-browse-post-link-at-point (pos &optional eww)
   "Open the post link at POS in a browser.
 If EWW is non-nil, browse in eww instead of the browser."
-  (interactive "d")
+  (interactive "d\nP")
   (let* ((post-link (dank-mode-post-link (dank-mode-utils-ewoc-data dank-mode-posts-current-ewoc pos)))
          (browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
     (browse-url post-link)))
@@ -333,10 +333,10 @@ If EWW is non-nil, browse in eww instead of the browser."
 (defun dank-mode-posts-browse-post-comments-at-point (pos &optional eww)
   "Open the post comments at POS in a browser.
 If EWW is non-nil, browse in eww instead of the browser."
-  (interactive "d")
-  (let ((post-permalink (dank-mode-post-permalink (dank-mode-utils-ewoc-data dank-mode-posts-current-ewoc point)))
+  (interactive "d\nP")
+  (let ((post-permalink (dank-mode-post-permalink (dank-mode-utils-ewoc-data dank-mode-posts-current-ewoc pos)))
         (browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
-    (browse-url (concat "https://old.reddit.com" post-permalink))))
+    (browse-url (concat (dank-mode-utils-reddit-url) post-permalink))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; interaction functions ;;
