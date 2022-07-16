@@ -338,6 +338,22 @@ If EWW is non-nil, browse in eww instead of the browser."
         (browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
     (browse-url (concat (dank-mode-utils-reddit-url) post-permalink))))
 
+(defun dank-mode-posts-vote-post-at-point (pos direction)
+  "Vote the post at POS with DIRECTION.
+Sets the post's `likes' field appropriately."
+  (interactive "d")
+  (let* ((post-id (dank-mode-post-id (dank-mode-utils-ewoc-data dank-mode-posts-current-ewoc pos)))
+         (post-current-likes (dank-mode-post-likes (dank-mode-utils-ewoc-data dank-mode-posts-current-ewoc pos)))
+         ; negate direction (set to 0) if post is already voted towards the same direction
+         (dir (cond ((and (eq :false post-current-likes) (= -1 direction)) 0)
+                    ((and post-current-likes (= 1 direction)) 0)
+                    (t direction)))
+         (updated-dir (dank-mode-backend-vote (concat "t3_" post-id) direction)))))
+
+(defun dank-mode-posts--print-ewoc-data-at-point (pos)
+  (interactive "d")
+  (message "%s" (dank-mode-utils-ewoc-data dank-mode-posts-current-ewoc pos)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; interaction functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
