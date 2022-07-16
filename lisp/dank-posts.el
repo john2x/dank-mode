@@ -73,6 +73,8 @@ When nil, defaults to the frontpage."
     (define-key map (kbd "C-x l l") (lambda (point) (interactive "d") (dank-posts-browse-post-link-at-point point t)))
     (define-key map (kbd "C-x l b") 'dank-posts-browse-post-link-at-point)
     (define-key map (kbd "C-x l o") 'dank-posts-browse-post-comments-at-point)
+    (define-key map (kbd "C-x v u") (lambda (point) (interactive "d") (dank-posts-vote-post-at-point point 1)))
+    (define-key map (kbd "C-x v d") (lambda (point) (interactive "d") (dank-posts-vote-post-at-point point -1)))
     (define-key map (kbd "C-x q") 'kill-current-buffer)
     map))
 
@@ -334,9 +336,25 @@ If EWW is non-nil, browse in eww instead of the browser."
   "Open the post comments at POS in a browser.
 If EWW is non-nil, browse in eww instead of the browser."
   (interactive "d")
-  (let ((post-permalink (dank-post-permalink (dank-utils-ewoc-data dank-posts-current-ewoc point)))
+  (let ((post-permalink (dank-post-permalink (dank-utils-ewoc-data dank-posts-current-ewoc pos)))
         (browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
     (browse-url (concat "https://old.reddit.com" post-permalink))))
+
+(defun dank-posts-vote-post-at-point (pos direction)
+  "Vote the post at POS with DIRECTION.
+Sets the post's `likes' field appropriately."
+  (interactive "d")
+  (let* ((post-id (dank-post-id (dank-utils-ewoc-data dank-posts-current-ewoc pos)))
+         (post-current-likes (dank-post-likes (dank-utils-ewoc-data dank-posts-current-ewoc pos)))
+         ; negate direction (set to 0) if post is already voted towards the same direction
+         (dir (cond ((and (eq :false post-current-likes) (= -1 direction)) 0)
+                    ((and post-current-likes (= 1 direction)) 0)
+                    (t direction)))
+         (updated-dir (dank-backend-vote (concat "t3_" post-id) direction)))))
+
+(defun dank-posts--print-ewoc-data-at-point (pos)
+  (interactive "d")
+  (message "%s" (dank-utils-ewoc-data dank-posts-current-ewoc pos)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; interaction functions ;;
