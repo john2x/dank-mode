@@ -342,13 +342,24 @@ If EWW is non-nil, browse in eww instead of the browser."
   "Vote the post at POS with DIRECTION.
 Sets the post's `likes' field appropriately."
   (interactive "d")
-  (let* ((post-id (dank-mode-post-id (dank-mode-utils-ewoc-data dank-mode-posts-current-ewoc pos)))
-         (post-current-likes (dank-mode-post-likes (dank-mode-utils-ewoc-data dank-mode-posts-current-ewoc pos)))
+  (let* ((ewoc-node (ewoc-locate dank-mode-posts-current-ewoc pos))
+         (post-data (dank-mode-utils-ewoc-data dank-mode-posts-current-ewoc pos))
+         (post-id (dank-mode-post-id post-data))
+         (post-current-likes (dank-mode-post-likes post-data))
+         (post-current-score (dank-mode-post-score post-data))
          ; negate direction (set to 0) if post is already voted towards the same direction
          (dir (cond ((and (eq :false post-current-likes) (= -1 direction)) 0)
                     ((and post-current-likes (= 1 direction)) 0)
                     (t direction)))
-         (updated-dir (dank-mode-backend-vote (concat "t3_" post-id) direction)))))
+         (new-likes (cond ((= -1 dir) :false)
+                          ((= 1 dir) t)
+                          ((= 0 dir) nil)
+                          (t nil))))
+    (dank-mode-backend-vote (concat "t3_" post-id) dir)
+    (setf (dank-mode-post-likes post-data) new-likes)
+    (setf (dank-mode-post-score post-data) (+ post-current-score dir))
+    (ewoc-set-data ewoc-node post-data)
+    (ewoc-invalidate dank-mode-posts-current-ewoc ewoc-node)))
 
 (defun dank-mode-posts--print-ewoc-data-at-point (pos)
   (interactive "d")
