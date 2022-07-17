@@ -16,12 +16,12 @@
 (require 'dank-utils)
 (require 'dank-faces)
 
-(defcustom dank-post-upvote-symbol "🠽"
+(defcustom dank-post-upvote-symbol "🡅"
   "Symbol to use for upvotes. Change this if the emoji doesn't work correctly."
   :type 'string
   :group 'dank-mode)
 
-(defcustom dank-post-downvote-symbol "🠿"
+(defcustom dank-post-downvote-symbol "🡇"
   "Symbol to use for downvotes. Change this if the emoji doesn't work correctly."
   :type 'string
   :group 'dank-mode)
