@@ -73,6 +73,8 @@ When nil, defaults to the frontpage."
     (define-key map (kbd "C-x l l") (lambda (point) (interactive "d") (dank-mode-posts-browse-post-link-at-point point t)))
     (define-key map (kbd "C-x l b") 'dank-mode-posts-browse-post-link-at-point)
     (define-key map (kbd "C-x l o") 'dank-mode-posts-browse-post-comments-at-point)
+    (define-key map (kbd "C-x v u") (lambda (point) (interactive "d") (dank-mode-posts-vote-post-at-point point 1)))
+    (define-key map (kbd "C-x v d") (lambda (point) (interactive "d") (dank-mode-posts-vote-post-at-point point -1)))
     (define-key map (kbd "C-x q") 'kill-current-buffer)
     map))
 
@@ -163,17 +165,6 @@ REFRESH-EWOC creates a new ewoc."
 (defun dank-mode-posts--set-posts-ewoc (ewoc posts)
   "Populate the EWOC with POSTS."
   (mapc (lambda (p) (ewoc-enter-last ewoc p)) posts))
-
-(defun dank-mode-posts-append-post-to-buffer (buf post-index post)
-  "Append POST into BUF.
-POST-INDEX is the number (\"position\") of the post."
-  (when (buffer-live-p buf)
-    (with-current-buffer buf
-      (let* ((inhibit-read-only t)
-             (formatted-post (concat (dank-mode-post-format post post-index) "\n")))
-        (save-excursion
-          (goto-char (point-max))
-          (insert formatted-post))))))
 
 (defun dank-mode-posts-render-error (err)
   "Render contents of ERR into the current buffer."
