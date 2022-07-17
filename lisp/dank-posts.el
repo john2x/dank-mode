@@ -166,17 +166,6 @@ REFRESH-EWOC creates a new ewoc."
   "Populate the EWOC with POSTS."
   (mapc (lambda (p) (ewoc-enter-last ewoc p)) posts))
 
-(defun dank-posts-append-post-to-buffer (buf post-index post)
-  "Append POST into BUF.
-POST-INDEX is the number (\"position\") of the post."
-  (when (buffer-live-p buf)
-    (with-current-buffer buf
-      (let* ((inhibit-read-only t)
-             (formatted-post (concat (dank-post-format post post-index) "\n")))
-        (save-excursion
-          (goto-char (point-max))
-          (insert formatted-post))))))
-
 (defun dank-posts-render-error (err)
   "Render contents of ERR into the current buffer."
   (let ((inhibit-read-only t))
