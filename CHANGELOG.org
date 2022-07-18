@@ -1,3 +1,6 @@
+* DONE v0.3.0
+** Misc
+- [x] refactor package name prefix to =dank-mode-=. Thanks to @SqrtMinusOne
 * DONE v0.2.0
 ** Enhancements
 - [X] use oauth2 and web-server to provide a better OAuth experience
