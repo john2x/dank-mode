@@ -1,4 +1,4 @@
-;;; dank-url.el --- Major mode for browsing Reddit
+;;; dank-mode-url.el --- Major mode for browsing Reddit -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2021 John Louis Del Rosario
 
@@ -15,7 +15,7 @@
 (require 'url)
 
 ;; This is copied from https://github.com/tkf/emacs-request
-(defun dank-url-encode-alist (alist)
+(defun dank-mode-url-encode-alist (alist)
   "Hexify ALIST fields according to RFC3986."
   (cl-loop for sep = "" then "&"
            for (k . v) in alist
@@ -24,20 +24,20 @@
            concat "="
            concat (url-hexify-string (format "%s" v))))
 
-(defun dank-url-response-status-code ()
+(defun dank-mode-url-response-status-code ()
   "Parse the first header line such as \"HTTP/1.1 200 OK\" and return the status code."
   (goto-char (point-min))
   (when (re-search-forward "\\=[ \t\n]*HTTP/\\([0-9\\.]+\\) +\\([0-9]+\\)" nil t)
     (string-to-number (match-string 2))))
 
-(defun dank-url-response-header (header)
+(defun dank-mode-url-response-header (header)
   "Get the value of HEADER in the current response buffer.
 HEADER should be a lower-case string."
   (goto-char (point-min))
   (when (re-search-forward (concat "^" header ": "))
     (buffer-substring (point) (line-end-position))))
 
-(defun dank-url-response-uncompress ()
+(defun dank-mode-url-response-uncompress ()
   "Uncompress the content of the `url-retrieve' response buffer BUF."
   (let ((filename (make-temp-file (buffer-name (current-buffer)) nil ".gz")))
     (search-forward "\n\n")               ; Skip response headers.
@@ -47,5 +47,5 @@ HEADER should be a lower-case string."
         (insert-file-contents filename)
         (buffer-string)))))
 
-(provide 'dank-url)
-;;; dank-url.el ends here
+(provide 'dank-mode-url)
+;;; dank-mode-url.el ends here
