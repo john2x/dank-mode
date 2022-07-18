@@ -9,8 +9,8 @@ Emacs major mode for browsing ~~dank memes~~ Reddit.
 - Open posts and links in a browser or with EWW.
 - Customizable faces.
 
-![dank-mode-posts mode](screenshots/dank-mode-posts.png)
-![dank-mode-comments mode](screenshots/dank-mode-comments.png)
+![dank-mode-posts mode](screenshots/dank-posts.png)
+![dank-mode-comments mode](screenshots/dank-comments.png)
 ![links](screenshots/link.png)
 
 # Install
@@ -162,7 +162,7 @@ To view the full list of commands, refer to the mode help page `C-x h m`.
 
 # Roadmap
 
-- [ ] Better auth (e.g. don't require providing password in plaintext)
+- [x] Better auth (e.g. don't require providing password in plaintext)
 - [ ] Multi-reddits
 - [ ] Upvote/downvote posts and comments
 - [ ] Reply in comments
