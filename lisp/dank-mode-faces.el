@@ -22,13 +22,18 @@
   :group 'dank-mode-faces)
 
 (defface dank-mode-faces-upvote
-  `((t :foreground ,dank-mode-faces-color-upvote))
+  `((t :foreground ,dank-mode-faces-color-upvote :weight bold))
   "Face for upvotes."
   :group 'dank-mode-faces)
 
 (defface dank-mode-faces-downvote
-  `((t :foreground ,dank-mode-faces-color-downvote))
+  `((t :foreground ,dank-mode-faces-color-downvote :weight bold))
   "Face for downvotes."
+  :group 'dank-mode-faces)
+
+(defface dank-mode-faces-score
+  `((t :foreground ,dank-mode-faces-color-upvote))
+  "Face for score points."
   :group 'dank-mode-faces)
 
 (defface dank-mode-faces-post-title

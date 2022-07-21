@@ -73,6 +73,8 @@ When nil, defaults to the frontpage."
     (define-key map (kbd "C-x l l") (lambda (point) (interactive "d") (dank-mode-posts-browse-post-link-at-point point t)))
     (define-key map (kbd "C-x l b") 'dank-mode-posts-browse-post-link-at-point)
     (define-key map (kbd "C-x l o") 'dank-mode-posts-browse-post-comments-at-point)
+    (define-key map (kbd "C-x v u") (lambda (point) (interactive "d") (dank-mode-posts-vote-post-at-point point 1)))
+    (define-key map (kbd "C-x v d") (lambda (point) (interactive "d") (dank-mode-posts-vote-post-at-point point -1)))
     (define-key map (kbd "C-x q") 'kill-current-buffer)
     map))
 
@@ -163,17 +165,6 @@ REFRESH-EWOC creates a new ewoc."
 (defun dank-mode-posts--set-posts-ewoc (ewoc posts)
   "Populate the EWOC with POSTS."
   (mapc (lambda (p) (ewoc-enter-last ewoc p)) posts))
-
-(defun dank-mode-posts-append-post-to-buffer (buf post-index post)
-  "Append POST into BUF.
-POST-INDEX is the number (\"position\") of the post."
-  (when (buffer-live-p buf)
-    (with-current-buffer buf
-      (let* ((inhibit-read-only t)
-             (formatted-post (concat (dank-mode-post-format post post-index) "\n")))
-        (save-excursion
-          (goto-char (point-max))
-          (insert formatted-post))))))
 
 (defun dank-mode-posts-render-error (err)
   "Render contents of ERR into the current buffer."
@@ -337,6 +328,33 @@ If EWW is non-nil, browse in eww instead of the browser."
   (let ((post-permalink (dank-mode-post-permalink (dank-mode-utils-ewoc-data dank-mode-posts-current-ewoc pos)))
         (browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
     (browse-url (concat (dank-mode-utils-reddit-url) post-permalink))))
+
+(defun dank-mode-posts-vote-post-at-point (pos direction)
+  "Vote the post at POS with DIRECTION.
+Sets the post's `likes' field appropriately."
+  (interactive "d")
+  (let* ((ewoc-node (ewoc-locate dank-mode-posts-current-ewoc pos))
+         (post-data (dank-mode-utils-ewoc-data dank-mode-posts-current-ewoc pos))
+         (post-id (dank-mode-post-id post-data))
+         (post-current-likes (dank-mode-post-likes post-data))
+         (post-current-score (dank-mode-post-score post-data))
+         ; negate direction (set to 0) if post is already voted towards the same direction
+         (dir (cond ((and (eq :false post-current-likes) (= -1 direction)) 0)
+                    ((and post-current-likes (= 1 direction)) 0)
+                    (t direction)))
+         (new-likes (cond ((= -1 dir) :false)
+                          ((= 1 dir) t)
+                          ((= 0 dir) nil)
+                          (t nil))))
+    (dank-mode-backend-vote (concat "t3_" post-id) dir)
+    (setf (dank-mode-post-likes post-data) new-likes)
+    (setf (dank-mode-post-score post-data) (+ post-current-score dir))
+    (ewoc-set-data ewoc-node post-data)
+    (ewoc-invalidate dank-mode-posts-current-ewoc ewoc-node)))
+
+(defun dank-mode-posts--print-ewoc-data-at-point (pos)
+  (interactive "d")
+  (message "%s" (dank-mode-utils-ewoc-data dank-mode-posts-current-ewoc pos)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; interaction functions ;;
