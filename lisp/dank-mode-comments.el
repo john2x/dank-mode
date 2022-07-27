@@ -59,6 +59,8 @@
     (define-key map (kbd "C-x l o") 'dank-mode-comments-browse-post-link)
     (define-key map (kbd "C-x l o") 'dank-mode-comments-browse-post-comments)
     (define-key map (kbd "TAB") 'dank-mode-comments-toggle-comment-tree-fold-at-point)
+    (define-key map (kbd "C-x v u") (lambda (point) (interactive "d") (dank-mode-comments-vote-comment-at-point point 1)))
+    (define-key map (kbd "C-x v d") (lambda (point) (interactive "d") (dank-mode-comments-vote-comment-at-point point -1)))
     (define-key map (kbd "C-x q") 'dank-mode-comments-kill-current-buffer)
     map))
 
@@ -437,6 +439,29 @@ If EWW is non-nil, browse in eww instead of the browser."
   (interactive "P")
   (let ((browse-url-browser-function (if eww 'eww-browse-url 'browse-url-default-browser)))
     (browse-url (concat (dank-mode-utils-reddit-url) dank-mode-comments-current-permalink))))
+
+(defun dank-mode-comments-vote-comment-at-point (pos direction)
+  "Vote the comment at POS with DIRECTION.
+Sets the comment's `likes' field appropriately."
+  (interactive "d")
+  (let* ((ewoc-node (ewoc-locate dank-mode-comments-current-ewoc pos))
+         (comment-data (dank-mode-utils-ewoc-data dank-mode-comments-current-ewoc pos))
+         (comment-id (dank-mode-comment-id comment-data))
+         (comment-current-likes (dank-mode-comment-likes comment-data))
+         (comment-current-score (dank-mode-comment-score comment-data))
+         ; negate direction (set to 0) if comment is already voted towards the same direction
+         (dir (cond ((and (eq :false comment-current-likes) (= -1 direction)) 0)
+                    ((and comment-current-likes (= 1 direction)) 0)
+                    (t direction)))
+         (new-likes (cond ((= -1 dir) :false)
+                          ((= 1 dir) t)
+                          ((= 0 dir) nil)
+                          (t nil))))
+    (dank-mode-backend-vote (concat "t3_" comment-id) dir)
+    (setf (dank-mode-comment-likes comment-data) new-likes)
+    (setf (dank-mode-comment-score comment-data) (+ comment-current-score dir))
+    (ewoc-set-data ewoc-node comment-data)
+    (ewoc-invalidate dank-mode-comments-current-ewoc ewoc-node)))
 
 (provide 'dank-mode-comments)
 ;;; dank-mode-comments.el ends here
