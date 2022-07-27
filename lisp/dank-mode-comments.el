@@ -457,7 +457,7 @@ Sets the comment's `likes' field appropriately."
                           ((= 1 dir) t)
                           ((= 0 dir) nil)
                           (t nil))))
-    (dank-mode-backend-vote (concat "t3_" comment-id) dir)
+    (dank-mode-backend-vote (concat "t1_" comment-id) dir)
     (setf (dank-mode-comment-likes comment-data) new-likes)
     (setf (dank-mode-comment-score comment-data) (+ comment-current-score dir))
     (ewoc-set-data ewoc-node comment-data)
