@@ -1,17 +1,25 @@
 * TODO
 ** Features
-- [ ] search
-- [ ] upvote/downvote posts
-- [ ] upvote/downvote comments
+- [X] upvote/downvote posts
+- [X] upvote/downvote comments
+- [ ] upvote/downvote current post in dank-mode-comments
+- [ ] browse url of current post in dank-mode-comments
 - [ ] reply comments
+- [ ] mouse interaction
+  - [ ] open post comments
+  - [ ] open post link
+  - [ ] upvote/downvote post
+  - [ ] upvote/downvote comment
+  - [ ] fold comment
+- [ ] search
 ** Enhancements
 ** Bug fixes
 - [ ] Switching subreddits in dank-mode-comments mode is not available
 
 * Ideas
 
-- Use plstore.el for oauth tokens
-- Use web-server.el to do the oauth dance
+- [X] Use plstore.el for oauth tokens
+- [X] Use web-server.el to do the oauth dance
   http://eschulte.github.io/emacs-web-server
 
 * Known bugs
