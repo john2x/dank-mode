@@ -16,11 +16,22 @@
 (require 'dank-mode-backend)
 (require 'dank-mode-utils)
 (require 'dank-mode-post)
+(require 'dank-mode-faces)
+
+(defcustom dank-mode-comment-upvote-symbol "🡅"
+  "Symbol to use for upvotes. Change this if the emoji doesn't work correctly."
+  :type 'string
+  :group 'dank-mode)
+
+(defcustom dank-mode-comment-downvote-symbol "🡇"
+  "Symbol to use for downvotes. Change this if the emoji doesn't work correctly."
+  :type 'string
+  :group 'dank-mode)
 
 (cl-defstruct dank-mode-comment
   name id body edited text age date author subreddit score
   author_flair gilded replies depth parent_id post_author_p
-  type more_count children_ids)
+  type more_count children_ids likes)
 
 (defcustom dank-mode-comments-body-fill-width 120
   "Fill width for rendering the comment body."
@@ -28,7 +39,7 @@
   :group 'dank-mode)
 
 (defvar dank-mode-comment-metadata-template
-  "- ${author} (${score} points | ${age})${edited} ")
+  "- ${author} (${vote}${score} points | ${age})${edited} ")
 
 (defvar dank-mode-comment-more-template
   "+ [${count} more comments]")
@@ -72,7 +83,8 @@ list of children, also parsed."
                              :author_flair (plist-get comment :author_flair_text)
                              :gilded (plist-get comment :gilded)
                              :parent_id (plist-get comment :parent_id)
-                             :post_author_p (string-equal (plist-get comment :author) post-author))))
+                             :post_author_p (string-equal (plist-get comment :author) post-author)
+                             :likes (plist-get comment :likes))))
         (if (stringp replies)
             parsed-comment
           `(,parsed-comment . (,(mapcar (lambda (c) (dank-mode-comment-parse c post-author)) children))))))))
@@ -85,11 +97,18 @@ formatting/indentation will depend on its position."
   (let* ((author-face (if (dank-mode-comment-post_author_p comment) 'dank-mode-faces-comment-author-op 'dank-mode-faces-comment-author))
          (author (concat "/u/" (dank-mode-comment-author comment)))
          (score (number-to-string (dank-mode-comment-score comment)))
+         (likes (dank-mode-comment-likes comment))
+         (vote (format "%s" (cond ((eq :false likes) dank-mode-comment-downvote-symbol)
+                                  (likes dank-mode-comment-upvote-symbol)  ; likes is t if upvoted
+                                  (t ""))))
+         (vote-face (format "%s" (cond ((eq :false likes) 'dank-mode-faces-downvote)
+                                       (likes 'dank-mode-faces-upvote)  ; likes is t if upvoted
+                                       (t 'dank-mode-faces-comment-metadata))))
          (age (dank-mode-comment-age comment))
          (edited (or nil ""))
          (gilded (number-to-string (dank-mode-comment-gilded comment)))
          (depth (dank-mode-comment-depth comment))
-         (format-context `(author (,author . ,author-face) age ,age score ,score edited ,edited gilded ,gilded depth ,depth))
+         (format-context `(author (,author . ,author-face) age ,age vote (,vote . ,vote-face) score (,score . ,vote-face) edited ,edited gilded ,gilded depth ,depth))
          (formatted-metadata (dank-mode-utils-format-plist dank-mode-comment-metadata-template format-context 'dank-mode-faces-comment-metadata))
          (formatted-metadata (concat (make-string (* 2 depth) ?\s) formatted-metadata)))
     formatted-metadata))

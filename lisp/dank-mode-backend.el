@@ -8,7 +8,7 @@
 
 ;;; Commentary:
 
-;; This file defines functions for making requests to Reddit.
+;; This file defines wrapper functions for making requests to Reddit.
 
 ;;; Code:
 
@@ -150,6 +150,13 @@ REQUEST-PARAMS is plist of request parameters that Reddit's 'subreddits' API tak
          (params `((limit . 100) (sr_detail . nil)))
          (resp (dank-mode-backend-request "GET" url params)))
     (plist-get (plist-get resp :data) :children)))
+
+(defun dank-mode-backend-vote (thing-id direction)
+  "Cast a vote on THING-ID with DIRECTION (1, 0 or -1)."
+  (let* ((url "/api/vote")
+         (resp (dank-mode-backend-request "POST" url `((id . ,thing-id) (dir . ,direction)))))
+    resp))
+
 
 (provide 'dank-mode-backend)
 
