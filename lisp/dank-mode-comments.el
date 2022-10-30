@@ -251,11 +251,12 @@ REFRESH-EWOC creates a new ewoc."
 
 (defun dank-mode-comments--find-comment-extents (pos)
   "Return list containing point for beginning and end of comment containing POS."
-  ;; find the header then do beginning-of-line-text
+  ;; find the header then do beginning-of-line
   (interactive "d")
   (save-excursion
     (goto-char pos)
-    (list (dank-mode-comments--navigate-beginning-of-comment pos)
+    (dank-mode-comments--navigate-beginning-of-comment pos)
+    (list (line-beginning-position)
           (dank-mode-comments--navigate-end-of-comment pos))))
 
 (defun dank-mode-comments--find-comment-tree-extents (pos &optional start-at-end-of-first-header)
