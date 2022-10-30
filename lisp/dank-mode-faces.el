@@ -72,7 +72,7 @@
   :group 'dank-mode-faces)
 
 (defface dank-mode-faces-highlight
-  '((t :inherit highlight))
+  '((t :inherit highlight :extend t))
   "Face for highlighted sections."
   :group 'dank-mode-faces)
 
